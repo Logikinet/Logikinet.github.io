@@ -3,12 +3,23 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import PostCard from "@/components/PostCard.astro";
 import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
-import { getFeaturedProjects } from "@/data/projects";
+import { getFeaturedProjects, projects } from "@/data/projects";
 import { tools } from "@/data/tools";
+import { labItems } from "@/data/lab";
 import { getPublishedPosts } from "@/utils/blog";
 
 const featuredProjects = getFeaturedProjects(4);
-const posts = (await getPublishedPosts()).slice(0, 3);
+const allPosts = await getPublishedPosts();
+const posts = allPosts.slice(0, 3);
+
+const stats = [
+  { value: String(projects.length), label: "项目实践" },
+  { value: String(allPosts.length), label: "技术文章" },
+  { value: String(tools.length), label: "本地工具" },
+  { value: String(labItems.length), label: "实验室 Demo" },
+] as const;
+
+const heroTags = ["Agent & Harness", "HarmonyOS", "Cangjie", "AI Apps", "ROS & IoT"] as const;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -26,48 +37,111 @@ const jsonLd = {
 ---
 
 <BaseLayout jsonLd={jsonLd}>
-  <section class="hero-glow border-b border-ink-200/60 dark:border-ink-800/80">
-    <div class="container-page section-space">
-      <p class="label-meta">{SITE.title}</p>
-      <h1 class="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-ink-900 dark:text-ink-50 sm:text-5xl lg:text-[3.25rem] lg:leading-[1.15]">
-        构建可控、可靠且高效的智能系统
+  <!-- Hero -->
+  <section class="hero-surface" aria-labelledby="hero-title">
+    <div class="container-page section-space !pb-14 sm:!pb-16 lg:!pb-20">
+      <div class="hero-kicker">
+        <span class="hero-kicker-dot" aria-hidden="true"></span>
+        <span class="font-mono text-[11px] tracking-[0.12em] uppercase text-ink-500 dark:text-ink-400">
+          {SITE.title}
+        </span>
+        <span class="text-ink-300 dark:text-ink-600" aria-hidden="true">·</span>
+        <span>{SITE.name}</span>
+      </div>
+
+      <h1 id="hero-title" class="hero-title mt-7 sm:mt-8">
+        构建可控、可靠<br class="hidden sm:block" />且高效的智能系统
       </h1>
-      <p class="mt-6 max-w-2xl text-base leading-relaxed text-ink-600 dark:text-ink-300 sm:text-lg">
-        {SITE.name}的个人技术空间，记录 AI Agent、Harness 工程、鸿蒙与仓颉开发，以及从想法到真实产品的完整实践。
+
+      <p class="hero-lead">
+        {SITE.name}的个人技术空间。记录 AI Agent、Harness 工程、鸿蒙与仓颉开发，以及从想法到真实产品的完整实践。
       </p>
-      <div class="mt-8 flex flex-wrap gap-3">
+
+      <div class="mt-9 flex flex-wrap items-center gap-3">
         <a href="/projects/" class="btn-primary">查看项目</a>
         <a href="/blog/" class="btn-secondary">阅读博客</a>
-        <a href={SITE.github} class="btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a
+          href={SITE.github}
+          class="btn-ghost !px-3"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub（新窗口打开）"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>GitHub</span>
+        </a>
       </div>
+
+      <ul class="mt-8 flex flex-wrap gap-2" aria-label="技术方向标签">
+        {
+          heroTags.map((tag) => (
+            <li>
+              <span class="chip">{tag}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <dl class="stat-bar" aria-label="站点概览">
+        {
+          stats.map((s) => (
+            <div class="stat-item">
+              <dt class="sr-only">{s.label}</dt>
+              <dd class="stat-value">{s.value}</dd>
+              <p class="stat-label">{s.label}</p>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </section>
 
+  <!-- Featured projects -->
   <section class="section-space" aria-labelledby="featured-projects">
     <div class="container-page">
-      <div class="mb-8 flex items-end justify-between gap-4">
+      <div class="mb-9 flex items-end justify-between gap-4">
         <div>
           <p class="label-meta">Projects</p>
-          <h2 id="featured-projects" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">精选项目</h2>
+          <h2 id="featured-projects" class="section-heading mt-2.5">精选项目</h2>
+          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+            从 Agent 工程到机器人与硬件，精选可说明问题的实践。
+          </p>
         </div>
-        <a href="/projects/" class="text-sm text-aqua-600 no-underline hover:underline dark:text-aqua-300">全部项目</a>
+        <a href="/projects/" class="section-link shrink-0">全部项目 →</a>
       </div>
-      <div class="grid gap-5 sm:grid-cols-2">
+      <div class="grid gap-5 sm:grid-cols-2 sm:gap-6">
         {featuredProjects.map((project) => <ProjectCard project={project} />)}
       </div>
     </div>
   </section>
 
-  <section class="section-space border-y border-ink-200/70 bg-white/40 dark:border-ink-800 dark:bg-ink-900/20" aria-labelledby="focus-areas">
+  <!-- Focus areas -->
+  <section class="band section-space" aria-labelledby="focus-areas">
     <div class="container-page">
-      <p class="label-meta">Focus</p>
-      <h2 id="focus-areas" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">技术方向</h2>
-      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <div class="mb-9">
+        <p class="label-meta">Focus</p>
+        <h2 id="focus-areas" class="section-heading mt-2.5">技术方向</h2>
+        <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+          以工程约束与系统可靠性为主线，串联软件、系统与硬件。
+        </p>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 sm:gap-5">
         {
-          FOCUS_AREAS.map((area) => (
+          FOCUS_AREAS.map((area, i) => (
             <article class="card">
-              <h3 class="text-lg font-semibold text-ink-900 dark:text-ink-50">{area.title}</h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300">{area.description}</p>
+              <div class="flex items-start justify-between gap-3">
+                <h3 class="card-title !text-base sm:!text-lg">{area.title}</h3>
+                <span class="focus-index" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </div>
+              <p class="card-body">{area.description}</p>
             </article>
           ))
         }
@@ -75,37 +149,52 @@ const jsonLd = {
     </div>
   </section>
 
+  <!-- Latest posts -->
   <section class="section-space" aria-labelledby="latest-posts">
     <div class="container-page">
-      <div class="mb-8 flex items-end justify-between gap-4">
+      <div class="mb-9 flex items-end justify-between gap-4">
         <div>
           <p class="label-meta">Blog</p>
-          <h2 id="latest-posts" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">最新文章</h2>
+          <h2 id="latest-posts" class="section-heading mt-2.5">最新文章</h2>
+          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+            工程判断、工作流与可复用框架，而非一次性提示词技巧。
+          </p>
         </div>
-        <a href="/blog/" class="text-sm text-aqua-600 no-underline hover:underline dark:text-aqua-300">全部文章</a>
+        <a href="/blog/" class="section-link shrink-0">全部文章 →</a>
       </div>
-      <div class="grid gap-5">
+      <div class="grid gap-5 sm:gap-6">
         {posts.map((post) => <PostCard post={post} />)}
       </div>
     </div>
   </section>
 
-  <section class="section-space border-y border-ink-200/70 bg-white/40 dark:border-ink-800 dark:bg-ink-900/20" aria-labelledby="tools">
+  <!-- Tools -->
+  <section class="band section-space" aria-labelledby="tools">
     <div class="container-page">
-      <div class="mb-8 flex items-end justify-between gap-4">
+      <div class="mb-9 flex items-end justify-between gap-4">
         <div>
           <p class="label-meta">Tools</p>
-          <h2 id="tools" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">在线工具</h2>
-          <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">全部在浏览器本地运行，不上传用户数据。</p>
+          <h2 id="tools" class="section-heading mt-2.5">在线工具</h2>
+          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+            全部在浏览器本地运行，不上传用户数据。
+          </p>
         </div>
-        <a href="/tools/" class="text-sm text-aqua-600 no-underline hover:underline dark:text-aqua-300">工具箱</a>
+        <a href="/tools/" class="section-link shrink-0">工具箱 →</a>
       </div>
-      <div class="grid gap-4 sm:grid-cols-3">
+      <div class="grid gap-4 sm:grid-cols-3 sm:gap-5">
         {
           tools.map((tool) => (
-            <a href={tool.href} class="card no-underline">
-              <h3 class="font-semibold text-ink-900 dark:text-ink-50">{tool.title}</h3>
-              <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">{tool.summary}</p>
+            <a href={tool.href} class="card card-interactive group">
+              <div class="mb-3 flex flex-wrap gap-1.5">
+                {tool.tags.map((tag) => (
+                  <span class="chip">{tag}</span>
+                ))}
+              </div>
+              <h3 class="card-title !text-base">{tool.title}</h3>
+              <p class="card-body">{tool.summary}</p>
+              <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
+                打开工具 →
+              </p>
             </a>
           ))
         }
@@ -113,29 +202,33 @@ const jsonLd = {
     </div>
   </section>
 
+  <!-- Highlights + contact -->
   <section class="section-space" aria-labelledby="achievements">
-    <div class="container-page grid gap-10 lg:grid-cols-2">
-      <div>
+    <div class="container-page grid gap-8 lg:grid-cols-5 lg:gap-10">
+      <div class="lg:col-span-3">
         <p class="label-meta">Highlights</p>
-        <h2 id="achievements" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">获奖与成果摘要</h2>
-        <ul class="mt-6 space-y-3">
+        <h2 id="achievements" class="section-heading mt-2.5">获奖与成果摘要</h2>
+        <ul class="mt-7 space-y-3.5">
           {
             ACHIEVEMENTS.map((item) => (
               <li class="flex gap-3 text-sm leading-relaxed text-ink-700 dark:text-ink-200">
-                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+                <span
+                  class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500 ring-4 ring-aqua-500/10"
+                  aria-hidden="true"
+                />
                 <span>{item}</span>
               </li>
             ))
           }
         </ul>
       </div>
-      <div class="card">
+      <div class="card lg:col-span-2">
         <p class="label-meta">Contact</p>
-        <h2 class="mt-2 text-xl font-semibold">GitHub 与联系方式</h2>
+        <h2 class="mt-2.5 text-xl font-semibold tracking-tight">GitHub 与联系</h2>
         <p class="mt-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
           开源与实验代码集中在 GitHub。如需交流 Agent 工程、鸿蒙/仓颉或项目合作，欢迎通过 GitHub 联系。
         </p>
-        <div class="mt-6 flex flex-wrap gap-3">
+        <div class="mt-7 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
           <a href={SITE.github} class="btn-primary" target="_blank" rel="noopener noreferrer">
             @{SITE.githubUser}
           </a>

@@ -6,24 +6,34 @@
 @theme {
   --font-sans: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
     ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", "IBM Plex Sans", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "Sarasa Mono SC", ui-monospace, monospace;
 
-  --color-ink-50: #f4f7fb;
-  --color-ink-100: #e6edf5;
-  --color-ink-200: #c9d7e8;
-  --color-ink-300: #9bb0c9;
-  --color-ink-400: #6d87a6;
-  --color-ink-500: #4d6684;
-  --color-ink-600: #3a4f69;
-  --color-ink-700: #2c3d53;
-  --color-ink-800: #1c2838;
-  --color-ink-900: #121a26;
-  --color-ink-950: #0a1018;
+  /* Cool graphite / deep slate — avoid pure black */
+  --color-ink-50: #f5f7fb;
+  --color-ink-100: #e8eef6;
+  --color-ink-200: #d0dbea;
+  --color-ink-300: #a4b5cb;
+  --color-ink-400: #7a90ab;
+  --color-ink-500: #5a718c;
+  --color-ink-600: #455a74;
+  --color-ink-700: #344659;
+  --color-ink-800: #1e2b3c;
+  --color-ink-850: #172231;
+  --color-ink-900: #121c29;
+  --color-ink-950: #0c121b;
+  --color-ink-975: #080d14;
 
-  --color-aqua-300: #7ecfc4;
-  --color-aqua-400: #4fb8ab;
-  --color-aqua-500: #2f9b90;
-  --color-aqua-600: #247c73;
+  --color-aqua-300: #7ed4c8;
+  --color-aqua-400: #4fbdb0;
+  --color-aqua-500: #2fa89a;
+  --color-aqua-600: #24877c;
+  --color-aqua-700: #1c6b62;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
+  --shadow-card-hover: 0 2px 4px rgb(15 23 42 / 0.05), 0 16px 40px -16px rgb(15 23 42 / 0.18);
+  --shadow-card-dark: 0 1px 2px rgb(0 0 0 / 0.25), 0 10px 28px -14px rgb(0 0 0 / 0.55);
+  --shadow-card-dark-hover: 0 2px 6px rgb(0 0 0 / 0.3), 0 18px 44px -14px rgb(0 0 0 / 0.65);
 }
 
 @layer base {
@@ -51,9 +61,25 @@
   }
 
   body {
-    @apply bg-ink-50 text-ink-800 antialiased dark:bg-ink-950 dark:text-ink-100;
+    @apply text-ink-700 antialiased dark:text-ink-200;
     font-family: var(--font-sans);
+    font-feature-settings: "kern" 1, "liga" 1;
     text-rendering: optimizeLegibility;
+    letter-spacing: 0.005em;
+    /* Layered page surface — not flat white / pure black */
+    background-color: var(--color-ink-50);
+    background-image:
+      radial-gradient(ellipse 90% 55% at 50% -20%, rgb(47 168 154 / 0.08), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 100% 0%, rgb(90 113 140 / 0.06), transparent 50%);
+    background-attachment: fixed;
+  }
+
+  html.dark body {
+    background-color: var(--color-ink-950);
+    background-image:
+      radial-gradient(ellipse 90% 50% at 50% -15%, rgb(47 168 154 / 0.09), transparent 55%),
+      radial-gradient(ellipse 45% 35% at 95% 5%, rgb(70 100 140 / 0.12), transparent 50%),
+      linear-gradient(180deg, var(--color-ink-975) 0%, var(--color-ink-950) 35%, var(--color-ink-950) 100%);
   }
 
   ::selection {
@@ -67,6 +93,15 @@
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-aqua-500;
   }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    @apply text-ink-900 dark:text-ink-50;
+    letter-spacing: -0.02em;
+  }
 }
 
 @layer components {
@@ -75,7 +110,17 @@
   }
 
   .section-space {
-    @apply py-14 sm:py-16 lg:py-20;
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+
+  .section-heading {
+    font-family: var(--font-display);
+    @apply text-2xl font-semibold tracking-tight text-ink-900 sm:text-[1.75rem] dark:text-ink-50;
+  }
+
+  .section-link {
+    @apply text-sm font-medium text-aqua-600 no-underline transition
+      hover:text-aqua-700 dark:text-aqua-400 dark:hover:text-aqua-300;
   }
 
   .prose-aqualeap {
@@ -86,57 +131,213 @@
       prose-pre:bg-ink-900 prose-pre:text-ink-50
       prose-blockquote:border-aqua-500/50
       prose-hr:border-ink-200 dark:prose-hr:border-ink-700;
+    font-family: var(--font-sans);
   }
 
+  .prose-aqualeap :is(h1, h2, h3, h4) {
+    font-family: var(--font-display);
+  }
+
+  /* Unified card system */
   .card {
-    @apply rounded-2xl border border-ink-200/80 bg-white/80 p-5 shadow-sm transition
-      hover:border-aqua-500/40 hover:shadow-md
-      dark:border-ink-700/80 dark:bg-ink-900/60 dark:hover:border-aqua-400/30;
+    @apply relative rounded-[1.15rem] border border-ink-200/70 bg-white/90 p-5 sm:p-6
+      transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card:hover {
+    @apply border-aqua-500/35;
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .dark .card {
+    @apply border-ink-700/55 bg-ink-900/55;
+    background-image: linear-gradient(
+      165deg,
+      rgb(30 43 60 / 0.55) 0%,
+      rgb(18 28 41 / 0.72) 100%
+    );
+    box-shadow: var(--shadow-card-dark);
+  }
+
+  .dark .card:hover {
+    @apply border-aqua-400/30 bg-ink-900/70;
+    box-shadow: var(--shadow-card-dark-hover);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card:hover {
+      transform: none;
+    }
+  }
+
+  .card-interactive {
+    @apply block no-underline;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    @apply text-lg font-semibold tracking-tight text-ink-900 transition-colors dark:text-ink-50;
+  }
+
+  .card:hover .card-title {
+    @apply text-aqua-700 dark:text-aqua-300;
+  }
+
+  .card-body {
+    @apply mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300;
+  }
+
+  .card-meta {
+    @apply text-xs leading-none text-ink-500 dark:text-ink-400;
+    font-variant-numeric: tabular-nums;
   }
 
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
-      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500;
+      transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
-      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
-      bg-ink-900 text-white hover:bg-ink-800 dark:bg-aqua-500 dark:text-ink-950 dark:hover:bg-aqua-400;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium
+      transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
+      bg-ink-900 text-white shadow-sm hover:bg-ink-800 hover:shadow-md
+      dark:bg-aqua-500 dark:text-ink-975 dark:hover:bg-aqua-400;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
-      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
-      border border-ink-300 bg-transparent text-ink-800 hover:border-aqua-500/60 hover:bg-ink-100/60
-      dark:border-ink-600 dark:text-ink-100 dark:hover:border-aqua-400/50 dark:hover:bg-ink-800/80;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium
+      transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
+      border border-ink-300/90 bg-white/60 text-ink-800 shadow-sm
+      hover:border-aqua-500/50 hover:bg-white hover:text-ink-900
+      dark:border-ink-600 dark:bg-ink-900/40 dark:text-ink-100
+      dark:hover:border-aqua-400/40 dark:hover:bg-ink-800/70;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
-      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
-      text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white;
+      transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
+      text-ink-600 hover:bg-ink-100/80 hover:text-ink-900
+      dark:text-ink-300 dark:hover:bg-ink-800/70 dark:hover:text-white;
   }
 
   .chip {
-    @apply inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs text-ink-600
-      dark:border-ink-700 dark:bg-ink-900 dark:text-ink-300;
+    @apply inline-flex items-center rounded-full border border-ink-200/90 bg-ink-50/90 px-2.5 py-1
+      text-[11px] font-medium tracking-wide text-ink-600
+      dark:border-ink-700/80 dark:bg-ink-900/80 dark:text-ink-300;
+  }
+
+  .chip-accent {
+    @apply inline-flex items-center rounded-full border border-aqua-500/25 bg-aqua-500/10 px-2.5 py-1
+      text-[11px] font-medium tracking-wide text-aqua-700
+      dark:border-aqua-400/25 dark:bg-aqua-500/10 dark:text-aqua-300;
   }
 
   .label-meta {
-    @apply text-xs font-medium uppercase tracking-[0.14em] text-aqua-600 dark:text-aqua-400;
+    font-family: var(--font-mono);
+    @apply text-[11px] font-medium uppercase tracking-[0.16em] text-aqua-600 dark:text-aqua-400;
   }
 
-  .hero-glow {
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(47 155 144 / 0.16), transparent 55%),
-      radial-gradient(ellipse 40% 30% at 90% 10%, rgb(109 135 166 / 0.12), transparent 50%);
+  /* Hero surface */
+  .hero-surface {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-bottom: 1px solid rgb(208 219 234 / 0.7);
   }
 
-  .dark .hero-glow {
+  .dark .hero-surface {
+    border-bottom-color: rgb(52 70 89 / 0.55);
+  }
+
+  .hero-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
     background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(47 155 144 / 0.12), transparent 55%),
-      radial-gradient(ellipse 40% 30% at 85% 5%, rgb(30 60 90 / 0.35), transparent 50%);
+      radial-gradient(ellipse 70% 55% at 18% 10%, rgb(47 168 154 / 0.14), transparent 55%),
+      radial-gradient(ellipse 55% 45% at 88% 20%, rgb(90 113 140 / 0.12), transparent 55%),
+      radial-gradient(ellipse 40% 30% at 55% 90%, rgb(47 168 154 / 0.05), transparent 60%);
+  }
+
+  .dark .hero-surface::before {
+    background:
+      radial-gradient(ellipse 70% 55% at 15% 0%, rgb(47 168 154 / 0.14), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 90% 15%, rgb(80 120 170 / 0.14), transparent 55%),
+      radial-gradient(ellipse 35% 30% at 50% 100%, rgb(47 100 120 / 0.08), transparent 60%);
+  }
+
+  /* Subtle technical grid — Devosfera-inspired structure, restrained */
+  .hero-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.35;
+    background-image:
+      linear-gradient(to right, rgb(90 113 140 / 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(90 113 140 / 0.07) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 20%, transparent 75%);
+    pointer-events: none;
+  }
+
+  .dark .hero-surface::after {
+    opacity: 0.28;
+    background-image:
+      linear-gradient(to right, rgb(126 212 200 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(126 212 200 / 0.05) 1px, transparent 1px);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    @apply max-w-[18ch] text-[2.35rem] font-semibold leading-[1.12] tracking-tight
+      text-ink-900 sm:max-w-none sm:text-5xl lg:text-[3.4rem] lg:leading-[1.1]
+      dark:text-ink-50;
+  }
+
+  .hero-lead {
+    @apply mt-6 max-w-xl text-[1.02rem] leading-[1.7] text-ink-600 sm:text-lg sm:leading-[1.75]
+      dark:text-ink-300;
+  }
+
+  .hero-kicker {
+    @apply inline-flex items-center gap-2 rounded-full border border-ink-200/80 bg-white/70
+      px-3 py-1 text-[12px] font-medium text-ink-600 shadow-sm backdrop-blur-sm
+      dark:border-ink-700/70 dark:bg-ink-900/50 dark:text-ink-300;
+  }
+
+  .hero-kicker-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-aqua-500 shadow-[0_0_0_3px_rgb(47_168_154_/_0.18)];
+  }
+
+  .stat-bar {
+    @apply mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4;
+  }
+
+  .stat-item {
+    @apply rounded-2xl border border-ink-200/70 bg-white/65 px-4 py-3.5 backdrop-blur-sm
+      dark:border-ink-700/50 dark:bg-ink-900/40;
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    @apply text-xl font-semibold tracking-tight text-ink-900 tabular-nums dark:text-ink-50;
+  }
+
+  .stat-label {
+    @apply mt-1 text-xs text-ink-500 dark:text-ink-400;
+  }
+
+  .focus-index {
+    font-family: var(--font-mono);
+    @apply text-[11px] tracking-wider text-aqua-600/90 dark:text-aqua-400/90;
+  }
+
+  .band {
+    @apply border-y border-ink-200/70 bg-white/45 dark:border-ink-800/70 dark:bg-ink-900/25;
   }
 
   .tool-input {
