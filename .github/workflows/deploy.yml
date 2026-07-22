@@ -2,11 +2,29 @@ name: Deploy AquaLeap to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+
   workflow_dispatch:
+    inputs:
+      source_repository:
+        description: "触发同步的项目仓库"
+        required: false
+        type: string
+      source_sha:
+        description: "触发同步的提交 SHA"
+        required: false
+        type: string
+      sync_reason:
+        description: "触发原因"
+        required: false
+        default: "manual"
+        type: string
+
   schedule:
-    # 每日 16:00 UTC ≈ 北京时间次日 00:00
-    - cron: "0 16 * * *"
+    # UTC 每日一次，故障兜底（非主同步方式）
+    - cron: "20 18 * * *"
+
   repository_dispatch:
     types: [sync-projects]
 
@@ -35,13 +53,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 公开仓无需 token；私有 README 请配置 PROJECTS_READ_TOKEN（只读 contents+metadata）
-      # 不打印 Secret；sync 脚本失败时保留缓存且 exit 0
+      - name: Log sync context
+        env:
+          SOURCE_REPOSITORY: ${{ inputs.source_repository || github.event.client_payload.source_repository || '' }}
+          SOURCE_SHA: ${{ inputs.source_sha || github.event.client_payload.source_sha || '' }}
+          SYNC_REASON: ${{ inputs.sync_reason || github.event.client_payload.sync_reason || github.event_name }}
+        run: |
+          echo "sync_reason=${SYNC_REASON}"
+          echo "source_repository=${SOURCE_REPOSITORY:-"(all)"}"
+          echo "source_sha=${SOURCE_SHA:-"(none)"}"
+          if [ -n "${{ secrets.PROJECTS_READ_TOKEN }}" ]; then
+            echo "PROJECTS_READ_TOKEN=configured"
+          else
+            echo "PROJECTS_READ_TOKEN=missing (public ok, private use cache)"
+          fi
+
       - name: Sync project READMEs
         env:
           PROJECTS_READ_TOKEN: ${{ secrets.PROJECTS_READ_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USER: Logikinet
+          SOURCE_REPOSITORY: ${{ inputs.source_repository || github.event.client_payload.source_repository || '' }}
+          SOURCE_SHA: ${{ inputs.source_sha || github.event.client_payload.source_sha || '' }}
+          SYNC_REASON: ${{ inputs.sync_reason || github.event.client_payload.sync_reason || github.event_name }}
         run: npm run sync:projects
 
       - name: Build site

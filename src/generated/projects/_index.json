@@ -1,173 +1,68 @@
 {
-  "generatedAt": "2026-07-22T11:06:43.922Z",
+  "generatedAt": "2026-07-22T11:11:06.099Z",
   "githubUser": "Logikinet",
+  "sourceRepository": null,
+  "sourceSha": null,
+  "syncReason": "manual",
   "projectIds": [
-    "harmonyos-dev",
-    "new-energy-inspection",
-    "aether",
     "harmony-ticket-agent",
+    "workbench",
+    "aether",
     "zhishen-dun",
     "zhidun",
     "smart-silver",
     "digital-bomb",
-    "ai-xunlianying",
-    "workbench"
-  ],
-  "discovered": [
-    {
-      "id": "harmony-ticket-agent",
-      "name": "harmony-ticket-agent",
-      "description": "Private mirror of user-controlled Gitee project: harmony_ticket_agent",
-      "htmlUrl": "https://github.com/Logikinet/harmony-ticket-agent",
-      "language": "TypeScript",
-      "topics": [],
-      "pushedAt": "2026-07-22T09:26:46Z",
-      "stars": 0
-    },
-    {
-      "id": "zhishen-dun",
-      "name": "zhishen-dun",
-      "description": "Zhishen Dun secure review backend source release",
-      "htmlUrl": "https://github.com/Logikinet/zhishen-dun",
-      "language": "Python",
-      "topics": [],
-      "pushedAt": "2026-07-22T09:57:16Z",
-      "stars": 0
-    },
-    {
-      "id": "aether",
-      "name": "Aether",
-      "description": "Aether —— 个人多智能体工作流平台",
-      "htmlUrl": "https://github.com/Logikinet/Aether",
-      "language": "TypeScript",
-      "topics": [],
-      "pushedAt": "2026-07-18T04:03:26Z",
-      "stars": 0
-    },
-    {
-      "id": "workbench",
-      "name": "workbench",
-      "description": "一个 Windows 本机个人用的「Todo → 计划 → 代理执行 → 审查 → 验收」工作台",
-      "htmlUrl": "https://github.com/Logikinet/workbench",
-      "language": "TypeScript",
-      "topics": [],
-      "pushedAt": "2026-07-16T15:55:55Z",
-      "stars": 0
-    },
-    {
-      "id": "ai-xunlianying",
-      "name": "AI_xunlianying",
-      "description": "",
-      "htmlUrl": "https://github.com/Logikinet/AI_xunlianying",
-      "language": null,
-      "topics": [],
-      "pushedAt": "2026-07-16T14:14:37Z",
-      "stars": 0
-    },
-    {
-      "id": "zhidun",
-      "name": "zhidun",
-      "description": "网络设计大赛",
-      "htmlUrl": "https://github.com/Logikinet/zhidun",
-      "language": "Python",
-      "topics": [],
-      "pushedAt": "2026-04-10T05:49:56Z",
-      "stars": 0
-    },
-    {
-      "id": "smart-silver",
-      "name": "smart-silver",
-      "description": "计算机程序设计大赛",
-      "htmlUrl": "https://github.com/Logikinet/smart-silver",
-      "language": "JavaScript",
-      "topics": [],
-      "pushedAt": "2026-04-10T05:41:25Z",
-      "stars": 0
-    },
-    {
-      "id": "digital-bomb",
-      "name": "digital-bomb",
-      "description": "",
-      "htmlUrl": "https://github.com/Logikinet/digital-bomb",
-      "language": "TypeScript",
-      "topics": [],
-      "pushedAt": "2026-03-08T01:36:14Z",
-      "stars": 0
-    }
+    "zhonghe",
+    "offer-pilot",
+    "cangjie-ict",
+    "personal-ai-workbench"
   ],
   "report": {
-    "synced": [
-      {
-        "id": "harmonyos-dev",
-        "readme": "local"
-      },
-      {
-        "id": "new-energy-inspection",
-        "readme": "local"
-      },
-      {
-        "id": "aether",
-        "readme": "none"
-      },
-      {
-        "id": "harmony-ticket-agent",
-        "readme": "none"
-      },
-      {
-        "id": "zhishen-dun",
-        "readme": "remote"
-      },
-      {
-        "id": "zhidun",
-        "readme": "none"
-      },
-      {
-        "id": "smart-silver",
-        "readme": "remote"
-      },
-      {
-        "id": "digital-bomb",
-        "readme": "remote"
-      }
-    ],
+    "synced": [],
     "cached": [
-      "ai-xunlianying",
-      "workbench"
+      "harmony-ticket-agent",
+      "workbench",
+      "aether",
+      "zhishen-dun",
+      "zhidun",
+      "smart-silver",
+      "digital-bomb"
     ],
-    "readmeBlocked": [
-      {
-        "id": "aether",
-        "reasons": [
-          "private_ip_url"
-        ]
-      },
-      {
-        "id": "harmony-ticket-agent",
-        "reasons": [
-          "private_ip_url"
-        ]
-      },
-      {
-        "id": "zhidun",
-        "reasons": [
-          "private_ip_url"
-        ]
-      }
-    ],
+    "readmeBlocked": [],
     "privateSkippedNoToken": [
-      "cangjie-agent-harness",
-      "welcome-robot",
       "zhonghe",
-      "offer-pilot"
+      "offer-pilot",
+      "cangjie-ict",
+      "personal-ai-workbench"
     ],
     "errors": [
       {
-        "id": "ai-xunlianying",
-        "message": "GitHub HTTP 403 (https://api.github.com/repos/Logikinet/AI_xunlianying)"
+        "id": "harmony-ticket-agent",
+        "type": "GitHub HTTP 403"
       },
       {
         "id": "workbench",
-        "message": "GitHub HTTP 403 (https://api.github.com/repos/Logikinet/workbench)"
+        "type": "GitHub HTTP 403"
+      },
+      {
+        "id": "aether",
+        "type": "GitHub HTTP 403"
+      },
+      {
+        "id": "zhishen-dun",
+        "type": "GitHub HTTP 403"
+      },
+      {
+        "id": "zhidun",
+        "type": "GitHub HTTP 403"
+      },
+      {
+        "id": "smart-silver",
+        "type": "GitHub HTTP 403"
+      },
+      {
+        "id": "digital-bomb",
+        "type": "GitHub HTTP 403"
       }
     ]
   }

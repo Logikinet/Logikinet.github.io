@@ -5,31 +5,21 @@ import type {
   Project,
   RepositoryProvider,
 } from "./types";
+import { projectRepositories } from "../project-repositories";
 
 export type * from "./types";
 export { projectCatalog } from "./catalog";
-
-function slugifyRepoName(name: string): string {
-  return name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+export {
+  projectRepositories,
+  pendingRepositoryMappings,
+  findRepoConfigByFullName,
+  findRepoConfigByProjectId,
+} from "../project-repositories";
 
 const generatedJsonModules = import.meta.glob<{ default: GeneratedProjectMeta }>(
   "../../generated/projects/*.json",
   { eager: true },
 );
-
-function getGeneratedIndex(): GeneratedIndex | null {
-  for (const [path, mod] of Object.entries(generatedJsonModules)) {
-    if (path.endsWith("_index.json")) {
-      return mod.default as unknown as GeneratedIndex;
-    }
-  }
-  return null;
-}
 
 function getAllGeneratedMeta(): Map<string, GeneratedProjectMeta> {
   const map = new Map<string, GeneratedProjectMeta>();
@@ -41,61 +31,13 @@ function getAllGeneratedMeta(): Map<string, GeneratedProjectMeta> {
   return map;
 }
 
-/** 自动发现：仅收录 catalog 未覆盖的公开仓，并排除敏感工具仓 */
-const DISCOVER_BLOCKLIST = new Set([
-  "logikinet.github.io",
-  "system_prompts_leaks",
-  "codex-5.5-codex-instruct-5.5",
-]);
-
-function discoveredProjects(index: GeneratedIndex | null): Project[] {
-  if (!index?.discovered?.length) return [];
-  const catalogIds = new Set(projectCatalog.map((p) => p.id));
-  const catalogRepos = new Set(
-    projectCatalog
-      .filter((p) => p.repositoryName)
-      .map(
-        (p) =>
-          `${p.repositoryProvider ?? "github"}:${p.repositoryOwner}/${p.repositoryName}`.toLowerCase(),
-      ),
-  );
-
-  return index.discovered
-    .filter((d) => {
-      const id = slugifyRepoName(d.name);
-      if (catalogIds.has(id)) return false;
-      if (DISCOVER_BLOCKLIST.has(d.name.toLowerCase())) return false;
-      const key = `github:logikinet/${d.name}`.toLowerCase();
-      if (catalogRepos.has(key)) return false;
-      return true;
-    })
-    .map((d) => {
-      const id = slugifyRepoName(d.name);
-      return {
-        id,
-        title: d.name,
-        summary: d.description?.trim() || `${d.name}（公开仓库）`,
-        description:
-          d.description?.trim() || "公开仓库自动收录。正文优先 README，不额外编造功能。",
-        stack: d.language ? [d.language] : [],
-        status: "实验中" as const,
-        featured: false,
-        visibility: "public" as const,
-        repositoryOwner: "Logikinet",
-        repositoryName: d.name,
-        repositoryUrl: d.htmlUrl,
-        repositoryProvider: "github" as const,
-        repositoryStatus: "public" as const,
-        exposeRepositoryUrl: true,
-        readmeSource: "github" as const,
-        readmePublicSafe: true,
-        syncMetadata: true,
-        year: d.pushedAt ? d.pushedAt.slice(0, 4) : undefined,
-        updatedAt: d.pushedAt ? d.pushedAt.slice(0, 10) : undefined,
-        ownership: "original" as const,
-        verificationStatus: "pending" as const,
-      } satisfies Project;
-    });
+function getGeneratedIndex(): GeneratedIndex | null {
+  for (const [path, mod] of Object.entries(generatedJsonModules)) {
+    if (path.endsWith("_index.json")) {
+      return mod.default as unknown as GeneratedIndex;
+    }
+  }
+  return null;
 }
 
 function isSafeHttpUrl(url: string): boolean {
@@ -109,13 +51,15 @@ function isSafeHttpUrl(url: string): boolean {
 
 function mergeMeta(p: Project, m: GeneratedProjectMeta | undefined): Project {
   if (!m) return toPageSafeProject(p);
-
   const next: Project = { ...p };
 
-  if (m.description && (!p.summary || p.summary.includes("自动收录"))) {
-    next.summary = m.description;
+  if (m.description?.trim() && (!p.summary || p.verificationStatus === "pending")) {
+    // 不覆盖已写好的人工 summary；仅在空/弱时用仓库 description
+    if (!p.summary || p.summary.length < 12) next.summary = m.description;
   }
-  if (m.language && (p.stack[0] === "整理中" || !p.stack.length)) {
+  if (m.language && !p.stack?.length) {
+    next.stack = [m.language];
+  } else if (m.language && p.stack[0] === "整理中") {
     next.stack = [m.language, ...p.stack.filter((s) => s !== "整理中" && s !== m.language)];
   }
   if (m.pushedAt) next.updatedAt = m.pushedAt.slice(0, 10);
@@ -124,20 +68,19 @@ function mergeMeta(p: Project, m: GeneratedProjectMeta | undefined): Project {
   }
   if (m.repositoryOwner) next.repositoryOwner = m.repositoryOwner;
   if (m.repositoryName) next.repositoryName = m.repositoryName;
-  if (m.repositoryProvider) next.repositoryProvider = m.repositoryProvider;
-
   if (p.exposeRepositoryUrl && m.repositoryUrl) {
     next.repositoryUrl = m.repositoryUrl;
   }
-
+  if (m.repositoryStatus === "public" || m.repositoryStatus === "private") {
+    next.repositoryStatus = m.repositoryStatus;
+  }
   return toPageSafeProject(next);
 }
 
 export function getAllProjectsRaw(): Project[] {
-  const index = getGeneratedIndex();
   const metaMap = getAllGeneratedMeta();
-  const merged = [...projectCatalog, ...discoveredProjects(index)];
-  return merged.map((p) => mergeMeta(p, metaMap.get(p.id)));
+  // 仅 catalog（仓库映射已内嵌）；不再自动发现未映射仓库
+  return projectCatalog.map((p) => mergeMeta(p, metaMap.get(p.id)));
 }
 
 export const projects: Project[] = getAllProjectsRaw();
@@ -158,6 +101,10 @@ export function getProjectById(id: string): Project | undefined {
 
 export function getGeneratedMeta(id: string): GeneratedProjectMeta | undefined {
   return getAllGeneratedMeta().get(id);
+}
+
+export function getSyncFile(): GeneratedIndex | null {
+  return getGeneratedIndex();
 }
 
 export function getExposedRepositoryUrl(project: Project): string | undefined {
@@ -188,7 +135,6 @@ export function getProviderLabel(project: Project): string {
   return "GitHub";
 }
 
-/** 渲染前剥离：!expose 时不得把 URL 带进页面数据 */
 export function toPageSafeProject(project: Project): Project {
   const safe = { ...project };
   if (!safe.exposeRepositoryUrl || safe.repositoryStatus === "unpublished") {
@@ -197,7 +143,6 @@ export function toPageSafeProject(project: Project): Project {
   return safe;
 }
 
-/** @deprecated 兼容旧名 */
 export function getPublicGithubUrl(project: Project): string | undefined {
   if (project.repositoryProvider === "gitee") return undefined;
   return getExposedRepositoryUrl(project);
@@ -206,4 +151,8 @@ export function getPublicGithubUrl(project: Project): string | undefined {
 export function getPublicGiteeUrl(project: Project): string | undefined {
   if (project.repositoryProvider !== "gitee") return undefined;
   return getExposedRepositoryUrl(project);
+}
+
+export function getNotifyEnabledRepositories(): string[] {
+  return projectRepositories.filter((r) => r.notifyEnabled).map((r) => r.repository);
 }
