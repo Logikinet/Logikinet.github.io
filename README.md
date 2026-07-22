@@ -102,6 +102,19 @@ draft: false
 2. 在 `src/pages/tools/` 新增页面（优先客户端本地逻辑，不上传数据）
 3. 从 `/tools/` 入口可访问
 
+### 资源库
+
+路径：`/resources/`（导航「资源库」）
+
+| 子页 | 数据文件字段 |
+| --- | --- |
+| 常用网址 | `src/data/resources.ts` → `resourceLinks` |
+| Prompt Library | `resourcePrompts` |
+| Skills Registry | `resourceSkills`（第三方/待确认：`publicDownload: false`） |
+| Workflows / Rules | `resourceWorkflows` |
+
+原则：知识资产与「工具箱」分离；第三方 Skill 不在本站提供下载。
+
 ### 实验室 Demo
 
 1. 静态 Demo 可放在 `public/lab/<name>/`

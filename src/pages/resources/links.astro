@@ -1,0 +1,119 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { resourceLinks, type LinkCategory } from "@/data/resources";
+
+const categories = [...new Set(resourceLinks.map((l) => l.category))] as LinkCategory[];
+const sorted = [...resourceLinks].sort((a, b) => {
+  if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
+  return a.name.localeCompare(b.name, "zh-CN");
+});
+---
+
+<BaseLayout title="常用网址" description="AquaLeap 资源库 · 常用网址：开发平台、文档、AI 平台、开源与论文工具。">
+  <div class="container-page section-space">
+    <nav class="text-sm text-ink-500 dark:text-ink-400" aria-label="面包屑">
+      <a href="/resources/" class="no-underline hover:text-aqua-600 dark:hover:text-aqua-300">资源库</a>
+      <span class="mx-2 opacity-50">/</span>
+      <span>常用网址</span>
+    </nav>
+    <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">常用网址</h1>
+    <p class="mt-3 max-w-2xl text-sm text-ink-600 dark:text-ink-300">
+      开发平台、文档、AI 平台、开源项目、设计参考与论文工具。标记「常用」的优先展示。
+    </p>
+
+    <div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="按分类筛选" id="link-filters">
+      <button type="button" class="chip filter-chip is-active" data-filter="all">全部</button>
+      {
+        categories.map((c) => (
+          <button type="button" class="chip filter-chip" data-filter={c}>
+            {c}
+          </button>
+        ))
+      }
+      <button type="button" class="chip filter-chip" data-filter="favorite">仅常用</button>
+    </div>
+
+    <ul class="mt-8 grid gap-4 sm:grid-cols-2" id="link-list">
+      {
+        sorted.map((link) => (
+          <li
+            class="link-item"
+            data-category={link.category}
+            data-favorite={link.favorite ? "1" : "0"}
+          >
+            <article class="card h-full">
+              <div class="mb-2 flex flex-wrap items-center gap-2">
+                <span class="chip">{link.category}</span>
+                {link.favorite && <span class="chip-accent">常用</span>}
+              </div>
+              <h2 class="card-title !text-base">
+                <a
+                  href={link.url}
+                  class="no-underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {link.name}
+                  <span class="ml-1 text-xs font-normal text-ink-400" aria-hidden="true">↗</span>
+                </a>
+              </h2>
+              <p class="card-body">{link.summary}</p>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                {link.tags.map((t) => (
+                  <span class="chip">{t}</span>
+                ))}
+              </div>
+              <p class="card-meta mt-4 font-mono">
+                最后检查：{link.lastChecked}
+              </p>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+    <p id="link-empty" class="mt-8 hidden text-sm text-ink-500" role="status">
+      该筛选下暂无条目。
+    </p>
+  </div>
+
+  <script>
+    const chips = document.querySelectorAll<HTMLButtonElement>(".filter-chip");
+    const items = document.querySelectorAll<HTMLElement>(".link-item");
+    const empty = document.getElementById("link-empty");
+
+    function applyFilter(key: string) {
+      chips.forEach((c) => c.classList.toggle("is-active", c.dataset.filter === key));
+      let visible = 0;
+      items.forEach((el) => {
+        const cat = el.dataset.category ?? "";
+        const fav = el.dataset.favorite === "1";
+        const show =
+          key === "all" ||
+          (key === "favorite" && fav) ||
+          cat === key;
+        el.classList.toggle("hidden", !show);
+        if (show) visible++;
+      });
+      empty?.classList.toggle("hidden", visible > 0);
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => applyFilter(chip.dataset.filter ?? "all"));
+    });
+  </script>
+
+  <style>
+    .filter-chip {
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+    .filter-chip.is-active {
+      border-color: color-mix(in oklab, var(--color-aqua-500) 45%, transparent);
+      background: color-mix(in oklab, var(--color-aqua-500) 12%, transparent);
+      color: var(--color-aqua-700);
+    }
+    :global(html.dark) .filter-chip.is-active {
+      color: var(--color-aqua-300);
+    }
+  </style>
+</BaseLayout>

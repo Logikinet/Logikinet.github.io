@@ -1,0 +1,72 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  resourceSections,
+  resourceLinks,
+  resourcePrompts,
+  resourceSkills,
+  resourceWorkflows,
+} from "@/data/resources";
+
+const counts: Record<string, number> = {
+  links: resourceLinks.length,
+  prompts: resourcePrompts.length,
+  skills: resourceSkills.length,
+  workflows: resourceWorkflows.length,
+};
+---
+
+<BaseLayout
+  title="资源库"
+  description="AquaLeap 资源库：常用网址、Prompt 模板、Agent Skills 登记与工作流规则。知识资产归档，非在线工具。"
+>
+  <div class="container-page section-space">
+    <p class="label-meta">Resources</p>
+    <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">资源库</h1>
+    <p class="mt-4 max-w-2xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
+      汇总可复用的知识资产：网址、Prompt、Skills 与工作流规则。与「工具箱」区分——工具负责本地处理数据，资源库负责沉淀方法与出处。
+    </p>
+    <p class="mt-3 max-w-2xl text-sm text-ink-500 dark:text-ink-400">
+      第三方或来源不明的 Skill 仅展示说明，不在本站提供下载。内容持续整理中。
+    </p>
+
+    <div class="mt-10 grid gap-5 sm:grid-cols-2">
+      {
+        resourceSections.map((section) => (
+          <a href={section.href} class="card card-interactive group">
+            <div class="flex items-start justify-between gap-3">
+              <h2 class="card-title">{section.title}</h2>
+              <span class="chip tabular-nums">{counts[section.id] ?? 0}</span>
+            </div>
+            <p class="card-body">{section.description}</p>
+            <p class="mt-5 text-xs font-medium text-aqua-600 opacity-80 transition group-hover:opacity-100 dark:text-aqua-400">
+              进入{section.shortTitle} →
+            </p>
+          </a>
+        ))
+      }
+    </div>
+
+    <section class="mt-14" aria-labelledby="resource-policy">
+      <h2 id="resource-policy" class="section-heading text-xl">收录原则</h2>
+      <ul class="mt-5 space-y-2.5 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+        <li class="flex gap-3">
+          <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+          Prompt 只收「真正复用过」的模板，不整段粘贴聊天记录。
+        </li>
+        <li class="flex gap-3">
+          <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+          Skill 标注原创 / 本人修改 / 第三方 / 待确认；后两类不提供文件下载。
+        </li>
+        <li class="flex gap-3">
+          <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+          网址记录最后检查时间；失效链接会逐步清理或标注。
+        </li>
+        <li class="flex gap-3">
+          <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+          工作流与规则以可复制摘要为主，完整仓库文件以 GitHub 为准。
+        </li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

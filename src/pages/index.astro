@@ -6,6 +6,7 @@ import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
 import { getFeaturedProjects, projects } from "@/data/projects";
 import { tools } from "@/data/tools";
 import { labItems } from "@/data/lab";
+import { resourceSections } from "@/data/resources";
 import { getPublishedPosts } from "@/utils/blog";
 
 const featuredProjects = getFeaturedProjects(4);
@@ -168,8 +169,37 @@ const jsonLd = {
     </div>
   </section>
 
+  <!-- Resources preview -->
+  <section class="band section-space" aria-labelledby="resources-preview">
+    <div class="container-page">
+      <div class="mb-9 flex items-end justify-between gap-4">
+        <div>
+          <p class="label-meta">Resources</p>
+          <h2 id="resources-preview" class="section-heading mt-2.5">个人资源库</h2>
+          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+            网址、Prompt、Skills 与工作流规则——知识资产归档，不把整库内容堆在首页。
+          </p>
+        </div>
+        <a href="/resources/" class="section-link shrink-0">进入资源库 →</a>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-5">
+        {
+          resourceSections.map((section) => (
+            <a href={section.href} class="card card-interactive group">
+              <h3 class="card-title !text-base">{section.shortTitle}</h3>
+              <p class="card-body line-clamp-2">{section.description}</p>
+              <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
+                查看 →
+              </p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
   <!-- Tools -->
-  <section class="band section-space" aria-labelledby="tools">
+  <section class="section-space" aria-labelledby="tools">
     <div class="container-page">
       <div class="mb-9 flex items-end justify-between gap-4">
         <div>

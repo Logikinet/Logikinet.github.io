@@ -1,0 +1,162 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { resourceSkills, type SkillOrigin } from "@/data/resources";
+
+const origins = [...new Set(resourceSkills.map((s) => s.origin))] as SkillOrigin[];
+---
+
+<BaseLayout
+  title="Skills Registry"
+  description="AquaLeap Agent Skills 登记：原创、本人修改版与第三方收藏说明。来源不明不提供下载。"
+>
+  <div class="container-page section-space">
+    <nav class="text-sm text-ink-500 dark:text-ink-400" aria-label="面包屑">
+      <a href="/resources/" class="no-underline hover:text-aqua-600 dark:hover:text-aqua-300">资源库</a>
+      <span class="mx-2 opacity-50">/</span>
+      <span>Skills Registry</span>
+    </nav>
+    <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Skills Registry</h1>
+    <p class="mt-3 max-w-2xl text-sm text-ink-600 dark:text-ink-300">
+      登记 Agent Skill 的用途、平台与来源。第三方收藏与待确认来源<strong>不提供</strong>站内下载，仅展示来源说明。
+    </p>
+
+    <div class="mt-6 flex flex-wrap gap-2" id="skill-filters" role="group" aria-label="按来源筛选">
+      <button type="button" class="chip filter-chip is-active" data-filter="all">全部</button>
+      {
+        origins.map((o) => (
+          <button type="button" class="chip filter-chip" data-filter={o}>
+            {o}
+          </button>
+        ))
+      }
+    </div>
+
+    <ul class="mt-8 space-y-5" id="skill-list">
+      {
+        resourceSkills.map((skill) => (
+          <li class="skill-item" data-origin={skill.origin}>
+            <article class="card">
+              <div class="mb-2 flex flex-wrap items-center gap-2">
+                <span class="chip-accent">{skill.origin}</span>
+                <span class="chip">{skill.status}</span>
+                {!skill.publicDownload && <span class="chip">无公开下载</span>}
+              </div>
+              <h2 class="card-title !text-lg">{skill.name}</h2>
+              <p class="card-body">{skill.purpose}</p>
+
+              <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt class="text-xs text-ink-500">适用平台</dt>
+                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.platforms.join(" · ")}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-500">作者</dt>
+                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.author}</dd>
+                </div>
+                {
+                  skill.source && (
+                    <div class="sm:col-span-2">
+                      <dt class="text-xs text-ink-500">来源</dt>
+                      <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.source}</dd>
+                    </div>
+                  )
+                }
+                {
+                  skill.license && (
+                    <div>
+                      <dt class="text-xs text-ink-500">许可证</dt>
+                      <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.license}</dd>
+                    </div>
+                  )
+                }
+                <div>
+                  <dt class="text-xs text-ink-500">依赖</dt>
+                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">
+                    {skill.dependencies.length ? skill.dependencies.join("、") : "无声明"}
+                  </dd>
+                </div>
+                {
+                  skill.publicDownload && skill.skillPath ? (
+                    <div>
+                      <dt class="text-xs text-ink-500">SKILL.md 路径</dt>
+                      <dd class="mt-0.5 font-mono text-xs text-ink-700 dark:text-ink-200">{skill.skillPath}</dd>
+                    </div>
+                  ) : skill.skillPath ? (
+                    <div>
+                      <dt class="text-xs text-ink-500">SKILL.md 路径</dt>
+                      <dd class="mt-0.5 text-ink-500">已登记，公开下载暂未开放</dd>
+                    </div>
+                  ) : null
+                }
+              </dl>
+
+              {
+                skill.notes && (
+                  <p class="mt-4 rounded-xl border border-ink-200/80 bg-ink-50/60 px-3 py-2 text-xs leading-relaxed text-ink-600 dark:border-ink-700 dark:bg-ink-950/40 dark:text-ink-300">
+                    {skill.notes}
+                  </p>
+                )
+              }
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                {
+                  skill.publicDownload && skill.repoUrl ? (
+                    <a
+                      href={skill.repoUrl}
+                      class="btn-secondary !py-1.5 text-xs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      仓库地址
+                    </a>
+                  ) : skill.repoUrl && (skill.origin === "原创" || skill.origin === "本人修改版") ? (
+                    <a
+                      href={skill.repoUrl}
+                      class="btn-secondary !py-1.5 text-xs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      相关仓库
+                    </a>
+                  ) : (
+                    <span class="text-xs text-ink-400">仓库 / 下载：整理中或不公开</span>
+                  )
+                }
+              </div>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <script>
+    const chips = document.querySelectorAll<HTMLButtonElement>("#skill-filters .filter-chip");
+    const items = document.querySelectorAll<HTMLElement>(".skill-item");
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const key = chip.dataset.filter ?? "all";
+        chips.forEach((c) => c.classList.toggle("is-active", c === chip));
+        items.forEach((el) => {
+          const show = key === "all" || el.dataset.origin === key;
+          el.classList.toggle("hidden", !show);
+        });
+      });
+    });
+  </script>
+
+  <style>
+    .filter-chip {
+      cursor: pointer;
+    }
+    .filter-chip.is-active {
+      border-color: color-mix(in oklab, var(--color-aqua-500) 45%, transparent);
+      background: color-mix(in oklab, var(--color-aqua-500) 12%, transparent);
+      color: var(--color-aqua-700);
+    }
+    :global(html.dark) .filter-chip.is-active {
+      color: var(--color-aqua-300);
+    }
+  </style>
+</BaseLayout>
