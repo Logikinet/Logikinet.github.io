@@ -1,7 +1,10 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
-import { projects } from "@/data/projects";
+import GitHubPublicNote from "@/components/GitHubPublicNote.astro";
+import { getListedProjects } from "@/data/projects";
+
+const listed = getListedProjects();
 ---
 
 <BaseLayout title="项目作品集" description="AquaLeap 项目作品集：Agent Harness、鸿蒙、AI 工作台、ROS 机器人与智能硬件相关实践。">
@@ -9,10 +12,12 @@ import { projects } from "@/data/projects";
     <p class="label-meta">Projects</p>
     <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">项目作品集</h1>
     <p class="mt-4 max-w-2xl text-base text-ink-600 dark:text-ink-300">
-      用结构化数据维护项目信息。链接未确定时标注「整理中」，不虚构演示或用户数据。
+      结构化数据人工维护，不自动导入全部 GitHub 仓库。私有仓库仅显示状态，不公开地址；未确认归属与用途的项目不进入作品集。
     </p>
+    <p class="mt-2 text-sm text-ink-500">当前展示 {listed.length} 个已收录项目。</p>
     <div class="mt-10 grid gap-5 sm:grid-cols-2">
-      {projects.map((project) => <ProjectCard project={project} />)}
+      {listed.map((project) => <ProjectCard project={project} />)}
     </div>
+    <GitHubPublicNote />
   </div>
 </BaseLayout>

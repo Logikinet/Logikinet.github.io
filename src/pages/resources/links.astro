@@ -3,9 +3,12 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { resourceLinks, type LinkCategory } from "@/data/resources";
 
 const categories = [...new Set(resourceLinks.map((l) => l.category))] as LinkCategory[];
+const allTags = [...new Set(resourceLinks.flatMap((l) => l.tags))].sort((a, b) =>
+  a.localeCompare(b, "zh-CN"),
+);
 const sorted = [...resourceLinks].sort((a, b) => {
-  if (a.favorite !== b.favorite) return a.favorite ? -1 : 1;
-  return a.name.localeCompare(b.name, "zh-CN");
+  if (a.featured !== b.featured) return a.featured ? -1 : 1;
+  return a.title.localeCompare(b.title, "zh-CN");
 });
 ---
 
@@ -18,10 +21,21 @@ const sorted = [...resourceLinks].sort((a, b) => {
     </nav>
     <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">常用网址</h1>
     <p class="mt-3 max-w-2xl text-sm text-ink-600 dark:text-ink-300">
-      开发平台、文档、AI 平台、开源项目、设计参考与论文工具。标记「常用」的优先展示。
+      开发平台、文档、AI 平台、开源项目、设计参考与论文工具。支持分类、标签与文本搜索。
     </p>
 
-    <div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="按分类筛选" id="link-filters">
+    <label class="mt-6 block max-w-md">
+      <span class="sr-only">搜索网址</span>
+      <input
+        id="q"
+        type="search"
+        class="tool-input"
+        placeholder="搜索名称、简介、标签…"
+        autocomplete="off"
+      />
+    </label>
+
+    <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="按分类筛选" id="cat-filters">
       <button type="button" class="chip filter-chip is-active" data-filter="all">全部</button>
       {
         categories.map((c) => (
@@ -30,82 +44,105 @@ const sorted = [...resourceLinks].sort((a, b) => {
           </button>
         ))
       }
-      <button type="button" class="chip filter-chip" data-filter="favorite">仅常用</button>
+      <button type="button" class="chip filter-chip" data-filter="featured">仅常用</button>
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="按标签筛选" id="tag-filters">
+      <button type="button" class="chip filter-chip is-active" data-tag="all">全部标签</button>
+      {
+        allTags.map((t) => (
+          <button type="button" class="chip filter-chip" data-tag={t}>
+            #{t}
+          </button>
+        ))
+      }
     </div>
 
-    <ul class="mt-8 grid gap-4 sm:grid-cols-2" id="link-list">
+    <ul class="mt-8 grid gap-4 sm:grid-cols-2" id="list">
       {
         sorted.map((link) => (
           <li
-            class="link-item"
+            class="item"
             data-category={link.category}
-            data-favorite={link.favorite ? "1" : "0"}
+            data-featured={link.featured ? "1" : "0"}
+            data-tags={link.tags.join(",")}
+            data-search={`${link.title} ${link.description} ${link.tags.join(" ")} ${link.category}`.toLowerCase()}
           >
             <article class="card h-full">
               <div class="mb-2 flex flex-wrap items-center gap-2">
                 <span class="chip">{link.category}</span>
-                {link.favorite && <span class="chip-accent">常用</span>}
+                {link.featured && <span class="chip-accent">常用</span>}
               </div>
               <h2 class="card-title !text-base">
-                <a
-                  href={link.url}
-                  class="no-underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {link.name}
+                <a href={link.url} class="no-underline" target="_blank" rel="noopener noreferrer">
+                  {link.title}
                   <span class="ml-1 text-xs font-normal text-ink-400" aria-hidden="true">↗</span>
                 </a>
               </h2>
-              <p class="card-body">{link.summary}</p>
+              <p class="card-body">{link.description}</p>
               <div class="mt-3 flex flex-wrap gap-1.5">
                 {link.tags.map((t) => (
                   <span class="chip">{t}</span>
                 ))}
               </div>
-              <p class="card-meta mt-4 font-mono">
-                最后检查：{link.lastChecked}
-              </p>
+              <p class="card-meta mt-4 font-mono">最后检查：{link.lastChecked}</p>
             </article>
           </li>
         ))
       }
     </ul>
-    <p id="link-empty" class="mt-8 hidden text-sm text-ink-500" role="status">
-      该筛选下暂无条目。
-    </p>
+    <p id="empty" class="mt-8 hidden text-sm text-ink-500" role="status">没有匹配项。</p>
   </div>
 
   <script>
-    const chips = document.querySelectorAll<HTMLButtonElement>(".filter-chip");
-    const items = document.querySelectorAll<HTMLElement>(".link-item");
-    const empty = document.getElementById("link-empty");
+    let cat = "all";
+    let tag = "all";
+    let q = "";
+    const catChips = document.querySelectorAll<HTMLButtonElement>("#cat-filters .filter-chip");
+    const tagChips = document.querySelectorAll<HTMLButtonElement>("#tag-filters .filter-chip");
+    const items = document.querySelectorAll<HTMLElement>(".item");
+    const empty = document.getElementById("empty");
+    const input = document.getElementById("q") as HTMLInputElement | null;
 
-    function applyFilter(key: string) {
-      chips.forEach((c) => c.classList.toggle("is-active", c.dataset.filter === key));
-      let visible = 0;
+    function refresh() {
+      catChips.forEach((c) => c.classList.toggle("is-active", (c.dataset.filter ?? "all") === cat));
+      tagChips.forEach((c) => c.classList.toggle("is-active", (c.dataset.tag ?? "all") === tag));
+      let n = 0;
       items.forEach((el) => {
-        const cat = el.dataset.category ?? "";
-        const fav = el.dataset.favorite === "1";
-        const show =
-          key === "all" ||
-          (key === "favorite" && fav) ||
-          cat === key;
+        const c = el.dataset.category ?? "";
+        const fav = el.dataset.featured === "1";
+        const tags = (el.dataset.tags ?? "").split(",").filter(Boolean);
+        const search = el.dataset.search ?? "";
+        const okCat = cat === "all" || (cat === "featured" && fav) || c === cat;
+        const okTag = tag === "all" || tags.includes(tag);
+        const okQ = !q || search.includes(q);
+        const show = okCat && okTag && okQ;
         el.classList.toggle("hidden", !show);
-        if (show) visible++;
+        if (show) n++;
       });
-      empty?.classList.toggle("hidden", visible > 0);
+      empty?.classList.toggle("hidden", n > 0);
     }
 
-    chips.forEach((chip) => {
-      chip.addEventListener("click", () => applyFilter(chip.dataset.filter ?? "all"));
+    catChips.forEach((chip) =>
+      chip.addEventListener("click", () => {
+        cat = chip.dataset.filter ?? "all";
+        refresh();
+      }),
+    );
+    tagChips.forEach((chip) =>
+      chip.addEventListener("click", () => {
+        tag = chip.dataset.tag ?? "all";
+        refresh();
+      }),
+    );
+    input?.addEventListener("input", () => {
+      q = input.value.trim().toLowerCase();
+      refresh();
     });
   </script>
 
   <style>
     .filter-chip {
       cursor: pointer;
-      transition: border-color 0.15s, background-color 0.15s;
     }
     .filter-chip.is-active {
       border-color: color-mix(in oklab, var(--color-aqua-500) 45%, transparent);

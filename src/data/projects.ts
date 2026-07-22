@@ -1,5 +1,25 @@
 export type ProjectStatus = "进行中" | "已完成" | "整理中" | "实验中";
 
+/** 公开作品集可见性：unpublished 不生成页面、不进入列表 */
+export type ProjectVisibility = "public" | "private" | "unpublished";
+
+export type RepositoryStatus =
+  | "public"
+  | "private"
+  | "none"
+  | "archived"
+  | "整理中";
+
+export type SourcePlatform = "github" | "gitee" | "local" | "other" | "none";
+
+export type ProjectOwnership = "original" | "collaborative" | "fork" | "unknown";
+
+export type VerificationStatus =
+  | "verified"
+  | "partial"
+  | "pending"
+  | "unverified";
+
 export interface Project {
   id: string;
   title: string;
@@ -8,11 +28,23 @@ export interface Project {
   stack: string[];
   status: ProjectStatus;
   featured: boolean;
+  visibility: ProjectVisibility;
+  repositoryStatus: RepositoryStatus;
+  sourcePlatform: SourcePlatform;
+  /** 仅 public 仓库可填；private 禁止写入 URL */
   github?: string;
+  gitee?: string;
   demo?: string;
   year?: string;
+  updatedAt?: string;
+  ownership: ProjectOwnership;
+  verificationStatus: VerificationStatus;
 }
 
+/**
+ * 人工精选作品集。不自动同步 GitHub 全量仓库。
+ * Private 仓库不得写入 github/gitee URL。
+ */
 export const projects: Project[] = [
   {
     id: "cangjie-agent-harness",
@@ -24,7 +56,13 @@ export const projects: Project[] = [
     stack: ["仓颉", "Agent", "CLI", "Harness", "Skills"],
     status: "进行中",
     featured: true,
+    visibility: "private",
+    repositoryStatus: "private",
+    sourcePlatform: "github",
     year: "2025–2026",
+    updatedAt: "2026-07-01",
+    ownership: "original",
+    verificationStatus: "partial",
   },
   {
     id: "personal-ai-workbench",
@@ -32,11 +70,17 @@ export const projects: Project[] = [
     summary:
       "面向学习、论文、项目管理和 AI 协作的个人智能工作台实验。",
     description:
-      "把学习笔记、论文阅读、任务管理与 AI 协作放进同一工作流，验证「从想法到交付」的个人效率闭环。当前仍以实验与原型为主，接口与数据模型持续迭代。",
+      "把学习笔记、论文阅读、任务管理与 AI 协作放进同一工作流，验证「从想法到交付」的个人效率闭环。当前仍以实验与原型为主，接口与数据模型持续迭代。功能完成度与最初目标是否一致，见博客草稿《Personal AI Workbench 复盘》。",
     stack: ["TypeScript", "AI", "Workbench", "工具链"],
     status: "实验中",
     featured: true,
+    visibility: "private",
+    repositoryStatus: "private",
+    sourcePlatform: "github",
     year: "2025–2026",
+    updatedAt: "2026-06-01",
+    ownership: "original",
+    verificationStatus: "partial",
   },
   {
     id: "harmonyos-dev",
@@ -47,7 +91,12 @@ export const projects: Project[] = [
     stack: ["HarmonyOS", "ArkTS", "华为生态"],
     status: "整理中",
     featured: true,
+    visibility: "private",
+    repositoryStatus: "整理中",
+    sourcePlatform: "none",
     year: "2024–2026",
+    ownership: "original",
+    verificationStatus: "partial",
   },
   {
     id: "welcome-robot",
@@ -59,7 +108,12 @@ export const projects: Project[] = [
     stack: ["ROS", "Python", "语音交互", "导航", "视觉"],
     status: "已完成",
     featured: true,
+    visibility: "private",
+    repositoryStatus: "private",
+    sourcePlatform: "github",
     year: "2024–2025",
+    ownership: "original",
+    verificationStatus: "partial",
   },
   {
     id: "new-energy-inspection",
@@ -71,14 +125,101 @@ export const projects: Project[] = [
     stack: ["嵌入式", "监测系统", "风险预警", "软硬件"],
     status: "整理中",
     featured: true,
+    visibility: "private",
+    repositoryStatus: "整理中",
+    sourcePlatform: "none",
     year: "2024–2025",
+    ownership: "original",
+    verificationStatus: "partial",
+  },
+  {
+    id: "harmony-ticket-agent",
+    title: "Harmony Ticket Agent",
+    summary:
+      "鸿蒙场景下的票务/工单类 Agent 实验（仓库私有）。用途细节以实际 README 与代码为准。",
+    description:
+      "对应私有仓库 harmony-ticket-agent。公开页不展示仓库地址。当前说明基于仓库命名与既有方向归纳：围绕 HarmonyOS 生态的对话/任务 Agent 与票务或工单流程结合。[待代码核验：完整模块划分、技术栈版本与运行方式] [待补充：对外可讲的演示范围与边界]。",
+    stack: ["HarmonyOS", "Agent", "TypeScript"],
+    status: "进行中",
+    featured: false,
+    visibility: "private",
+    repositoryStatus: "private",
+    sourcePlatform: "github",
+    year: "2025–2026",
+    updatedAt: "2026-07-01",
+    ownership: "original",
+    verificationStatus: "pending",
+  },
+  {
+    id: "zhonghe",
+    title: "zhonghe",
+    summary:
+      "私有仓库 zhonghe 的作品集条目。展示名称与用途以代码核验后为准，当前不做过度推断。",
+    description:
+      "GitHub Private 仓库 zhonghe。公开页不展示仓库地址，也不根据仓库名虚构业务场景。[待代码核验：真实用途、技术栈、是否可改展示名] [待补充：一句话产品描述与是否允许精选]。在核验完成前保持低曝光、非精选。",
+    stack: ["整理中"],
+    status: "整理中",
+    featured: false,
+    visibility: "private",
+    repositoryStatus: "private",
+    sourcePlatform: "github",
+    year: "2025–2026",
+    ownership: "unknown",
+    verificationStatus: "pending",
+  },
+  {
+    id: "offer-pilot",
+    title: "OfferPilot",
+    summary:
+      "与求职/Offer 流程相关的个人工具实验（私有仓库）。不重复创建条目，公开页不暴露仓库地址。",
+    description:
+      "已存在私有仓库 OfferPilot，本站仅维护一条人工条目。名称沿用仓库名；具体能力边界与实现栈需对照 README 与代码。[待代码核验：功能列表、技术栈、是否仍在维护] [待补充：可公开的能力摘要与演示策略]。仓库地址不写入本文件。",
+    stack: ["整理中"],
+    status: "实验中",
+    featured: false,
+    visibility: "private",
+    repositoryStatus: "private",
+    sourcePlatform: "github",
+    year: "2025–2026",
+    ownership: "original",
+    verificationStatus: "pending",
   },
 ];
 
+/** 进入作品集列表/详情的项目（排除 unpublished） */
+export function getListedProjects(): Project[] {
+  return projects.filter((p) => p.visibility !== "unpublished");
+}
+
 export function getFeaturedProjects(limit = 4): Project[] {
-  return projects.filter((p) => p.featured).slice(0, limit);
+  return getListedProjects()
+    .filter((p) => p.featured)
+    .slice(0, limit);
 }
 
 export function getProjectById(id: string): Project | undefined {
-  return projects.find((p) => p.id === id);
+  return getListedProjects().find((p) => p.id === id);
+}
+
+/** 仅 visibility=public 且存在 github 字段时允许展示外链 */
+export function getPublicGithubUrl(project: Project): string | undefined {
+  if (project.visibility !== "public") return undefined;
+  if (project.repositoryStatus === "private") return undefined;
+  if (!project.github) return undefined;
+  // 防御：不允许把 private 误标 public 却带敏感路径
+  return project.github;
+}
+
+export function getPublicGiteeUrl(project: Project): string | undefined {
+  if (project.visibility !== "public") return undefined;
+  if (project.repositoryStatus === "private") return undefined;
+  return project.gitee;
+}
+
+export function repositoryLabel(project: Project): string {
+  if (project.repositoryStatus === "private") return "私有仓库";
+  if (project.repositoryStatus === "public") return "公开仓库";
+  if (project.repositoryStatus === "archived") return "已归档";
+  if (project.repositoryStatus === "整理中") return "仓库整理中";
+  return "无公开仓库";
 }

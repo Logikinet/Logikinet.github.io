@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
-import { projects } from "@/data/projects";
+import { getFeaturedProjects } from "@/data/projects";
+
+const featuredProjects = getFeaturedProjects(8);
 ---
 
 <BaseLayout title="在线简历" description={`${SITE.name}的在线简历：方向、成果与精选项目摘要。`}>
@@ -43,9 +45,7 @@ import { projects } from "@/data/projects";
       <h2 class="text-xl font-semibold">精选项目</h2>
       <ul class="mt-4 space-y-4">
         {
-          projects
-            .filter((p) => p.featured)
-            .map((p) => (
+          featuredProjects.map((p) => (
               <li class="border-b border-ink-100 pb-4 last:border-0 last:pb-0 dark:border-ink-800">
                 <div class="flex flex-wrap items-center gap-2">
                   <a href={`/projects/${p.id}/`} class="font-medium text-ink-900 no-underline hover:text-aqua-600 dark:text-ink-50 dark:hover:text-aqua-300">

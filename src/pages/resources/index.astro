@@ -27,7 +27,7 @@ const counts: Record<string, number> = {
       汇总可复用的知识资产：网址、Prompt、Skills 与工作流规则。与「工具箱」区分——工具负责本地处理数据，资源库负责沉淀方法与出处。
     </p>
     <p class="mt-3 max-w-2xl text-sm text-ink-500 dark:text-ink-400">
-      第三方或来源不明的 Skill 仅展示说明，不在本站提供下载。内容持续整理中。
+      第三方或来源不明的 Skill 仅展示说明，不在本站提供下载。Private 内容与密钥不会编译进静态页。
     </p>
 
     <div class="mt-10 grid gap-5 sm:grid-cols-2">
@@ -52,19 +52,19 @@ const counts: Record<string, number> = {
       <ul class="mt-5 space-y-2.5 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
         <li class="flex gap-3">
           <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
-          Prompt 只收「真正复用过」的模板，不整段粘贴聊天记录。
+          Prompt 只收「真正复用过」的模板，不整段粘贴聊天记录；路径与账号用占位符。
         </li>
         <li class="flex gap-3">
           <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
-          Skill 标注原创 / 本人修改 / 第三方 / 待确认；后两类不提供文件下载。
+          Skill 标注 ownership（original / modified / third-party / unknown）；后两类不提供文件下载。
         </li>
         <li class="flex gap-3">
           <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
-          网址记录最后检查时间；失效链接会逐步清理或标注。
+          不写入 API Key、Token、Cookie、本机绝对路径或设备信息。
         </li>
         <li class="flex gap-3">
           <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
-          工作流与规则以可复制摘要为主，完整仓库文件以 GitHub 为准。
+          数据分文件维护：<code class="chip">src/data/resources/*.ts</code>
         </li>
       </ul>
     </section>

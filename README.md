@@ -106,14 +106,21 @@ draft: false
 
 路径：`/resources/`（导航「资源库」）
 
-| 子页 | 数据文件字段 |
+| 子页 | 数据文件 |
 | --- | --- |
-| 常用网址 | `src/data/resources.ts` → `resourceLinks` |
-| Prompt Library | `resourcePrompts` |
-| Skills Registry | `resourceSkills`（第三方/待确认：`publicDownload: false`） |
-| Workflows / Rules | `resourceWorkflows` |
+| 常用网址 | `src/data/resources/links.ts` |
+| Prompt Library | `src/data/resources/prompts.ts` |
+| Skills Registry | `src/data/resources/skills.ts`（third-party/unknown 不提供下载） |
+| Workflows / Rules | `src/data/resources/workflows.ts` |
 
-原则：知识资产与「工具箱」分离；第三方 Skill 不在本站提供下载。
+原则：知识资产与「工具箱」分离；Private 仓库 URL 不得写入前端数据。
+
+### 项目作品集
+
+- 数据：`src/data/projects.ts`（人工精选，不自动同步 GitHub）
+- `visibility`: `public` | `private` | `unpublished`
+- Private 仅显示「私有仓库」，不写仓库 URL
+- 精选由 `featured` 控制
 
 ### 实验室 Demo
 

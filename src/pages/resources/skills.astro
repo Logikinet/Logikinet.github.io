@@ -1,8 +1,22 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { resourceSkills, type SkillOrigin } from "@/data/resources";
+import { resourceSkills, type SkillOwnership } from "@/data/resources";
 
-const origins = [...new Set(resourceSkills.map((s) => s.origin))] as SkillOrigin[];
+const ownerships = [...new Set(resourceSkills.map((s) => s.ownership))] as SkillOwnership[];
+
+const ownershipLabel: Record<SkillOwnership, string> = {
+  original: "原创",
+  modified: "本人修改版",
+  "third-party": "第三方收藏",
+  unknown: "待确认来源",
+};
+
+const statusLabel: Record<string, string> = {
+  available: "可用",
+  experimental: "实验中",
+  draft: "整理中",
+  retired: "已停用",
+};
 ---
 
 <BaseLayout
@@ -17,15 +31,20 @@ const origins = [...new Set(resourceSkills.map((s) => s.origin))] as SkillOrigin
     </nav>
     <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Skills Registry</h1>
     <p class="mt-3 max-w-2xl text-sm text-ink-600 dark:text-ink-300">
-      登记 Agent Skill 的用途、平台与来源。第三方收藏与待确认来源<strong>不提供</strong>站内下载，仅展示来源说明。
+      登记 Agent Skill 的用途、平台与来源。第三方收藏与待确认来源<strong>不提供</strong>站内下载，仅展示作者与许可证说明。
     </p>
 
-    <div class="mt-6 flex flex-wrap gap-2" id="skill-filters" role="group" aria-label="按来源筛选">
+    <label class="mt-6 block max-w-md">
+      <span class="sr-only">搜索 Skill</span>
+      <input id="q" type="search" class="tool-input" placeholder="搜索名称、用途、标签…" autocomplete="off" />
+    </label>
+
+    <div class="mt-4 flex flex-wrap gap-2" id="skill-filters" role="group" aria-label="按归属筛选">
       <button type="button" class="chip filter-chip is-active" data-filter="all">全部</button>
       {
-        origins.map((o) => (
+        ownerships.map((o) => (
           <button type="button" class="chip filter-chip" data-filter={o}>
-            {o}
+            {ownershipLabel[o]}
           </button>
         ))
       }
@@ -34,60 +53,45 @@ const origins = [...new Set(resourceSkills.map((s) => s.origin))] as SkillOrigin
     <ul class="mt-8 space-y-5" id="skill-list">
       {
         resourceSkills.map((skill) => (
-          <li class="skill-item" data-origin={skill.origin}>
+          <li
+            class="skill-item"
+            data-origin={skill.ownership}
+            data-search={`${skill.name} ${skill.summary} ${skill.author} ${skill.tags.join(" ")} ${skill.origin}`.toLowerCase()}
+          >
             <article class="card">
               <div class="mb-2 flex flex-wrap items-center gap-2">
-                <span class="chip-accent">{skill.origin}</span>
-                <span class="chip">{skill.status}</span>
-                {!skill.publicDownload && <span class="chip">无公开下载</span>}
+                <span class="chip-accent">{ownershipLabel[skill.ownership]}</span>
+                <span class="chip">{statusLabel[skill.status] ?? skill.status}</span>
+                {!skill.allowPublicLink && <span class="chip">无公开下载</span>}
               </div>
               <h2 class="card-title !text-lg">{skill.name}</h2>
-              <p class="card-body">{skill.purpose}</p>
+              <p class="card-body">{skill.summary}</p>
 
               <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                 <div>
                   <dt class="text-xs text-ink-500">适用平台</dt>
-                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.platforms.join(" · ")}</dd>
+                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.platform.join(" · ")}</dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-500">作者</dt>
                   <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.author}</dd>
                 </div>
-                {
-                  skill.source && (
-                    <div class="sm:col-span-2">
-                      <dt class="text-xs text-ink-500">来源</dt>
-                      <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.source}</dd>
-                    </div>
-                  )
-                }
-                {
-                  skill.license && (
-                    <div>
-                      <dt class="text-xs text-ink-500">许可证</dt>
-                      <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.license}</dd>
-                    </div>
-                  )
-                }
+                <div class="sm:col-span-2">
+                  <dt class="text-xs text-ink-500">来源</dt>
+                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.origin}</dd>
+                </div>
                 <div>
-                  <dt class="text-xs text-ink-500">依赖</dt>
-                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">
-                    {skill.dependencies.length ? skill.dependencies.join("、") : "无声明"}
+                  <dt class="text-xs text-ink-500">许可证</dt>
+                  <dd class="mt-0.5 text-ink-700 dark:text-ink-200">{skill.license}</dd>
+                </div>
+                <div>
+                  <dt class="text-xs text-ink-500">标签</dt>
+                  <dd class="mt-1 flex flex-wrap gap-1.5">
+                    {skill.tags.map((t) => (
+                      <span class="chip">#{t}</span>
+                    ))}
                   </dd>
                 </div>
-                {
-                  skill.publicDownload && skill.skillPath ? (
-                    <div>
-                      <dt class="text-xs text-ink-500">SKILL.md 路径</dt>
-                      <dd class="mt-0.5 font-mono text-xs text-ink-700 dark:text-ink-200">{skill.skillPath}</dd>
-                    </div>
-                  ) : skill.skillPath ? (
-                    <div>
-                      <dt class="text-xs text-ink-500">SKILL.md 路径</dt>
-                      <dd class="mt-0.5 text-ink-500">已登记，公开下载暂未开放</dd>
-                    </div>
-                  ) : null
-                }
               </dl>
 
               {
@@ -100,27 +104,30 @@ const origins = [...new Set(resourceSkills.map((s) => s.origin))] as SkillOrigin
 
               <div class="mt-4 flex flex-wrap gap-2">
                 {
-                  skill.publicDownload && skill.repoUrl ? (
+                  skill.allowPublicLink && skill.repository ? (
                     <a
-                      href={skill.repoUrl}
+                      href={skill.repository}
                       class="btn-secondary !py-1.5 text-xs"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      仓库地址
-                    </a>
-                  ) : skill.repoUrl && (skill.origin === "原创" || skill.origin === "本人修改版") ? (
-                    <a
-                      href={skill.repoUrl}
-                      class="btn-secondary !py-1.5 text-xs"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      相关仓库
+                      仓库
                     </a>
                   ) : (
-                    <span class="text-xs text-ink-400">仓库 / 下载：整理中或不公开</span>
+                    <span class="text-xs text-ink-400">仓库 / 下载：不公开或整理中</span>
                   )
+                }
+                {
+                  skill.allowPublicLink && skill.documentation ? (
+                    <a
+                      href={skill.documentation}
+                      class="btn-ghost !py-1.5 text-xs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      文档
+                    </a>
+                  ) : null
                 }
               </div>
             </article>
@@ -128,21 +135,39 @@ const origins = [...new Set(resourceSkills.map((s) => s.origin))] as SkillOrigin
         ))
       }
     </ul>
+    <p id="empty" class="mt-8 hidden text-sm text-ink-500" role="status">没有匹配项。</p>
   </div>
 
   <script>
+    let ownership = "all";
+    let q = "";
     const chips = document.querySelectorAll<HTMLButtonElement>("#skill-filters .filter-chip");
     const items = document.querySelectorAll<HTMLElement>(".skill-item");
+    const empty = document.getElementById("empty");
+    const input = document.getElementById("q") as HTMLInputElement | null;
 
-    chips.forEach((chip) => {
-      chip.addEventListener("click", () => {
-        const key = chip.dataset.filter ?? "all";
-        chips.forEach((c) => c.classList.toggle("is-active", c === chip));
-        items.forEach((el) => {
-          const show = key === "all" || el.dataset.origin === key;
-          el.classList.toggle("hidden", !show);
-        });
+    function refresh() {
+      chips.forEach((c) => c.classList.toggle("is-active", (c.dataset.filter ?? "all") === ownership));
+      let n = 0;
+      items.forEach((el) => {
+        const o = el.dataset.origin ?? "";
+        const search = el.dataset.search ?? "";
+        const show = (ownership === "all" || o === ownership) && (!q || search.includes(q));
+        el.classList.toggle("hidden", !show);
+        if (show) n++;
       });
+      empty?.classList.toggle("hidden", n > 0);
+    }
+
+    chips.forEach((chip) =>
+      chip.addEventListener("click", () => {
+        ownership = chip.dataset.filter ?? "all";
+        refresh();
+      }),
+    );
+    input?.addEventListener("input", () => {
+      q = input.value.trim().toLowerCase();
+      refresh();
     });
   </script>
 

@@ -1,5 +1,10 @@
 ---
-import type { Project } from "@/data/projects";
+import {
+  type Project,
+  getPublicGithubUrl,
+  getPublicGiteeUrl,
+  repositoryLabel,
+} from "@/data/projects";
 
 interface Props {
   project: Project;
@@ -7,12 +12,16 @@ interface Props {
 }
 
 const { project, compact = false } = Astro.props;
+const githubUrl = getPublicGithubUrl(project);
+const giteeUrl = getPublicGiteeUrl(project);
+const repoLabel = repositoryLabel(project);
 ---
 
 <article class="card flex h-full flex-col">
   <div class="mb-3.5 flex flex-wrap items-center gap-2">
     {project.featured && <span class="chip-accent">精选</span>}
     <span class="chip">{project.status}</span>
+    <span class="chip">{repoLabel}</span>
     {
       project.year && (
         <span class="card-meta ml-auto font-mono">{project.year}</span>
@@ -37,18 +46,32 @@ const { project, compact = false } = Astro.props;
       详情
     </a>
     {
-      project.github ? (
+      githubUrl ? (
         <a
-          href={project.github}
+          href={githubUrl}
           class="btn-ghost !px-3 !py-1.5 text-xs"
           target="_blank"
           rel="noopener noreferrer"
         >
           GitHub
         </a>
+      ) : project.repositoryStatus === "private" ? (
+        <span class="px-2 py-1.5 text-xs text-ink-400">私有仓库</span>
       ) : (
-        <span class="px-2 py-1.5 text-xs text-ink-400">GitHub 整理中</span>
+        <span class="px-2 py-1.5 text-xs text-ink-400">仓库整理中</span>
       )
+    }
+    {
+      giteeUrl ? (
+        <a
+          href={giteeUrl}
+          class="btn-ghost !px-3 !py-1.5 text-xs"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Gitee
+        </a>
+      ) : null
     }
     {
       project.demo ? (

@@ -3,18 +3,19 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import PostCard from "@/components/PostCard.astro";
 import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
-import { getFeaturedProjects, projects } from "@/data/projects";
+import { getFeaturedProjects, getListedProjects } from "@/data/projects";
 import { tools } from "@/data/tools";
 import { labItems } from "@/data/lab";
 import { resourceSections } from "@/data/resources";
 import { getPublishedPosts } from "@/utils/blog";
 
 const featuredProjects = getFeaturedProjects(4);
+const listedProjects = getListedProjects();
 const allPosts = await getPublishedPosts();
 const posts = allPosts.slice(0, 3);
 
 const stats = [
-  { value: String(projects.length), label: "项目实践" },
+  { value: String(listedProjects.length), label: "项目实践" },
   { value: String(allPosts.length), label: "技术文章" },
   { value: String(tools.length), label: "本地工具" },
   { value: String(labItems.length), label: "实验室 Demo" },

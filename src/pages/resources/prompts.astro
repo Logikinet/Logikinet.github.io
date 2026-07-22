@@ -20,14 +20,19 @@ const allTags = [...new Set(resourcePrompts.flatMap((p) => p.tags))].sort((a, b)
     </nav>
     <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Prompt Library</h1>
     <p class="mt-3 max-w-2xl text-sm text-ink-600 dark:text-ink-300">
-      只收录真正复用过的模板骨架。占位符使用 <code class="chip">{"{{...}}"}</code>，请按场景替换。
+      只收录真正复用过的模板骨架。占位符 <code class="chip">{"{{...}}"}</code> 请按场景替换；勿粘贴密钥与本机路径。
     </p>
 
-    <div class="mt-6 flex flex-wrap gap-2" id="prompt-cat-filters" role="group" aria-label="按分类筛选">
+    <label class="mt-6 block max-w-md">
+      <span class="sr-only">搜索 Prompt</span>
+      <input id="q" type="search" class="tool-input" placeholder="搜索标题、说明、标签…" autocomplete="off" />
+    </label>
+
+    <div class="mt-4 flex flex-wrap gap-2" id="prompt-cat-filters" role="group" aria-label="按分类筛选">
       <button type="button" class="chip filter-chip is-active" data-filter="all">全部分类</button>
       {
         categories.map((c) => (
-          <button type="button" class="chip filter-chip" data-filter={c} data-kind="category">
+          <button type="button" class="chip filter-chip" data-filter={c}>
             {c}
           </button>
         ))
@@ -51,33 +56,36 @@ const allTags = [...new Set(resourcePrompts.flatMap((p) => p.tags))].sort((a, b)
             class="prompt-item"
             data-category={prompt.category}
             data-tags={prompt.tags.join(",")}
+            data-search={`${prompt.title} ${prompt.summary} ${prompt.tags.join(" ")} ${prompt.category} ${prompt.models}`.toLowerCase()}
           >
             <article class="card">
               <div class="mb-2 flex flex-wrap items-center gap-2">
                 <span class="chip-accent">{prompt.category}</span>
                 <span class="chip font-mono">v{prompt.version}</span>
+                {prompt.featured && <span class="chip">精选</span>}
                 {prompt.tags.map((t) => (
                   <span class="chip">#{t}</span>
                 ))}
               </div>
               <h2 class="card-title !text-lg">{prompt.title}</h2>
+              <p class="card-body">{prompt.summary}</p>
               <dl class="mt-3 grid gap-2 text-sm text-ink-600 dark:text-ink-300 sm:grid-cols-2">
-                <div>
-                  <dt class="text-xs text-ink-500">使用说明</dt>
-                  <dd class="mt-0.5">{prompt.usage}</dd>
-                </div>
                 <div>
                   <dt class="text-xs text-ink-500">适用模型</dt>
                   <dd class="mt-0.5">{prompt.models}</dd>
                 </div>
+                <div>
+                  <dt class="text-xs text-ink-500">更新</dt>
+                  <dd class="mt-0.5 font-mono text-xs">{prompt.updatedAt}</dd>
+                </div>
               </dl>
-
+              {
+                prompt.safetyNote && (
+                  <p class="mt-3 text-xs text-amber-800 dark:text-amber-200/90">安全提示：{prompt.safetyNote}</p>
+                )
+              }
               <div class="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  class="btn-secondary !py-1.5 text-xs copy-btn"
-                  data-copy={prompt.body}
-                >
+                <button type="button" class="btn-secondary !py-1.5 text-xs copy-btn" data-copy={prompt.content}>
                   一键复制
                 </button>
                 <button
@@ -89,30 +97,28 @@ const allTags = [...new Set(resourcePrompts.flatMap((p) => p.tags))].sort((a, b)
                   展开全文
                 </button>
               </div>
-
               <pre
                 id={`body-${prompt.id}`}
-                class="prompt-body mt-4 hidden max-h-none overflow-x-auto rounded-xl border border-ink-200 bg-ink-50/80 p-4 font-mono text-[12px] leading-relaxed text-ink-700 dark:border-ink-700 dark:bg-ink-950/50 dark:text-ink-200"
-              >{prompt.body}</pre>
+                class="mt-4 hidden overflow-x-auto rounded-xl border border-ink-200 bg-ink-50/80 p-4 font-mono text-[12px] leading-relaxed text-ink-700 dark:border-ink-700 dark:bg-ink-950/50 dark:text-ink-200"
+              >{prompt.content}</pre>
               <p class="copy-status mt-2 text-xs text-ink-500" role="status"></p>
             </article>
           </li>
         ))
       }
     </ul>
-    <p id="prompt-empty" class="mt-8 hidden text-sm text-ink-500" role="status">
-      该筛选下暂无模板。
-    </p>
+    <p id="prompt-empty" class="mt-8 hidden text-sm text-ink-500" role="status">没有匹配模板。</p>
   </div>
 
   <script>
     let cat = "all";
     let tag = "all";
-
+    let q = "";
     const catChips = document.querySelectorAll<HTMLButtonElement>("#prompt-cat-filters .filter-chip");
     const tagChips = document.querySelectorAll<HTMLButtonElement>("#prompt-tag-filters .filter-chip");
     const items = document.querySelectorAll<HTMLElement>(".prompt-item");
     const empty = document.getElementById("prompt-empty");
+    const input = document.getElementById("q") as HTMLInputElement | null;
 
     function refresh() {
       catChips.forEach((c) => c.classList.toggle("is-active", (c.dataset.filter ?? "all") === cat));
@@ -121,45 +127,49 @@ const allTags = [...new Set(resourcePrompts.flatMap((p) => p.tags))].sort((a, b)
       items.forEach((el) => {
         const c = el.dataset.category ?? "";
         const tags = (el.dataset.tags ?? "").split(",").filter(Boolean);
-        const okCat = cat === "all" || c === cat;
-        const okTag = tag === "all" || tags.includes(tag);
-        const show = okCat && okTag;
+        const search = el.dataset.search ?? "";
+        const show =
+          (cat === "all" || c === cat) &&
+          (tag === "all" || tags.includes(tag)) &&
+          (!q || search.includes(q));
         el.classList.toggle("hidden", !show);
         if (show) n++;
       });
       empty?.classList.toggle("hidden", n > 0);
     }
 
-    catChips.forEach((chip) => {
+    catChips.forEach((chip) =>
       chip.addEventListener("click", () => {
         cat = chip.dataset.filter ?? "all";
         refresh();
-      });
-    });
-    tagChips.forEach((chip) => {
+      }),
+    );
+    tagChips.forEach((chip) =>
       chip.addEventListener("click", () => {
         tag = chip.dataset.tag ?? "all";
         refresh();
-      });
+      }),
+    );
+    input?.addEventListener("input", () => {
+      q = input.value.trim().toLowerCase();
+      refresh();
     });
 
     document.querySelectorAll<HTMLButtonElement>(".toggle-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const id = btn.dataset.target;
-        const pre = id ? document.getElementById(id) : null;
+        const pre = document.getElementById(btn.dataset.target ?? "");
         if (!pre) return;
-        const open = pre.classList.toggle("hidden") === false;
-        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        const open = !pre.classList.toggle("hidden");
+        btn.setAttribute("aria-expanded", String(open));
         btn.textContent = open ? "收起全文" : "展开全文";
       });
     });
 
     document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
       btn.addEventListener("click", async () => {
-        const text = btn.dataset.copy ?? "";
         const status = btn.closest("article")?.querySelector(".copy-status");
         try {
-          await navigator.clipboard.writeText(text);
+          await navigator.clipboard.writeText(btn.dataset.copy ?? "");
           if (status) status.textContent = "已复制到剪贴板。";
           btn.textContent = "已复制";
           setTimeout(() => {
