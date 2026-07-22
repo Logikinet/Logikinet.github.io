@@ -1,0 +1,21 @@
+{
+  "id": "zhidun",
+  "name": "zhidun",
+  "description": "网络设计大赛",
+  "repositoryProvider": "github",
+  "repositoryOwner": "Logikinet",
+  "repositoryName": "zhidun",
+  "repositoryStatus": "public",
+  "defaultBranch": "main",
+  "language": "Python",
+  "topics": [],
+  "stars": 0,
+  "forks": 0,
+  "homepage": null,
+  "pushedAt": "2026-04-10T05:49:56Z",
+  "syncedAt": "2026-07-22T11:02:53.184Z",
+  "readmeIncluded": false,
+  "readmePublicSafe": false,
+  "securityScanPassed": false,
+  "repositoryUrl": "https://github.com/Logikinet/zhidun"
+}

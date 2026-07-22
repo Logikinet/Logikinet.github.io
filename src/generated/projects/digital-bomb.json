@@ -1,0 +1,21 @@
+{
+  "id": "digital-bomb",
+  "name": "digital-bomb",
+  "description": "",
+  "repositoryProvider": "github",
+  "repositoryOwner": "Logikinet",
+  "repositoryName": "digital-bomb",
+  "repositoryStatus": "public",
+  "defaultBranch": "master",
+  "language": "TypeScript",
+  "topics": [],
+  "stars": 0,
+  "forks": 0,
+  "homepage": null,
+  "pushedAt": "2026-03-08T01:36:14Z",
+  "syncedAt": "2026-07-22T11:02:53.184Z",
+  "readmeIncluded": true,
+  "readmePublicSafe": true,
+  "securityScanPassed": true,
+  "repositoryUrl": "https://github.com/Logikinet/digital-bomb"
+}

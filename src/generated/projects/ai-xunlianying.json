@@ -1,0 +1,21 @@
+{
+  "id": "ai-xunlianying",
+  "name": "AI_xunlianying",
+  "description": "",
+  "repositoryProvider": "github",
+  "repositoryOwner": "Logikinet",
+  "repositoryName": "AI_xunlianying",
+  "repositoryStatus": "public",
+  "defaultBranch": "master",
+  "language": null,
+  "topics": [],
+  "stars": 0,
+  "forks": 0,
+  "homepage": null,
+  "pushedAt": "2026-07-16T14:14:37Z",
+  "syncedAt": "2026-07-22T11:02:53.184Z",
+  "readmeIncluded": true,
+  "readmePublicSafe": true,
+  "securityScanPassed": true,
+  "repositoryUrl": "https://github.com/Logikinet/AI_xunlianying"
+}

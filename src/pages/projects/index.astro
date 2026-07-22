@@ -12,10 +12,11 @@ const listed = getListedProjects();
     <p class="label-meta">Projects</p>
     <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">项目作品集</h1>
     <p class="mt-4 max-w-2xl text-base text-ink-600 dark:text-ink-300">
-      详情页正文由仓库 README 驱动（构建期同步到 <code class="chip">src/content/projects</code>）。
-      人工目录维护精选与可见性；公开仓可自动发现。私有仓可同步 README 正文，但页面永不展示私有地址。
+      详情页正文优先渲染已同步且可公开的仓库 README（<code class="chip">src/generated/projects</code>）。
+      目录与精选在 <code class="chip">catalog.ts</code> 维护；是否暴露仓库 URL 由 <code class="chip">exposeRepositoryUrl</code> 控制。
+      无 Demo 时不显示占位按钮。
     </p>
-    <p class="mt-2 text-sm text-ink-500">当前展示 {listed.length} 个项目（含自动发现的公开仓）。</p>
+    <p class="mt-2 text-sm text-ink-500">当前展示 {listed.length} 个项目。</p>
     <div class="mt-10 grid gap-5 sm:grid-cols-2">
       {listed.map((project) => <ProjectCard project={project} />)}
     </div>

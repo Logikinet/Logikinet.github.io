@@ -1,9 +1,10 @@
 ---
 import {
   type Project,
-  getPublicGithubUrl,
-  getPublicGiteeUrl,
+  getExposedRepositoryUrl,
+  getProviderLabel,
   repositoryLabel,
+  toPageSafeProject,
 } from "@/data/projects";
 
 interface Props {
@@ -11,10 +12,11 @@ interface Props {
   compact?: boolean;
 }
 
-const { project, compact = false } = Astro.props;
-const githubUrl = getPublicGithubUrl(project);
-const giteeUrl = getPublicGiteeUrl(project);
+const { project: raw, compact = false } = Astro.props;
+const project = toPageSafeProject(raw);
+const repoUrl = getExposedRepositoryUrl(project);
 const repoLabel = repositoryLabel(project);
+const providerLabel = getProviderLabel(project);
 ---
 
 <article class="card flex h-full flex-col">
@@ -46,31 +48,17 @@ const repoLabel = repositoryLabel(project);
       详情
     </a>
     {
-      githubUrl ? (
+      repoUrl ? (
         <a
-          href={githubUrl}
+          href={repoUrl}
           class="btn-ghost !px-3 !py-1.5 text-xs"
           target="_blank"
           rel="noopener noreferrer"
         >
-          GitHub
+          {project.repositoryStatus === "private" ? `私有 ${providerLabel}` : providerLabel}
         </a>
       ) : project.repositoryStatus === "private" ? (
         <span class="px-2 py-1.5 text-xs text-ink-400">私有仓库</span>
-      ) : (
-        <span class="px-2 py-1.5 text-xs text-ink-400">仓库整理中</span>
-      )
-    }
-    {
-      giteeUrl ? (
-        <a
-          href={giteeUrl}
-          class="btn-ghost !px-3 !py-1.5 text-xs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Gitee
-        </a>
       ) : null
     }
     {

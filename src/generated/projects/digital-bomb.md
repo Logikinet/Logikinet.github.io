@@ -1,14 +1,3 @@
----
-title: digital-bomb
-summary: digital-bomb
-source: github
-repoLabel: Logikinet/digital-bomb
-language: TypeScript
-stars: 0
-syncedAt: "2026-07-22"
-isPrivateRepo: false
-topics: []
----
 # 游戏盒子
 
 ![HarmonyOS](https://img.shields.io/badge/HarmonyOS-5.0.0(12)-0A59F7)

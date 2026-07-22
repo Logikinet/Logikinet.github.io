@@ -1,14 +1,3 @@
----
-title: smart-silver
-summary: 计算机程序设计大赛
-source: github
-repoLabel: Logikinet/smart-silver
-language: JavaScript
-stars: 0
-syncedAt: "2026-07-22"
-isPrivateRepo: false
-topics: []
----
 # 智享银龄（smart-silver-mvp）
 
 智享银龄是基于 `ruoyi-vue-pro` 二次开发的适老化 MVP 项目，聚焦以下能力：

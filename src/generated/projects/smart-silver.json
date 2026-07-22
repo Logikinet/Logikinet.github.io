@@ -1,0 +1,21 @@
+{
+  "id": "smart-silver",
+  "name": "smart-silver",
+  "description": "计算机程序设计大赛",
+  "repositoryProvider": "github",
+  "repositoryOwner": "Logikinet",
+  "repositoryName": "smart-silver",
+  "repositoryStatus": "public",
+  "defaultBranch": "main",
+  "language": "JavaScript",
+  "topics": [],
+  "stars": 0,
+  "forks": 0,
+  "homepage": null,
+  "pushedAt": "2026-04-10T05:41:25Z",
+  "syncedAt": "2026-07-22T11:02:53.184Z",
+  "readmeIncluded": true,
+  "readmePublicSafe": true,
+  "securityScanPassed": true,
+  "repositoryUrl": "https://github.com/Logikinet/smart-silver"
+}

@@ -2,18 +2,24 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   getListedProjects,
-  getPublicGithubUrl,
-  getPublicGiteeUrl,
-  getSyncMeta,
+  getExposedRepositoryUrl,
+  getGeneratedMeta,
+  getProviderLabel,
   repositoryLabel,
+  toPageSafeProject,
   type Project,
 } from "@/data/projects";
-import { getProjectReadmeHtml } from "@/utils/projects";
+import {
+  resolveProjectReadme,
+  rewriteReadmeUrls,
+  extractHeadings,
+  markdownToSafeHtml,
+} from "@/utils/project-readme";
 
 export function getStaticPaths() {
   return getListedProjects().map((project) => ({
     params: { id: project.id },
-    props: { project },
+    props: { project: toPageSafeProject(project) },
   }));
 }
 
@@ -22,179 +28,211 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const githubUrl = getPublicGithubUrl(project);
-const giteeUrl = getPublicGiteeUrl(project);
-const repoLabel = repositoryLabel(project);
-const meta = getSyncMeta(project.id);
-const { Content, doc, hasReadme } = await getProjectReadmeHtml(project);
+const safe = toPageSafeProject(project);
+const repoUrl = getExposedRepositoryUrl(safe);
+const repoLabel = repositoryLabel(safe);
+const providerLabel = getProviderLabel(safe);
+const meta = getGeneratedMeta(safe.id);
 
-const pageDescription = doc?.data.summary || project.summary;
-const demoUrl =
-  project.demo ||
-  (doc?.data.homepage && !doc.data.isPrivateRepo ? doc.data.homepage : undefined) ||
-  (meta?.homepage && project.visibility === "public" ? meta.homepage : undefined);
+const resolved = resolveProjectReadme(safe);
+const rewritten = rewriteReadmeUrls(resolved.markdown, safe, meta ?? resolved.meta);
+const headings = extractHeadings(rewritten);
+const readmeHtml = markdownToSafeHtml(rewritten);
 
-const showPrivateBadge =
-  project.repositoryStatus === "private" || project.remote?.isPrivate || doc?.data.isPrivateRepo;
+const demoUrl = safe.demo || undefined;
+const pageDescription = safe.summary;
+
+const showRepoLink = Boolean(repoUrl);
+const showPrivateNoLink =
+  safe.repositoryStatus === "private" && !safe.exposeRepositoryUrl;
+const showPrivateWithLink =
+  safe.repositoryStatus === "private" && safe.exposeRepositoryUrl && Boolean(repoUrl);
+
+const stackTags = [
+  ...safe.stack,
+  ...(meta?.topics ?? []).slice(0, 6).filter((t) => !safe.stack.includes(t)),
+];
 ---
 
-<BaseLayout title={project.title} description={pageDescription}>
+<BaseLayout title={safe.title} description={pageDescription}>
   <article class="container-page section-space">
-    <p class="label-meta">Project</p>
-    <div class="mt-3 flex flex-wrap items-center gap-2">
-      {project.featured && <span class="chip-accent">精选</span>}
-      <span class="chip">{project.status}</span>
-      <span class="chip">{repoLabel}</span>
-      {hasReadme && <span class="chip">README</span>}
-      {project.year && <span class="text-sm text-ink-500">{project.year}</span>}
-    </div>
-    <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h1>
-    <p class="mt-4 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
-      {pageDescription}
-    </p>
-
-    <div class="mt-8 flex flex-wrap gap-3">
-      {
-        githubUrl ? (
-          <a href={githubUrl} class="btn-primary" target="_blank" rel="noopener noreferrer">
-            GitHub
-          </a>
-        ) : showPrivateBadge ? (
-          <span class="btn-secondary opacity-80">私有仓库 · 地址不公开</span>
-        ) : null
-      }
-      {
-        giteeUrl ? (
-          <a href={giteeUrl} class="btn-secondary" target="_blank" rel="noopener noreferrer">
-            Gitee
-          </a>
-        ) : null
-      }
-      {
-        demoUrl ? (
-          <a href={demoUrl} class="btn-secondary" target="_blank" rel="noopener noreferrer">
-            打开 Demo
-          </a>
-        ) : null
-      }
-      <a href="/projects/" class="btn-ghost">返回列表</a>
-    </div>
-
-    <div class="mt-10 grid gap-6 lg:grid-cols-3">
-      <section class="card lg:col-span-2 min-w-0">
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 class="text-xl font-semibold tracking-tight">
-            {hasReadme ? "README" : "项目说明"}
-          </h2>
-          {
-            doc?.data.syncedAt && (
-              <p class="card-meta font-mono">同步 {doc.data.syncedAt}</p>
-            )
-          }
-        </div>
-
+    <!-- 顶部 -->
+    <header class="border-b border-ink-200/70 pb-8 dark:border-ink-800">
+      <p class="label-meta">Project</p>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        {safe.featured && <span class="chip-accent">精选</span>}
+        <span class="chip">{safe.status}</span>
+        <span class="chip">{repoLabel}</span>
         {
-          hasReadme && Content ? (
-            <div class="prose-aqualeap project-readme">
-              <Content />
+          resolved.source === "generated" && (
+            <span class="chip">README</span>
+          )
+        }
+      </div>
+      <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{safe.title}</h1>
+      <p class="mt-3 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
+        {pageDescription}
+      </p>
+
+      <div class="mt-4 flex flex-wrap gap-3 text-sm text-ink-500 dark:text-ink-400">
+        {safe.year && <span>{safe.year}</span>}
+        {
+          safe.updatedAt && (
+            <span class="font-mono">更新 {safe.updatedAt}</span>
+          )
+        }
+        {
+          meta?.language && (
+            <span>{meta.language}</span>
+          )
+        }
+        {
+          typeof meta?.stars === "number" &&
+            safe.repositoryStatus === "public" &&
+            meta.stars > 0 && <span class="font-mono">★ {meta.stars}</span>
+        }
+      </div>
+
+      {
+        stackTags.length > 0 && (
+          <div class="mt-5 flex flex-wrap gap-1.5">
+            {stackTags.map((tech) => (
+              <span class="chip">{tech}</span>
+            ))}
+          </div>
+        )
+      }
+
+      <div class="mt-7 flex flex-wrap gap-3">
+        {
+          showRepoLink && showPrivateWithLink && (
+            <a
+              href={repoUrl}
+              class="btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              私有 {providerLabel} 仓库
+            </a>
+          )
+        }
+        {
+          showRepoLink && !showPrivateWithLink && (
+            <a
+              href={repoUrl}
+              class="btn-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              查看 {providerLabel}
+            </a>
+          )
+        }
+        {
+          showPrivateNoLink && (
+            <span class="btn-secondary opacity-90 pointer-events-none">私有仓库</span>
+          )
+        }
+        {
+          demoUrl ? (
+            <a href={demoUrl} class="btn-secondary" target="_blank" rel="noopener noreferrer">
+              打开 Demo
+            </a>
+          ) : null
+        }
+        <a href="/projects/" class="btn-ghost">返回列表</a>
+      </div>
+      {
+        showPrivateWithLink && (
+          <p class="mt-3 text-xs text-ink-500">访问私有仓库需要相应权限。</p>
+        )
+      }
+    </header>
+
+    <!-- 主体：README + 目录 -->
+    <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div class="min-w-0">
+        {
+          resolved.source === "status" ? (
+            <p class="text-sm text-ink-600 dark:text-ink-300" set:html={readmeHtml} />
+          ) : resolved.source === "description" ? (
+            <div class="max-w-3xl text-sm leading-relaxed text-ink-700 dark:text-ink-200">
+              <div class="prose-aqualeap project-readme" set:html={readmeHtml} />
             </div>
           ) : (
-            <div class="space-y-4 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
-              <p class="whitespace-pre-line">{project.description}</p>
-              <p class="rounded-xl border border-ink-200/80 bg-ink-50/70 px-3 py-2 text-xs text-ink-500 dark:border-ink-700 dark:bg-ink-950/40">
-                尚未同步到仓库 README。配置 <code class="chip">remote</code> 后运行{" "}
-                <code class="chip">npm run sync:projects</code>
-                （私有仓需 GITHUB_TOKEN）将自动生成本页正文。
-              </p>
-            </div>
+            <div class="prose-aqualeap project-readme" set:html={readmeHtml} />
           )
         }
-      </section>
+        {
+          resolved.source === "local" && (
+            <p class="mt-8 text-xs text-ink-500">
+              正文来自本地说明。确认 README 可公开后设置 readmePublicSafe，并配置 PROJECTS_READ_TOKEN 同步仓库原文。
+            </p>
+          )
+        }
+      </div>
 
-      <aside class="space-y-5">
-        <section class="card">
-          <h2 class="text-lg font-semibold">技术栈</h2>
-          <div class="mt-4 flex flex-wrap gap-2">
-            {project.stack.map((tech) => <span class="chip">{tech}</span>)}
+      <aside class="hidden lg:block">
+        <div class="sticky top-24 space-y-4">
+          {
+            headings.length > 0 && (
+              <nav class="rounded-2xl border border-ink-200/80 bg-white/70 p-4 dark:border-ink-700 dark:bg-ink-900/50" aria-label="README 目录">
+                <p class="label-meta mb-3">目录</p>
+                <ol class="space-y-2 text-sm">
+                  {headings.map((h) => (
+                    <li class:list={[h.depth === 3 ? "ml-3" : ""]}>
+                      <a
+                        href={`#${h.slug}`}
+                        class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300"
+                      >
+                        {h.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )
+          }
+          <div class="rounded-2xl border border-ink-200/80 p-4 text-xs text-ink-500 dark:border-ink-700">
+            <p>正文来源：{resolved.source}</p>
             {
-              doc?.data.topics?.slice(0, 8).map((t) => (
-                <span class="chip">#{t}</span>
-              ))
+              meta?.syncedAt && (
+                <p class="mt-1 font-mono">同步 {meta.syncedAt.slice(0, 10)}</p>
+              )
             }
           </div>
-        </section>
-
-        <section class="card">
-          <h2 class="text-lg font-semibold">元信息</h2>
-          <dl class="mt-4 space-y-3 text-sm">
-            <div>
-              <dt class="text-ink-500">状态</dt>
-              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.status}</dd>
-            </div>
-            <div>
-              <dt class="text-ink-500">可见性</dt>
-              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.visibility}</dd>
-            </div>
-            <div>
-              <dt class="text-ink-500">仓库</dt>
-              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{repoLabel}</dd>
-            </div>
-            {
-              doc?.data.language && (
-                <div>
-                  <dt class="text-ink-500">主语言</dt>
-                  <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{doc.data.language}</dd>
-                </div>
-              )
-            }
-            {
-              typeof doc?.data.stars === "number" && project.visibility === "public" && (
-                <div>
-                  <dt class="text-ink-500">Stars</dt>
-                  <dd class="mt-0.5 font-mono text-ink-800 dark:text-ink-100">{doc.data.stars}</dd>
-                </div>
-              )
-            }
-            <div>
-              <dt class="text-ink-500">归属</dt>
-              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.ownership}</dd>
-            </div>
-            <div>
-              <dt class="text-ink-500">核验</dt>
-              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.verificationStatus}</dd>
-            </div>
-            {
-              (project.updatedAt || meta?.pushedAt) && (
-                <div>
-                  <dt class="text-ink-500">更新</dt>
-                  <dd class="mt-0.5 font-mono text-ink-800 dark:text-ink-100">
-                    {project.updatedAt || meta?.pushedAt?.slice(0, 10)}
-                  </dd>
-                </div>
-              )
-            }
-            {
-              doc?.data.source && (
-                <div>
-                  <dt class="text-ink-500">正文来源</dt>
-                  <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{doc.data.source}</dd>
-                </div>
-              )
-            }
-          </dl>
-        </section>
-
-        {
-          !hasReadme && (
-            <section class="card">
-              <h2 class="text-sm font-semibold text-ink-500">站点摘要</h2>
-              <p class="mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300 whitespace-pre-line">
-                {project.description}
-              </p>
-            </section>
-          )
-        }
+        </div>
       </aside>
     </div>
   </article>
 </BaseLayout>
+
+<style is:global>
+  .project-readme .table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .project-readme table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .project-readme th,
+  .project-readme td {
+    border: 1px solid rgb(208 219 234 / 0.9);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  .dark .project-readme th,
+  .dark .project-readme td {
+    border-color: rgb(52 70 89 / 0.8);
+  }
+  .project-readme img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+  }
+  .project-readme pre {
+    overflow-x: auto;
+  }
+</style>

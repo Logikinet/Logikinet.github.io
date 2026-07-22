@@ -1,0 +1,21 @@
+{
+  "id": "zhishen-dun",
+  "name": "zhishen-dun",
+  "description": "Zhishen Dun secure review backend source release",
+  "repositoryProvider": "github",
+  "repositoryOwner": "Logikinet",
+  "repositoryName": "zhishen-dun",
+  "repositoryStatus": "public",
+  "defaultBranch": "main",
+  "language": "Python",
+  "topics": [],
+  "stars": 0,
+  "forks": 0,
+  "homepage": null,
+  "pushedAt": "2026-07-22T09:57:16Z",
+  "syncedAt": "2026-07-22T11:02:53.184Z",
+  "readmeIncluded": true,
+  "readmePublicSafe": true,
+  "securityScanPassed": true,
+  "repositoryUrl": "https://github.com/Logikinet/zhishen-dun"
+}

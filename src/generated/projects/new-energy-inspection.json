@@ -1,0 +1,20 @@
+{
+  "id": "new-energy-inspection",
+  "name": "新能智检",
+  "description": "",
+  "repositoryProvider": "github",
+  "repositoryOwner": "",
+  "repositoryName": "",
+  "repositoryStatus": "unpublished",
+  "defaultBranch": "",
+  "language": null,
+  "topics": [],
+  "stars": 0,
+  "forks": 0,
+  "homepage": null,
+  "pushedAt": null,
+  "syncedAt": "2026-07-22T11:02:53.184Z",
+  "readmeIncluded": true,
+  "readmePublicSafe": true,
+  "securityScanPassed": true
+}

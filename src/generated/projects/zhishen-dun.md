@@ -1,14 +1,3 @@
----
-title: zhishen-dun
-summary: Zhishen Dun secure review backend source release
-source: github
-repoLabel: Logikinet/zhishen-dun
-language: Python
-stars: 0
-syncedAt: "2026-07-22"
-isPrivateRepo: false
-topics: []
----
 # 智审盾（Zhishen Dun）
 
 面向网络敏感信息审核的后端服务发布副本，提供规则检测、语义检测、脱敏、审核报告与模型接口适配能力。

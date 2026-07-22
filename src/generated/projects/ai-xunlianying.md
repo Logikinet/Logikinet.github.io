@@ -1,13 +1,3 @@
----
-title: AI_xunlianying
-summary: AI_xunlianying
-source: github
-repoLabel: Logikinet/AI_xunlianying
-stars: 0
-syncedAt: "2026-07-22"
-isPrivateRepo: false
-topics: []
----
 《微信小程序入门教程》示例库。
 
 配套教程：

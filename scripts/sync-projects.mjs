@@ -1,15 +1,16 @@
 /**
- * 同步 GitHub 仓库元数据与 README → 站点项目内容
+ * 同步仓库元数据 + README → src/generated/projects/
  *
- * - 公开仓库：列表发现 + 拉取 README（无需 Token，有 Token 更稳）
- * - 私有仓库：仅当设置 GITHUB_TOKEN 时拉取 README；绝不写入私有仓库 URL 到页面数据
- * - 输出：
- *   - src/data/projects/sync-meta.json
- *   - src/content/projects/{id}.md
+ * 环境变量：
+ *   PROJECTS_READ_TOKEN  私有仓只读 Token（Contents + Metadata），禁止写入
+ *   GITHUB_TOKEN         回退（公开请求可用）
+ *   GITHUB_USER          默认 Logikinet
+ *   SYNC_SKIP_REMOTE=1   跳过网络
  *
- * 用法：
- *   node scripts/sync-projects.mjs
- *   GITHUB_TOKEN=xxx node scripts/sync-projects.mjs
+ * 输出（不含 Token / 响应头）：
+ *   src/generated/projects/_index.json
+ *   src/generated/projects/<id>.json
+ *   src/generated/projects/<id>.md   （仅通过安全扫描且允许公开的 README）
  */
 
 import fs from "node:fs/promises";
@@ -18,12 +19,15 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
-const contentDir = path.join(root, "src/content/projects");
-const metaPath = path.join(root, "src/data/projects/sync-meta.json");
+const outDir = path.join(root, "src/generated/projects");
 const catalogPath = path.join(root, "src/data/projects/catalog.ts");
 
 const GITHUB_USER = process.env.GITHUB_USER || "Logikinet";
-const TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";
+const TOKEN =
+  process.env.PROJECTS_READ_TOKEN ||
+  process.env.GITHUB_TOKEN ||
+  process.env.GH_TOKEN ||
+  "";
 const SKIP_REMOTE = process.env.SYNC_SKIP_REMOTE === "1";
 
 const headers = {
@@ -41,55 +45,64 @@ function slugify(name) {
     .replace(/^-+|-+$/g, "");
 }
 
-function stripSecrets(md) {
-  return md
-    .replace(/\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b/g, "[REDACTED_TOKEN]")
-    .replace(/\bsk-[A-Za-z0-9]{20,}\b/g, "[REDACTED_KEY]")
-    .replace(
-      /(?<=(?:api[_-]?key|token|password|secret)\s*[:=]\s*)["'][^"']+["']/gi,
-      '"[REDACTED]"',
-    )
-    .replace(/C:\\\\Users\\\\[^\\s]+/gi, "{{LOCAL_PATH}}")
-    .replace(/\/Users\/[^/\s]+/g, "{{LOCAL_PATH}}");
-}
+const SECRET_PATTERNS = [
+  /\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b/g,
+  /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g,
+  /\bsk-[A-Za-z0-9]{20,}\b/g,
+  /\bAKIA[0-9A-Z]{16}\b/g,
+  /(?<=(?:api[_-]?key|token|password|secret|authorization)\s*[:=]\s*)["'][^"'\n]{8,}["']/gi,
+  /C:\\\\Users\\\\[^\s"'`]+/gi,
+  /\/Users\/[^\s"'`/]+/g,
+  /\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b/g,
+  /https?:\/\/(?:localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)[^\s)'"`]*/gi,
+];
 
-function yamlEscape(s) {
-  if (s == null) return "";
-  const t = String(s);
-  if (/[:#{}[\],&*?|>!%@`]/.test(t) || t.includes("\n") || t.includes('"')) {
-    return `"${t.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ")}"`;
+function scanSecrets(text) {
+  const hits = [];
+  for (const re of SECRET_PATTERNS) {
+    re.lastIndex = 0;
+    if (re.test(text)) hits.push(String(re));
   }
-  return t;
+  return hits;
 }
 
-/** 从 catalog.ts 解析 remote 配置（轻量正则，避免引入 TS 运行时） */
-async function parseCatalogRemotes() {
+function redactSecrets(md) {
+  let out = md;
+  for (const re of SECRET_PATTERNS) {
+    out = out.replace(re, "[REDACTED]");
+  }
+  return out;
+}
+
+/** 轻量解析 catalog.ts */
+async function parseCatalog() {
   const src = await fs.readFile(catalogPath, "utf8");
-  const projects = [];
+  const items = [];
   const blocks = src.split(/\{\s*\n\s*id:\s*"/).slice(1);
   for (const block of blocks) {
     const id = block.match(/^([^"]+)"/)?.[1];
     if (!id) continue;
-    const remoteMatch = block.match(
-      /remote:\s*\{\s*platform:\s*"(\w+)"\s*,\s*owner:\s*"([^"]+)"\s*,\s*name:\s*"([^"]+)"\s*,\s*isPrivate:\s*(true|false)/,
-    );
-    const title = block.match(/title:\s*"([^"]+)"/)?.[1];
-    const autoSync = !/autoSync:\s*false/.test(block.split(/\n\s*\},/)[0] || block);
-    projects.push({
+    const field = (k) => block.match(new RegExp(`${k}:\\s*"([^"]*)"`))?.[1];
+    const bool = (k, d = false) => {
+      const m = block.match(new RegExp(`${k}:\\s*(true|false)`));
+      return m ? m[1] === "true" : d;
+    };
+    items.push({
       id,
-      title,
-      autoSync,
-      remote: remoteMatch
-        ? {
-            platform: remoteMatch[1],
-            owner: remoteMatch[2],
-            name: remoteMatch[3],
-            isPrivate: remoteMatch[4] === "true",
-          }
-        : null,
+      title: field("title") || id,
+      repositoryOwner: field("repositoryOwner"),
+      repositoryName: field("repositoryName"),
+      repositoryUrl: field("repositoryUrl"),
+      repositoryProvider: field("repositoryProvider") || "github",
+      repositoryStatus: field("repositoryStatus") || "private",
+      exposeRepositoryUrl: bool("exposeRepositoryUrl", false),
+      readmeSource: field("readmeSource") || "none",
+      readmePublicSafe: bool("readmePublicSafe", false),
+      syncMetadata: bool("syncMetadata", false),
+      localReadmePath: field("localReadmePath"),
     });
   }
-  return projects;
+  return items;
 }
 
 async function ghJson(url) {
@@ -97,7 +110,7 @@ async function ghJson(url) {
   if (res.status === 404) return { ok: false, status: 404, data: null };
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`GitHub ${res.status} ${url}: ${text.slice(0, 200)}`);
+    throw new Error(`GitHub ${res.status}: ${text.slice(0, 180)}`);
   }
   return { ok: true, status: res.status, data: await res.json() };
 }
@@ -108,89 +121,57 @@ async function fetchPublicRepos() {
   while (page <= 5) {
     const url = `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&page=${page}&type=public&sort=updated`;
     const { ok, data } = await ghJson(url);
-    if (!ok || !Array.isArray(data) || data.length === 0) break;
-    repos.push(...data);
+    if (!ok || !Array.isArray(data) || !data.length) break;
+    repos.push(...data.filter((r) => !r.fork));
     if (data.length < 100) break;
     page++;
   }
-  return repos.filter((r) => !r.fork);
+  return repos;
 }
 
 async function fetchRepo(owner, name) {
   return ghJson(`https://api.github.com/repos/${owner}/${name}`);
 }
 
-async function fetchReadme(owner, name) {
+async function fetchReadmeRaw(owner, name) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${name}/readme`, {
     headers: { ...headers, Accept: "application/vnd.github.raw" },
   });
   if (res.status === 404) return null;
   if (!res.ok) {
-    console.warn(`  README skip ${owner}/${name}: HTTP ${res.status}`);
+    console.warn(`  README HTTP ${res.status} ${owner}/${name}`);
     return null;
   }
-  return await res.text();
+  return res.text();
 }
 
-async function writeReadmeFile(id, body, front) {
-  await fs.mkdir(contentDir, { recursive: true });
-  const fm = [
-    "---",
-    front.title ? `title: ${yamlEscape(front.title)}` : null,
-    front.summary ? `summary: ${yamlEscape(front.summary)}` : null,
-    `source: ${front.source}`,
-    front.repoLabel ? `repoLabel: ${yamlEscape(front.repoLabel)}` : null,
-    front.homepage ? `homepage: ${yamlEscape(front.homepage)}` : null,
-    front.language ? `language: ${yamlEscape(front.language)}` : null,
-    typeof front.stars === "number" ? `stars: ${front.stars}` : null,
-    front.syncedAt ? `syncedAt: "${String(front.syncedAt).replace(/"/g, "")}"` : null,
-    `isPrivateRepo: ${front.isPrivateRepo ? "true" : "false"}`,
-    front.topics?.length
-      ? `topics:\n${front.topics.map((t) => `  - ${yamlEscape(t)}`).join("\n")}`
-      : "topics: []",
-    "---",
-    "",
-  ]
-    .filter((l) => l != null)
-    .join("\n");
-
-  const cleaned = stripSecrets(body || "");
-  const file = path.join(contentDir, `${id}.md`);
-  await fs.writeFile(file, `${fm}${cleaned.trim()}\n`, "utf8");
-  return file;
+async function writeJson(id, obj) {
+  await fs.mkdir(outDir, { recursive: true });
+  await fs.writeFile(path.join(outDir, `${id}.json`), JSON.stringify(obj, null, 2) + "\n", "utf8");
 }
 
-async function ensureLocalStub(id, title, summary) {
-  const file = path.join(contentDir, `${id}.md`);
-  try {
-    await fs.access(file);
-    return false;
-  } catch {
-    /* create stub */
-  }
-  await writeReadmeFile(
-    id,
-    `# ${title}\n\n${summary}\n\n> 本地说明稿。配置 remote 并运行 \`npm run sync:projects\`（私有仓需 GITHUB_TOKEN）后，将由仓库 README 覆盖。\n`,
-    {
-      title,
-      summary,
-      source: "local",
-      isPrivateRepo: true,
-      syncedAt: new Date().toISOString().slice(0, 10),
-      topics: [],
-    },
-  );
-  return true;
+async function writeMd(id, body) {
+  await fs.mkdir(outDir, { recursive: true });
+  await fs.writeFile(path.join(outDir, `${id}.md`), body.trim() + "\n", "utf8");
 }
 
 async function main() {
-  console.log("AquaLeap project sync");
-  console.log(`  user=${GITHUB_USER} token=${TOKEN ? "yes" : "no"} skipRemote=${SKIP_REMOTE}`);
+  console.log("AquaLeap sync-projects → src/generated/projects/");
+  console.log(
+    `  user=${GITHUB_USER} token=${TOKEN ? "yes" : "no"} skip=${SKIP_REMOTE}`,
+  );
 
-  await fs.mkdir(contentDir, { recursive: true });
-  const catalog = await parseCatalogRemotes();
+  await fs.mkdir(outDir, { recursive: true });
+  // 清理旧生成物（保留目录）
+  for (const f of await fs.readdir(outDir)) {
+    if (f.endsWith(".json") || f.endsWith(".md")) {
+      await fs.unlink(path.join(outDir, f));
+    }
+  }
+
+  const catalog = await parseCatalog();
   const now = new Date().toISOString();
-  const metaProjects = [];
+  const projectIds = [];
   const discovered = [];
 
   if (!SKIP_REMOTE) {
@@ -211,154 +192,169 @@ async function main() {
         });
       }
     } catch (e) {
-      console.warn("  public repo list failed:", e.message);
+      console.warn("  list public failed:", e.message);
     }
   }
 
-  // 同步 catalog 中带 remote 的项目 + 发现的公开仓库
+  /** @type {Map<string, any>} */
   const targets = new Map();
 
   for (const c of catalog) {
-    if (!c.remote) {
-      await ensureLocalStub(c.id, c.title || c.id, "本地维护项目，无远程 README 源。");
-      metaProjects.push({
-        id: c.id,
-        syncedAt: now,
-        readmeSynced: false,
-        readmeSource: "local",
-        isPrivate: true,
-      });
+    if (!c.syncMetadata || !c.repositoryOwner || !c.repositoryName) {
+      // 本地说明不生成远程 meta；可复制 local 到 generated 若 public safe
+      if (c.localReadmePath && c.readmePublicSafe) {
+        try {
+          const local = await fs.readFile(path.join(root, c.localReadmePath), "utf8");
+          const body = local.replace(/^---[\s\S]*?---\s*/, "");
+          const hits = scanSecrets(body);
+          if (hits.length === 0) {
+            await writeMd(c.id, redactSecrets(body));
+            await writeJson(c.id, {
+              id: c.id,
+              name: c.title,
+              description: "",
+              repositoryProvider: c.repositoryProvider,
+              repositoryOwner: c.repositoryOwner || "",
+              repositoryName: c.repositoryName || "",
+              repositoryStatus: c.repositoryStatus,
+              defaultBranch: "",
+              language: null,
+              topics: [],
+              stars: 0,
+              forks: 0,
+              homepage: null,
+              pushedAt: null,
+              syncedAt: now,
+              readmeIncluded: true,
+              readmePublicSafe: true,
+              securityScanPassed: true,
+              ...(c.exposeRepositoryUrl && c.repositoryUrl
+                ? { repositoryUrl: c.repositoryUrl }
+                : {}),
+            });
+            projectIds.push(c.id);
+            console.log(`  ✓ local README ${c.id}`);
+          }
+        } catch {
+          console.log(`  · no local file ${c.id}`);
+        }
+      }
       continue;
     }
-    targets.set(`${c.remote.platform}:${c.remote.owner}/${c.remote.name}`.toLowerCase(), {
-      id: c.id,
-      title: c.title,
-      ...c.remote,
-    });
+
+    targets.set(`${c.repositoryProvider}:${c.repositoryOwner}/${c.repositoryName}`.toLowerCase(), c);
   }
 
   for (const d of discovered) {
     const key = `github:logikinet/${d.name}`.toLowerCase();
-    if (!targets.has(key)) {
-      targets.set(key, {
-        id: d.id,
-        title: d.name,
-        platform: "github",
-        owner: GITHUB_USER,
-        name: d.name,
-        isPrivate: false,
-      });
-    }
+    if (targets.has(key)) continue;
+    targets.set(key, {
+      id: d.id,
+      title: d.name,
+      repositoryOwner: GITHUB_USER,
+      repositoryName: d.name,
+      repositoryProvider: "github",
+      repositoryStatus: "public",
+      exposeRepositoryUrl: true,
+      readmeSource: "github",
+      readmePublicSafe: true,
+      syncMetadata: true,
+    });
   }
 
-  for (const t of targets.values()) {
-    if (t.platform !== "github") {
-      console.warn(`  skip unsupported platform ${t.platform} for ${t.id}`);
+  for (const c of targets.values()) {
+    if (c.repositoryProvider !== "github") {
+      console.warn(`  skip provider ${c.repositoryProvider} ${c.id}`);
       continue;
     }
+    if (SKIP_REMOTE) continue;
 
-    if (SKIP_REMOTE) {
-      await ensureLocalStub(t.id, t.title || t.id, "SYNC_SKIP_REMOTE=1");
-      continue;
-    }
+    const owner = c.repositoryOwner;
+    const name = c.repositoryName;
+    const isPrivateCatalog = c.repositoryStatus === "private";
 
-    if (t.isPrivate && !TOKEN) {
-      console.log(`  private ${t.owner}/${t.name}: no token → keep/create local stub`);
-      await ensureLocalStub(
-        t.id,
-        t.title || t.name,
-        "私有仓库。设置 GITHUB_TOKEN 后重新 sync 可拉取 README（页面仍不展示仓库 URL）。",
-      );
-      metaProjects.push({
-        id: t.id,
-        syncedAt: now,
-        readmeSynced: false,
-        readmeSource: "local",
-        isPrivate: true,
-        platform: "github",
-      });
+    if (isPrivateCatalog && !TOKEN) {
+      console.log(`  private ${owner}/${name}: need PROJECTS_READ_TOKEN`);
       continue;
     }
 
     try {
-      const { ok, data: repo } = await fetchRepo(t.owner, t.name);
+      const { ok, data: repo } = await fetchRepo(owner, name);
       if (!ok || !repo) {
-        console.warn(`  repo not found ${t.owner}/${t.name}`);
-        await ensureLocalStub(t.id, t.title || t.name, "远程仓库暂不可访问。");
-        metaProjects.push({
-          id: t.id,
-          syncedAt: now,
-          readmeSynced: false,
-          readmeSource: "none",
-          isPrivate: t.isPrivate,
-        });
+        console.warn(`  not found ${owner}/${name}`);
         continue;
       }
 
       const isPrivate = Boolean(repo.private);
-      const readme = await fetchReadme(t.owner, t.name);
-      const summary = repo.description || t.title || t.name;
+      const expose = Boolean(c.exposeRepositoryUrl);
+      // 私有 README 仅当人工 readmePublicSafe=true 才写入构建产物
+      const allowReadmeBody = isPrivate ? Boolean(c.readmePublicSafe) : true;
 
-      if (readme) {
-        await writeReadmeFile(t.id, readme, {
-          title: repo.name,
-          summary,
-          source: "github",
-          // 私有：只写 label 文本，不写 URL
-          repoLabel: isPrivate ? undefined : `${t.owner}/${t.name}`,
-          homepage: !isPrivate && repo.homepage ? repo.homepage : undefined,
-          language: repo.language || undefined,
-          stars: isPrivate ? undefined : repo.stargazers_count,
-          syncedAt: now.slice(0, 10),
-          isPrivateRepo: isPrivate,
-          topics: repo.topics || [],
-        });
-        console.log(`  ✓ README ${t.owner}/${t.name} → ${t.id}.md${isPrivate ? " (private content)" : ""}`);
+      let readmeIncluded = false;
+      let securityScanPassed = false;
+
+      if (allowReadmeBody) {
+        const raw = await fetchReadmeRaw(owner, name);
+        if (raw) {
+          const hits = scanSecrets(raw);
+          if (hits.length) {
+            console.warn(`  ⚠ secret scan failed ${owner}/${name} — README not published`);
+            securityScanPassed = false;
+          } else {
+            securityScanPassed = true;
+            const cleaned = redactSecrets(raw);
+            await writeMd(c.id, cleaned);
+            readmeIncluded = true;
+            console.log(`  ✓ README ${owner}/${name} → ${c.id}.md`);
+          }
+        } else {
+          console.log(`  · empty README ${owner}/${name}`);
+        }
       } else {
-        await ensureLocalStub(t.id, repo.name, summary || "仓库暂无 README。");
-        console.log(`  · no README ${t.owner}/${t.name}`);
+        console.log(`  · skip README body (not public-safe) ${owner}/${name}`);
       }
 
-      metaProjects.push({
-        id: t.id,
-        title: repo.name,
-        summary,
-        homepage: !isPrivate && repo.homepage ? repo.homepage : undefined,
-        topics: repo.topics || [],
+      /** @type {Record<string, unknown>} */
+      const meta = {
+        id: c.id,
+        name: repo.name,
+        description: repo.description || "",
+        repositoryProvider: "github",
+        repositoryOwner: owner,
+        repositoryName: name,
+        repositoryStatus: isPrivate ? "private" : "public",
+        defaultBranch: repo.default_branch || "main",
         language: repo.language,
-        stars: isPrivate ? undefined : repo.stargazers_count,
-        forks: isPrivate ? undefined : repo.forks_count,
-        defaultBranch: repo.default_branch,
-        pushedAt: repo.pushed_at,
-        htmlUrl: isPrivate ? undefined : repo.html_url,
-        platform: "github",
-        isPrivate,
+        topics: repo.topics || [],
+        stars: isPrivate && !expose ? 0 : repo.stargazers_count || 0,
+        forks: isPrivate && !expose ? 0 : repo.forks_count || 0,
+        homepage: repo.homepage || null,
+        pushedAt: repo.pushed_at || null,
         syncedAt: now,
-        readmeSynced: Boolean(readme),
-        readmeSource: readme ? "remote" : "none",
-      });
+        readmeIncluded,
+        readmePublicSafe: allowReadmeBody && securityScanPassed,
+        securityScanPassed,
+      };
+
+      if (expose && repo.html_url) {
+        meta.repositoryUrl = repo.html_url;
+      }
+
+      await writeJson(c.id, meta);
+      projectIds.push(c.id);
     } catch (e) {
-      console.warn(`  error ${t.owner}/${t.name}:`, e.message);
-      await ensureLocalStub(t.id, t.title || t.name, `同步失败：${e.message}`);
-      metaProjects.push({
-        id: t.id,
-        syncedAt: now,
-        readmeSynced: false,
-        readmeSource: "none",
-        isPrivate: t.isPrivate,
-      });
+      console.warn(`  error ${owner}/${name}:`, e.message);
     }
   }
 
-  const out = {
+  const index = {
     generatedAt: now,
     githubUser: GITHUB_USER,
-    projects: metaProjects,
+    projectIds: [...new Set(projectIds)],
     discovered,
   };
-  await fs.writeFile(metaPath, JSON.stringify(out, null, 2) + "\n", "utf8");
-  console.log(`  wrote ${metaPath}`);
-  console.log(`  content dir ${contentDir}`);
+  await fs.writeFile(path.join(outDir, "_index.json"), JSON.stringify(index, null, 2) + "\n", "utf8");
+  console.log(`  wrote ${outDir} (${projectIds.length} projects)`);
   console.log("done");
 }
 
