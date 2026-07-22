@@ -1,16 +1,17 @@
 {
-  "generatedAt": "2026-07-22T11:02:53.184Z",
+  "generatedAt": "2026-07-22T11:06:43.922Z",
   "githubUser": "Logikinet",
   "projectIds": [
     "harmonyos-dev",
     "new-energy-inspection",
-    "zhishen-dun",
     "aether",
-    "workbench",
-    "ai-xunlianying",
+    "harmony-ticket-agent",
+    "zhishen-dun",
     "zhidun",
     "smart-silver",
-    "digital-bomb"
+    "digital-bomb",
+    "ai-xunlianying",
+    "workbench"
   ],
   "discovered": [
     {
@@ -93,5 +94,81 @@
       "pushedAt": "2026-03-08T01:36:14Z",
       "stars": 0
     }
-  ]
+  ],
+  "report": {
+    "synced": [
+      {
+        "id": "harmonyos-dev",
+        "readme": "local"
+      },
+      {
+        "id": "new-energy-inspection",
+        "readme": "local"
+      },
+      {
+        "id": "aether",
+        "readme": "none"
+      },
+      {
+        "id": "harmony-ticket-agent",
+        "readme": "none"
+      },
+      {
+        "id": "zhishen-dun",
+        "readme": "remote"
+      },
+      {
+        "id": "zhidun",
+        "readme": "none"
+      },
+      {
+        "id": "smart-silver",
+        "readme": "remote"
+      },
+      {
+        "id": "digital-bomb",
+        "readme": "remote"
+      }
+    ],
+    "cached": [
+      "ai-xunlianying",
+      "workbench"
+    ],
+    "readmeBlocked": [
+      {
+        "id": "aether",
+        "reasons": [
+          "private_ip_url"
+        ]
+      },
+      {
+        "id": "harmony-ticket-agent",
+        "reasons": [
+          "private_ip_url"
+        ]
+      },
+      {
+        "id": "zhidun",
+        "reasons": [
+          "private_ip_url"
+        ]
+      }
+    ],
+    "privateSkippedNoToken": [
+      "cangjie-agent-harness",
+      "welcome-robot",
+      "zhonghe",
+      "offer-pilot"
+    ],
+    "errors": [
+      {
+        "id": "ai-xunlianying",
+        "message": "GitHub HTTP 403 (https://api.github.com/repos/Logikinet/AI_xunlianying)"
+      },
+      {
+        "id": "workbench",
+        "message": "GitHub HTTP 403 (https://api.github.com/repos/Logikinet/workbench)"
+      }
+    ]
+  }
 }

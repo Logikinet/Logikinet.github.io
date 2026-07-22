@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "astro dev",
     "sync:projects": "node scripts/sync-projects.mjs",
-    "build": "astro check && astro build && pagefind --site dist",
+    "build": "npm run sync:projects && astro check && astro build && pagefind --site dist",
     "build:ci": "astro check && astro build && pagefind --site dist",
     "preview": "astro preview",
     "sync": "astro sync",

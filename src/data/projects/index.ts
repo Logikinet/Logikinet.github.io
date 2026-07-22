@@ -41,6 +41,13 @@ function getAllGeneratedMeta(): Map<string, GeneratedProjectMeta> {
   return map;
 }
 
+/** 自动发现：仅收录 catalog 未覆盖的公开仓，并排除敏感工具仓 */
+const DISCOVER_BLOCKLIST = new Set([
+  "logikinet.github.io",
+  "system_prompts_leaks",
+  "codex-5.5-codex-instruct-5.5",
+]);
+
 function discoveredProjects(index: GeneratedIndex | null): Project[] {
   if (!index?.discovered?.length) return [];
   const catalogIds = new Set(projectCatalog.map((p) => p.id));
@@ -57,7 +64,7 @@ function discoveredProjects(index: GeneratedIndex | null): Project[] {
     .filter((d) => {
       const id = slugifyRepoName(d.name);
       if (catalogIds.has(id)) return false;
-      if (d.name === "Logikinet.github.io") return false;
+      if (DISCOVER_BLOCKLIST.has(d.name.toLowerCase())) return false;
       const key = `github:logikinet/${d.name}`.toLowerCase();
       if (catalogRepos.has(key)) return false;
       return true;
@@ -67,12 +74,11 @@ function discoveredProjects(index: GeneratedIndex | null): Project[] {
       return {
         id,
         title: d.name,
-        summary: d.description?.trim() || `${d.name}（公开仓库，自动收录）`,
+        summary: d.description?.trim() || `${d.name}（公开仓库）`,
         description:
-          d.description?.trim() ||
-          "由 GitHub 公开仓库列表自动生成。正文优先展示同步后的 README。",
-        stack: d.language ? [d.language] : ["整理中"],
-        status: "整理中" as const,
+          d.description?.trim() || "公开仓库自动收录。正文优先 README，不额外编造功能。",
+        stack: d.language ? [d.language] : [],
+        status: "实验中" as const,
         featured: false,
         visibility: "public" as const,
         repositoryOwner: "Logikinet",

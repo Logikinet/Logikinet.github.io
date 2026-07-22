@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # 每日 16:00 UTC ≈ 北京时间次日 00:00
+    - cron: "0 16 * * *"
+  repository_dispatch:
+    types: [sync-projects]
 
 permissions:
   contents: read
@@ -30,7 +35,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 公开仓无需 token；私有仓只读请配置 Secrets.PROJECTS_READ_TOKEN（仅 metadata/contents 读权限）
+      # 公开仓无需 token；私有 README 请配置 PROJECTS_READ_TOKEN（只读 contents+metadata）
+      # 不打印 Secret；sync 脚本失败时保留缓存且 exit 0
       - name: Sync project READMEs
         env:
           PROJECTS_READ_TOKEN: ${{ secrets.PROJECTS_READ_TOKEN }}
@@ -38,7 +44,7 @@ jobs:
           GITHUB_USER: Logikinet
         run: npm run sync:projects
 
-      - name: Build
+      - name: Build site
         run: npm run build:ci
 
       - name: Upload artifact

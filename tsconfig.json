@@ -10,5 +10,5 @@
     "resolveJsonModule": true
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "node_modules", "public/lab"]
+  "exclude": ["dist", "node_modules", "public/lab", "scripts"]
 }

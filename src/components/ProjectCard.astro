@@ -39,9 +39,18 @@ const providerLabel = getProviderLabel(project);
 
   <p class="card-body flex-1">{project.summary}</p>
 
-  <div class="mt-4 flex flex-wrap gap-1.5">
-    {project.stack.slice(0, 5).map((tech) => <span class="chip">{tech}</span>)}
-  </div>
+  {
+    project.stack.filter((t) => t && t !== "整理中").length > 0 && (
+      <div class="mt-4 flex flex-wrap gap-1.5">
+        {project.stack
+          .filter((t) => t && t !== "整理中")
+          .slice(0, 5)
+          .map((tech) => (
+            <span class="chip">{tech}</span>
+          ))}
+      </div>
+    )
+  }
 
   <div class="relative z-10 mt-5 flex flex-wrap items-center gap-2 border-t border-ink-100 pt-4 dark:border-ink-800/80">
     <a href={`/projects/${project.id}/`} class="btn-secondary !px-3 !py-1.5 text-xs">

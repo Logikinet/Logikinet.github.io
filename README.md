@@ -126,13 +126,29 @@ draft: false
 | `scripts/sync-projects.mjs` | 同步脚本 |
 
 ```bash
-# 公开仓
+# 构建会先 sync（公开仓可无 Token）
+npm run build
+
+# 仅同步
 npm run sync:projects
 
-# 私有仓只读（勿提交 Token）
+# 私有 README（勿提交 Token）
 $env:PROJECTS_READ_TOKEN="github_pat_..."
 npm run sync:projects
 ```
+
+CI：`push` / `workflow_dispatch` / **每日 schedule** / `repository_dispatch`（type: `sync-projects`）均会构建部署。  
+其他仓库 README 更新后可触发本站重建（需 PAT）：
+
+```bash
+curl -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer $TOKEN" \
+  https://api.github.com/repos/Logikinet/Logikinet.github.io/dispatches \
+  -d '{"event_type":"sync-projects"}'
+```
+
+私有仓 URL 是否可展示：见 `docs/private-repo-expose-checklist.md`。
 
 字段要点：
 

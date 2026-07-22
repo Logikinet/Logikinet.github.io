@@ -48,50 +48,92 @@ const showPrivateNoLink =
 const showPrivateWithLink =
   safe.repositoryStatus === "private" && safe.exposeRepositoryUrl && Boolean(repoUrl);
 
+// 技术栈：过滤空与「整理中」占位
 const stackTags = [
   ...safe.stack,
-  ...(meta?.topics ?? []).slice(0, 6).filter((t) => !safe.stack.includes(t)),
-];
+  ...(meta?.topics ?? []).filter((t) => !safe.stack.includes(t)),
+].filter((t) => t && t !== "整理中");
+
+const ownershipLabel: Record<string, string> = {
+  original: "原创",
+  collaborative: "合作",
+  fork: "Fork",
+  unknown: "待确认",
+};
+const verifyLabel: Record<string, string> = {
+  verified: "已核验",
+  partial: "部分核验",
+  pending: "待核验",
+  unverified: "未核验",
+};
+
+const sidebarRows: { label: string; value: string }[] = [];
+if (safe.repositoryProvider) {
+  sidebarRows.push({ label: "仓库平台", value: providerLabel });
+}
+if (safe.repositoryStatus === "public" || safe.repositoryStatus === "private") {
+  sidebarRows.push({
+    label: "公开/私有",
+    value: safe.repositoryStatus === "public" ? "公开" : "私有",
+  });
+}
+const updated = safe.updatedAt || meta?.pushedAt?.slice(0, 10);
+if (updated) sidebarRows.push({ label: "最近更新", value: updated });
+if (meta?.language) sidebarRows.push({ label: "主要语言", value: meta.language });
+if (meta?.topics?.length) {
+  sidebarRows.push({ label: "Topics", value: meta.topics.join(", ") });
+}
+if (
+  safe.repositoryStatus === "public" &&
+  typeof meta?.stars === "number" &&
+  (meta.stars > 0 || (meta.forks ?? 0) > 0)
+) {
+  sidebarRows.push({
+    label: "Stars / Forks",
+    value: `${meta.stars ?? 0} / ${meta.forks ?? 0}`,
+  });
+}
+if (safe.ownership) {
+  sidebarRows.push({
+    label: "原创归属",
+    value: ownershipLabel[safe.ownership] ?? safe.ownership,
+  });
+}
+if (safe.verificationStatus) {
+  sidebarRows.push({
+    label: "核验状态",
+    value: verifyLabel[safe.verificationStatus] ?? safe.verificationStatus,
+  });
+}
 ---
 
 <BaseLayout title={safe.title} description={pageDescription}>
   <article class="container-page section-space">
-    <!-- 顶部 -->
     <header class="border-b border-ink-200/70 pb-8 dark:border-ink-800">
       <p class="label-meta">Project</p>
       <div class="mt-3 flex flex-wrap items-center gap-2">
         {safe.featured && <span class="chip-accent">精选</span>}
-        <span class="chip">{safe.status}</span>
+        {safe.status && <span class="chip">{safe.status}</span>}
         <span class="chip">{repoLabel}</span>
-        {
-          resolved.source === "generated" && (
-            <span class="chip">README</span>
-          )
-        }
+        {resolved.source === "generated" && <span class="chip">README</span>}
       </div>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{safe.title}</h1>
-      <p class="mt-3 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
-        {pageDescription}
-      </p>
+      {
+        pageDescription && (
+          <p class="mt-3 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
+            {pageDescription}
+          </p>
+        )
+      }
 
-      <div class="mt-4 flex flex-wrap gap-3 text-sm text-ink-500 dark:text-ink-400">
-        {safe.year && <span>{safe.year}</span>}
-        {
-          safe.updatedAt && (
-            <span class="font-mono">更新 {safe.updatedAt}</span>
-          )
-        }
-        {
-          meta?.language && (
-            <span>{meta.language}</span>
-          )
-        }
-        {
-          typeof meta?.stars === "number" &&
-            safe.repositoryStatus === "public" &&
-            meta.stars > 0 && <span class="font-mono">★ {meta.stars}</span>
-        }
-      </div>
+      {
+        (safe.year || updated) && (
+          <div class="mt-4 flex flex-wrap gap-3 text-sm text-ink-500 dark:text-ink-400">
+            {safe.year && <span>{safe.year}</span>}
+            {updated && <span class="font-mono">更新 {updated}</span>}
+          </div>
+        )
+      }
 
       {
         stackTags.length > 0 && (
@@ -106,24 +148,14 @@ const stackTags = [
       <div class="mt-7 flex flex-wrap gap-3">
         {
           showRepoLink && showPrivateWithLink && (
-            <a
-              href={repoUrl}
-              class="btn-primary"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={repoUrl} class="btn-primary" target="_blank" rel="noopener noreferrer">
               私有 {providerLabel} 仓库
             </a>
           )
         }
         {
           showRepoLink && !showPrivateWithLink && (
-            <a
-              href={repoUrl}
-              class="btn-primary"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={repoUrl} class="btn-primary" target="_blank" rel="noopener noreferrer">
               查看 {providerLabel}
             </a>
           )
@@ -149,59 +181,68 @@ const stackTags = [
       }
     </header>
 
-    <!-- 主体：README + 目录 -->
-    <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_220px]">
+    <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px]">
       <div class="min-w-0">
-        {
-          resolved.source === "status" ? (
-            <p class="text-sm text-ink-600 dark:text-ink-300" set:html={readmeHtml} />
-          ) : resolved.source === "description" ? (
-            <div class="max-w-3xl text-sm leading-relaxed text-ink-700 dark:text-ink-200">
-              <div class="prose-aqualeap project-readme" set:html={readmeHtml} />
-            </div>
-          ) : (
-            <div class="prose-aqualeap project-readme" set:html={readmeHtml} />
-          )
-        }
+        <div class="prose-aqualeap project-readme" set:html={readmeHtml} />
         {
           resolved.source === "local" && (
             <p class="mt-8 text-xs text-ink-500">
-              正文来自本地说明。确认 README 可公开后设置 readmePublicSafe，并配置 PROJECTS_READ_TOKEN 同步仓库原文。
+              正文来自本地说明。若仓库 README 已确认可公开，设置 readmePublicSafe 并配置 PROJECTS_READ_TOKEN 后重新同步。
             </p>
           )
         }
       </div>
 
-      <aside class="hidden lg:block">
-        <div class="sticky top-24 space-y-4">
-          {
-            headings.length > 0 && (
-              <nav class="rounded-2xl border border-ink-200/80 bg-white/70 p-4 dark:border-ink-700 dark:bg-ink-900/50" aria-label="README 目录">
-                <p class="label-meta mb-3">目录</p>
-                <ol class="space-y-2 text-sm">
-                  {headings.map((h) => (
-                    <li class:list={[h.depth === 3 ? "ml-3" : ""]}>
-                      <a
-                        href={`#${h.slug}`}
-                        class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300"
-                      >
-                        {h.text}
-                      </a>
-                    </li>
-                  ))}
-                </ol>
-              </nav>
-            )
-          }
-          <div class="rounded-2xl border border-ink-200/80 p-4 text-xs text-ink-500 dark:border-ink-700">
-            <p>正文来源：{resolved.source}</p>
-            {
-              meta?.syncedAt && (
-                <p class="mt-1 font-mono">同步 {meta.syncedAt.slice(0, 10)}</p>
-              )
-            }
-          </div>
-        </div>
+      <aside class="space-y-4">
+        {
+          sidebarRows.length > 0 && (
+            <section class="rounded-2xl border border-ink-200/80 bg-white/70 p-4 dark:border-ink-700 dark:bg-ink-900/50">
+              <p class="label-meta mb-3">项目信息</p>
+              <dl class="space-y-3 text-sm">
+                {sidebarRows.map((row) => (
+                  <div>
+                    <dt class="text-xs text-ink-500">{row.label}</dt>
+                    <dd class="mt-0.5 text-ink-800 dark:text-ink-100 break-words">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )
+        }
+
+        {
+          headings.length > 0 && (
+            <nav
+              class="hidden rounded-2xl border border-ink-200/80 bg-white/70 p-4 dark:border-ink-700 dark:bg-ink-900/50 lg:block"
+              aria-label="README 目录"
+            >
+              <p class="label-meta mb-3">目录</p>
+              <ol class="space-y-2 text-sm">
+                {headings.map((h) => (
+                  <li class:list={[h.depth === 3 ? "ml-3" : ""]}>
+                    <a
+                      href={`#${h.slug}`}
+                      class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300"
+                    >
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
+
+        {
+          (resolved.source || meta?.syncedAt) && (
+            <div class="rounded-2xl border border-ink-200/80 p-4 text-xs text-ink-500 dark:border-ink-700">
+              {resolved.source && <p>正文来源：{resolved.source}</p>}
+              {meta?.syncedAt && (
+                <p class="mt-1 font-mono">同步 {String(meta.syncedAt).slice(0, 10)}</p>
+              )}
+            </div>
+          )
+        }
       </aside>
     </div>
   </article>
