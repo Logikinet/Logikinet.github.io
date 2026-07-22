@@ -10,8 +10,8 @@ import { SITE } from "@/config";
   <p class="label-meta">GitHub · Public only</p>
   <h2 class="mt-2 text-lg font-semibold tracking-tight">公开仓库动态</h2>
   <p class="mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
-    作品集由 <code class="chip">src/data/projects.ts</code> 人工维护，不会自动同步全部仓库。
-    若需浏览账号下的公开仓库，请前往 GitHub（私有仓库不会在此列出或暴露地址）。
+    精选与私有条目由 <code class="chip">src/data/projects/catalog.ts</code> 维护；公开仓可通过
+    <code class="chip">npm run sync:projects</code> 发现并拉取 README。私有地址不会写进页面。
   </p>
   <div class="mt-5 flex flex-wrap gap-2">
     <a

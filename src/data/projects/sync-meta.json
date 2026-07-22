@@ -1,0 +1,269 @@
+{
+  "generatedAt": "2026-07-22T10:58:01.764Z",
+  "githubUser": "Logikinet",
+  "projects": [
+    {
+      "id": "harmonyos-dev",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true
+    },
+    {
+      "id": "new-energy-inspection",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true
+    },
+    {
+      "id": "cangjie-agent-harness",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true,
+      "platform": "github"
+    },
+    {
+      "id": "personal-ai-workbench",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true,
+      "platform": "github"
+    },
+    {
+      "id": "welcome-robot",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true,
+      "platform": "github"
+    },
+    {
+      "id": "harmony-ticket-agent",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true,
+      "platform": "github"
+    },
+    {
+      "id": "zhonghe",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true,
+      "platform": "github"
+    },
+    {
+      "id": "offer-pilot",
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": false,
+      "readmeSource": "local",
+      "isPrivate": true,
+      "platform": "github"
+    },
+    {
+      "id": "zhishen-dun",
+      "title": "zhishen-dun",
+      "summary": "Zhishen Dun secure review backend source release",
+      "topics": [],
+      "language": "Python",
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "main",
+      "pushedAt": "2026-07-22T09:57:16Z",
+      "htmlUrl": "https://github.com/Logikinet/zhishen-dun",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    },
+    {
+      "id": "aether",
+      "title": "Aether",
+      "summary": "Aether —— 个人多智能体工作流平台",
+      "topics": [],
+      "language": "TypeScript",
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "master",
+      "pushedAt": "2026-07-18T04:03:26Z",
+      "htmlUrl": "https://github.com/Logikinet/Aether",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    },
+    {
+      "id": "workbench",
+      "title": "workbench",
+      "summary": "一个 Windows 本机个人用的「Todo → 计划 → 代理执行 → 审查 → 验收」工作台",
+      "topics": [],
+      "language": "TypeScript",
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "master",
+      "pushedAt": "2026-07-16T15:55:55Z",
+      "htmlUrl": "https://github.com/Logikinet/workbench",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    },
+    {
+      "id": "ai-xunlianying",
+      "title": "AI_xunlianying",
+      "summary": "AI_xunlianying",
+      "topics": [],
+      "language": null,
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "master",
+      "pushedAt": "2026-07-16T14:14:37Z",
+      "htmlUrl": "https://github.com/Logikinet/AI_xunlianying",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    },
+    {
+      "id": "zhidun",
+      "title": "zhidun",
+      "summary": "网络设计大赛",
+      "topics": [],
+      "language": "Python",
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "main",
+      "pushedAt": "2026-04-10T05:49:56Z",
+      "htmlUrl": "https://github.com/Logikinet/zhidun",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    },
+    {
+      "id": "smart-silver",
+      "title": "smart-silver",
+      "summary": "计算机程序设计大赛",
+      "topics": [],
+      "language": "JavaScript",
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "main",
+      "pushedAt": "2026-04-10T05:41:25Z",
+      "htmlUrl": "https://github.com/Logikinet/smart-silver",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    },
+    {
+      "id": "digital-bomb",
+      "title": "digital-bomb",
+      "summary": "digital-bomb",
+      "topics": [],
+      "language": "TypeScript",
+      "stars": 0,
+      "forks": 0,
+      "defaultBranch": "master",
+      "pushedAt": "2026-03-08T01:36:14Z",
+      "htmlUrl": "https://github.com/Logikinet/digital-bomb",
+      "platform": "github",
+      "isPrivate": false,
+      "syncedAt": "2026-07-22T10:58:01.764Z",
+      "readmeSynced": true,
+      "readmeSource": "remote"
+    }
+  ],
+  "discovered": [
+    {
+      "id": "harmony-ticket-agent",
+      "name": "harmony-ticket-agent",
+      "description": "Private mirror of user-controlled Gitee project: harmony_ticket_agent",
+      "htmlUrl": "https://github.com/Logikinet/harmony-ticket-agent",
+      "language": "TypeScript",
+      "topics": [],
+      "pushedAt": "2026-07-22T09:26:46Z",
+      "stars": 0
+    },
+    {
+      "id": "zhishen-dun",
+      "name": "zhishen-dun",
+      "description": "Zhishen Dun secure review backend source release",
+      "htmlUrl": "https://github.com/Logikinet/zhishen-dun",
+      "language": "Python",
+      "topics": [],
+      "pushedAt": "2026-07-22T09:57:16Z",
+      "stars": 0
+    },
+    {
+      "id": "aether",
+      "name": "Aether",
+      "description": "Aether —— 个人多智能体工作流平台",
+      "htmlUrl": "https://github.com/Logikinet/Aether",
+      "language": "TypeScript",
+      "topics": [],
+      "pushedAt": "2026-07-18T04:03:26Z",
+      "stars": 0
+    },
+    {
+      "id": "workbench",
+      "name": "workbench",
+      "description": "一个 Windows 本机个人用的「Todo → 计划 → 代理执行 → 审查 → 验收」工作台",
+      "htmlUrl": "https://github.com/Logikinet/workbench",
+      "language": "TypeScript",
+      "topics": [],
+      "pushedAt": "2026-07-16T15:55:55Z",
+      "stars": 0
+    },
+    {
+      "id": "ai-xunlianying",
+      "name": "AI_xunlianying",
+      "description": "",
+      "htmlUrl": "https://github.com/Logikinet/AI_xunlianying",
+      "language": null,
+      "topics": [],
+      "pushedAt": "2026-07-16T14:14:37Z",
+      "stars": 0
+    },
+    {
+      "id": "zhidun",
+      "name": "zhidun",
+      "description": "网络设计大赛",
+      "htmlUrl": "https://github.com/Logikinet/zhidun",
+      "language": "Python",
+      "topics": [],
+      "pushedAt": "2026-04-10T05:49:56Z",
+      "stars": 0
+    },
+    {
+      "id": "smart-silver",
+      "name": "smart-silver",
+      "description": "计算机程序设计大赛",
+      "htmlUrl": "https://github.com/Logikinet/smart-silver",
+      "language": "JavaScript",
+      "topics": [],
+      "pushedAt": "2026-04-10T05:41:25Z",
+      "stars": 0
+    },
+    {
+      "id": "digital-bomb",
+      "name": "digital-bomb",
+      "description": "",
+      "htmlUrl": "https://github.com/Logikinet/digital-bomb",
+      "language": "TypeScript",
+      "topics": [],
+      "pushedAt": "2026-03-08T01:36:14Z",
+      "stars": 0
+    }
+  ]
+}

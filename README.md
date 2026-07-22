@@ -115,12 +115,28 @@ draft: false
 
 原则：知识资产与「工具箱」分离；Private 仓库 URL 不得写入前端数据。
 
-### 项目作品集
+### 项目作品集（README 驱动）
 
-- 数据：`src/data/projects.ts`（人工精选，不自动同步 GitHub）
-- `visibility`: `public` | `private` | `unpublished`
-- Private 仅显示「私有仓库」，不写仓库 URL
-- 精选由 `featured` 控制
+| 路径 | 作用 |
+| --- | --- |
+| `src/data/projects/catalog.ts` | 人工目录（标题、精选、visibility、remote） |
+| `src/data/projects/sync-meta.json` | 同步脚本写入的元数据 |
+| `src/content/projects/*.md` | **详情页正文 = 仓库 README**（或本地稿） |
+| `scripts/sync-projects.mjs` | 拉 GitHub 公开列表 + README |
+
+```bash
+# 本地同步（私有仓 README 需要 token）
+set GITHUB_TOKEN=ghp_xxx   # PowerShell: $env:GITHUB_TOKEN="..."
+npm run sync:projects
+```
+
+规则：
+
+- 详情页优先渲染 `src/content/projects/{id}.md`，无文件时才回退 `description`
+- **无 Demo 时不显示「Demo 整理中」**，有 `demo` 或公开 homepage 才显示按钮
+- Private：可同步 README 正文，**页面永不输出私有仓库 URL**
+- 新的 **Public** 仓库会出现在 `sync-meta.json` 的 `discovered` 并自动生成列表条目（默认非精选）；精选仍改 `catalog.ts` 的 `featured`
+- 站点仓库 `Logikinet.github.io` 不会进入作品集
 
 ### 实验室 Demo
 

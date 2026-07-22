@@ -4,9 +4,11 @@ import {
   getListedProjects,
   getPublicGithubUrl,
   getPublicGiteeUrl,
+  getSyncMeta,
   repositoryLabel,
   type Project,
 } from "@/data/projects";
+import { getProjectReadmeHtml } from "@/utils/projects";
 
 export function getStaticPaths() {
   return getListedProjects().map((project) => ({
@@ -23,19 +25,33 @@ const { project } = Astro.props;
 const githubUrl = getPublicGithubUrl(project);
 const giteeUrl = getPublicGiteeUrl(project);
 const repoLabel = repositoryLabel(project);
+const meta = getSyncMeta(project.id);
+const { Content, doc, hasReadme } = await getProjectReadmeHtml(project);
+
+const pageDescription = doc?.data.summary || project.summary;
+const demoUrl =
+  project.demo ||
+  (doc?.data.homepage && !doc.data.isPrivateRepo ? doc.data.homepage : undefined) ||
+  (meta?.homepage && project.visibility === "public" ? meta.homepage : undefined);
+
+const showPrivateBadge =
+  project.repositoryStatus === "private" || project.remote?.isPrivate || doc?.data.isPrivateRepo;
 ---
 
-<BaseLayout title={project.title} description={project.summary}>
+<BaseLayout title={project.title} description={pageDescription}>
   <article class="container-page section-space">
     <p class="label-meta">Project</p>
     <div class="mt-3 flex flex-wrap items-center gap-2">
       {project.featured && <span class="chip-accent">精选</span>}
       <span class="chip">{project.status}</span>
       <span class="chip">{repoLabel}</span>
+      {hasReadme && <span class="chip">README</span>}
       {project.year && <span class="text-sm text-ink-500">{project.year}</span>}
     </div>
     <h1 class="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h1>
-    <p class="mt-4 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300">{project.summary}</p>
+    <p class="mt-4 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
+      {pageDescription}
+    </p>
 
     <div class="mt-8 flex flex-wrap gap-3">
       {
@@ -43,11 +59,9 @@ const repoLabel = repositoryLabel(project);
           <a href={githubUrl} class="btn-primary" target="_blank" rel="noopener noreferrer">
             GitHub
           </a>
-        ) : project.repositoryStatus === "private" ? (
+        ) : showPrivateBadge ? (
           <span class="btn-secondary opacity-80">私有仓库 · 地址不公开</span>
-        ) : (
-          <span class="btn-secondary opacity-70">仓库整理中</span>
-        )
+        ) : null
       }
       {
         giteeUrl ? (
@@ -57,60 +71,130 @@ const repoLabel = repositoryLabel(project);
         ) : null
       }
       {
-        project.demo ? (
-          <a href={project.demo} class="btn-secondary" target="_blank" rel="noopener noreferrer">
+        demoUrl ? (
+          <a href={demoUrl} class="btn-secondary" target="_blank" rel="noopener noreferrer">
             打开 Demo
           </a>
-        ) : (
-          <span class="btn-ghost opacity-70">Demo 整理中</span>
-        )
+        ) : null
       }
       <a href="/projects/" class="btn-ghost">返回列表</a>
     </div>
 
     <div class="mt-10 grid gap-6 lg:grid-cols-3">
-      <section class="card lg:col-span-2">
-        <h2 class="text-xl font-semibold">项目说明</h2>
-        <p class="mt-4 text-sm leading-relaxed text-ink-600 dark:text-ink-300 whitespace-pre-line">
-          {project.description}
-        </p>
-      </section>
-      <section class="card">
-        <h2 class="text-lg font-semibold">元信息</h2>
-        <div class="mt-4 flex flex-wrap gap-2">
-          {project.stack.map((tech) => <span class="chip">{tech}</span>)}
-        </div>
-        <dl class="mt-6 space-y-3 text-sm">
-          <div>
-            <dt class="text-ink-500">状态</dt>
-            <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.status}</dd>
-          </div>
-          <div>
-            <dt class="text-ink-500">可见性</dt>
-            <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.visibility}</dd>
-          </div>
-          <div>
-            <dt class="text-ink-500">仓库</dt>
-            <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{repoLabel}</dd>
-          </div>
-          <div>
-            <dt class="text-ink-500">归属</dt>
-            <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.ownership}</dd>
-          </div>
-          <div>
-            <dt class="text-ink-500">核验</dt>
-            <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.verificationStatus}</dd>
-          </div>
+      <section class="card lg:col-span-2 min-w-0">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-xl font-semibold tracking-tight">
+            {hasReadme ? "README" : "项目说明"}
+          </h2>
           {
-            project.updatedAt && (
-              <div>
-                <dt class="text-ink-500">更新</dt>
-                <dd class="mt-0.5 font-mono text-ink-800 dark:text-ink-100">{project.updatedAt}</dd>
-              </div>
+            doc?.data.syncedAt && (
+              <p class="card-meta font-mono">同步 {doc.data.syncedAt}</p>
             )
           }
-        </dl>
+        </div>
+
+        {
+          hasReadme && Content ? (
+            <div class="prose-aqualeap project-readme">
+              <Content />
+            </div>
+          ) : (
+            <div class="space-y-4 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+              <p class="whitespace-pre-line">{project.description}</p>
+              <p class="rounded-xl border border-ink-200/80 bg-ink-50/70 px-3 py-2 text-xs text-ink-500 dark:border-ink-700 dark:bg-ink-950/40">
+                尚未同步到仓库 README。配置 <code class="chip">remote</code> 后运行{" "}
+                <code class="chip">npm run sync:projects</code>
+                （私有仓需 GITHUB_TOKEN）将自动生成本页正文。
+              </p>
+            </div>
+          )
+        }
       </section>
+
+      <aside class="space-y-5">
+        <section class="card">
+          <h2 class="text-lg font-semibold">技术栈</h2>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {project.stack.map((tech) => <span class="chip">{tech}</span>)}
+            {
+              doc?.data.topics?.slice(0, 8).map((t) => (
+                <span class="chip">#{t}</span>
+              ))
+            }
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="text-lg font-semibold">元信息</h2>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div>
+              <dt class="text-ink-500">状态</dt>
+              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.status}</dd>
+            </div>
+            <div>
+              <dt class="text-ink-500">可见性</dt>
+              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.visibility}</dd>
+            </div>
+            <div>
+              <dt class="text-ink-500">仓库</dt>
+              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{repoLabel}</dd>
+            </div>
+            {
+              doc?.data.language && (
+                <div>
+                  <dt class="text-ink-500">主语言</dt>
+                  <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{doc.data.language}</dd>
+                </div>
+              )
+            }
+            {
+              typeof doc?.data.stars === "number" && project.visibility === "public" && (
+                <div>
+                  <dt class="text-ink-500">Stars</dt>
+                  <dd class="mt-0.5 font-mono text-ink-800 dark:text-ink-100">{doc.data.stars}</dd>
+                </div>
+              )
+            }
+            <div>
+              <dt class="text-ink-500">归属</dt>
+              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.ownership}</dd>
+            </div>
+            <div>
+              <dt class="text-ink-500">核验</dt>
+              <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{project.verificationStatus}</dd>
+            </div>
+            {
+              (project.updatedAt || meta?.pushedAt) && (
+                <div>
+                  <dt class="text-ink-500">更新</dt>
+                  <dd class="mt-0.5 font-mono text-ink-800 dark:text-ink-100">
+                    {project.updatedAt || meta?.pushedAt?.slice(0, 10)}
+                  </dd>
+                </div>
+              )
+            }
+            {
+              doc?.data.source && (
+                <div>
+                  <dt class="text-ink-500">正文来源</dt>
+                  <dd class="mt-0.5 text-ink-800 dark:text-ink-100">{doc.data.source}</dd>
+                </div>
+              )
+            }
+          </dl>
+        </section>
+
+        {
+          !hasReadme && (
+            <section class="card">
+              <h2 class="text-sm font-semibold text-ink-500">站点摘要</h2>
+              <p class="mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300 whitespace-pre-line">
+                {project.description}
+              </p>
+            </section>
+          )
+        }
+      </aside>
     </div>
   </article>
 </BaseLayout>

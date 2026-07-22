@@ -12,9 +12,10 @@ const listed = getListedProjects();
     <p class="label-meta">Projects</p>
     <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">项目作品集</h1>
     <p class="mt-4 max-w-2xl text-base text-ink-600 dark:text-ink-300">
-      结构化数据人工维护，不自动导入全部 GitHub 仓库。私有仓库仅显示状态，不公开地址；未确认归属与用途的项目不进入作品集。
+      详情页正文由仓库 README 驱动（构建期同步到 <code class="chip">src/content/projects</code>）。
+      人工目录维护精选与可见性；公开仓可自动发现。私有仓可同步 README 正文，但页面永不展示私有地址。
     </p>
-    <p class="mt-2 text-sm text-ink-500">当前展示 {listed.length} 个已收录项目。</p>
+    <p class="mt-2 text-sm text-ink-500">当前展示 {listed.length} 个项目（含自动发现的公开仓）。</p>
     <div class="mt-10 grid gap-5 sm:grid-cols-2">
       {listed.map((project) => <ProjectCard project={project} />)}
     </div>

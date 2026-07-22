@@ -6,7 +6,9 @@
   "description": "AquaLeap — personal site of 王子健 (Logikinet)",
   "scripts": {
     "dev": "astro dev",
+    "sync:projects": "node scripts/sync-projects.mjs",
     "build": "astro check && astro build && pagefind --site dist",
+    "build:ci": "astro check && astro build && pagefind --site dist",
     "preview": "astro preview",
     "sync": "astro sync",
     "astro": "astro",

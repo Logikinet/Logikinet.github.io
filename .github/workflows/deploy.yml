@@ -30,8 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 公开仓 README 无需 token；跨仓库私有 README 请在仓库 Secrets 配置 PROJECT_SYNC_TOKEN（repo 范围 PAT）
+      - name: Sync project READMEs
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_USER: Logikinet
+        run: npm run sync:projects
+
       - name: Build
-        run: npm run build
+        run: npm run build:ci
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
