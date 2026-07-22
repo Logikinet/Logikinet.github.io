@@ -1,0 +1,29 @@
+---
+import type { TocHeading } from "@/utils/toc";
+
+interface Props {
+  headings: TocHeading[];
+}
+
+const { headings } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <nav class="rounded-2xl border border-ink-200 bg-white/70 p-4 dark:border-ink-700 dark:bg-ink-900/50" aria-label="文章目录">
+      <p class="label-meta mb-3">目录</p>
+      <ol class="space-y-2 text-sm">
+        {headings.map((h) => (
+          <li class:list={[h.depth === 3 ? "ml-3" : ""]}>
+            <a
+              href={`#${h.slug}`}
+              class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300"
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

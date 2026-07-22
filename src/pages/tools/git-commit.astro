@@ -1,0 +1,106 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Git Commit 生成器" description="根据需求描述、实现思路与复现路径生成规范中文 Git Commit，本地运行一键复制。">
+  <div class="container-page section-space max-w-3xl">
+    <p class="label-meta">Tool</p>
+    <h1 class="mt-3 text-3xl font-semibold tracking-tight">Git Commit 生成器</h1>
+    <p class="mt-3 text-sm text-ink-600 dark:text-ink-300">
+      输入内容仅在浏览器本地处理，不会上传。输出遵循本站约定的中文 Commit 结构。
+    </p>
+
+    <form id="commit-form" class="mt-8 space-y-5" autocomplete="off">
+      <div>
+        <label for="type" class="mb-1.5 block text-sm font-medium">类型前缀</label>
+        <select id="type" class="tool-input" name="type">
+          <option value="feat">feat</option>
+          <option value="fix">fix</option>
+          <option value="docs">docs</option>
+          <option value="style">style</option>
+          <option value="refactor">refactor</option>
+          <option value="perf">perf</option>
+          <option value="test">test</option>
+          <option value="chore">chore</option>
+        </select>
+      </div>
+      <div>
+        <label for="summary" class="mb-1.5 block text-sm font-medium">一句话摘要（必填）</label>
+        <input id="summary" name="summary" class="tool-input" type="text" placeholder="例如：实现个人博客首页" required />
+      </div>
+      <div>
+        <label for="problem" class="mb-1.5 block text-sm font-medium">问题或需求描述（必填）</label>
+        <textarea id="problem" name="problem" class="tool-textarea" placeholder="需要解决什么问题？" required></textarea>
+      </div>
+      <div>
+        <label for="solution" class="mb-1.5 block text-sm font-medium">修复或实现思路（必填）</label>
+        <textarea id="solution" name="solution" class="tool-textarea" placeholder="如何实现或修复？" required></textarea>
+      </div>
+      <div>
+        <label for="repro" class="mb-1.5 block text-sm font-medium">复现路径（可选）</label>
+        <textarea id="repro" name="repro" class="tool-textarea" placeholder="如何验证或复现"></textarea>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="submit" class="btn-primary">生成 Commit</button>
+        <button type="button" id="clear-btn" class="btn-secondary">清空</button>
+      </div>
+    </form>
+
+    <section class="mt-8" aria-live="polite">
+      <div class="mb-2 flex items-center justify-between gap-2">
+        <h2 class="text-lg font-semibold">输出</h2>
+        <button type="button" id="copy-btn" class="btn-secondary !py-1.5 text-xs" disabled>复制</button>
+      </div>
+      <pre id="output" class="tool-textarea min-h-40 whitespace-pre-wrap text-ink-700 dark:text-ink-200">填写表单后点击「生成 Commit」。</pre>
+      <p id="status" class="mt-2 text-xs text-ink-500" role="status"></p>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById("commit-form") as HTMLFormElement | null;
+    const output = document.getElementById("output");
+    const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement | null;
+    const clearBtn = document.getElementById("clear-btn");
+    const status = document.getElementById("status");
+
+    function buildMessage(): string {
+      const type = (document.getElementById("type") as HTMLSelectElement).value.trim();
+      const summary = (document.getElementById("summary") as HTMLInputElement).value.trim();
+      const problem = (document.getElementById("problem") as HTMLTextAreaElement).value.trim();
+      const solution = (document.getElementById("solution") as HTMLTextAreaElement).value.trim();
+      const repro = (document.getElementById("repro") as HTMLTextAreaElement).value.trim();
+
+      let msg = `${type}: ${summary}\n\n问题或需求描述：\n${problem}\n\n修复或实现思路：\n${solution}`;
+      if (repro) {
+        msg += `\n\n复现路径：\n${repro}`;
+      }
+      return msg;
+    }
+
+    form?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const msg = buildMessage();
+      if (output) output.textContent = msg;
+      if (copyBtn) copyBtn.disabled = false;
+      if (status) status.textContent = "已生成，可一键复制。";
+    });
+
+    copyBtn?.addEventListener("click", async () => {
+      const text = output?.textContent ?? "";
+      if (!text || text.startsWith("填写表单")) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        if (status) status.textContent = "已复制到剪贴板。";
+      } catch {
+        if (status) status.textContent = "复制失败，请手动选择文本复制。";
+      }
+    });
+
+    clearBtn?.addEventListener("click", () => {
+      form?.reset();
+      if (output) output.textContent = "填写表单后点击「生成 Commit」。";
+      if (copyBtn) copyBtn.disabled = true;
+      if (status) status.textContent = "";
+    });
+  </script>
+</BaseLayout>

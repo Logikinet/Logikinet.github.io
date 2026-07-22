@@ -1,0 +1,52 @@
+---
+import type { BlogPost } from "@/utils/blog";
+import { formatDate, getReadingTime } from "@/utils/blog";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const minutes = getReadingTime(post.body ?? "");
+---
+
+<article class="card">
+  <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-ink-500 dark:text-ink-400">
+    <time datetime={post.data.pubDatetime.toISOString()}>{formatDate(post.data.pubDatetime)}</time>
+    <span aria-hidden="true">·</span>
+    <span>{minutes} 分钟阅读</span>
+    <span aria-hidden="true">·</span>
+    <a href={`/blog/categories/${encodeURIComponent(post.data.category)}/`} class="text-aqua-600 no-underline dark:text-aqua-400">
+      {post.data.category}
+    </a>
+    {
+      post.data.featured && (
+        <span class="chip border-aqua-500/30 bg-aqua-500/10 text-aqua-700 dark:text-aqua-300">精选</span>
+      )
+    }
+    {
+      post.data.draft && (
+        <span class="chip">草稿</span>
+      )
+    }
+  </div>
+  <h3 class="text-lg font-semibold tracking-tight text-ink-900 dark:text-ink-50">
+    <a href={`/blog/${post.id}/`} class="no-underline hover:text-aqua-600 dark:hover:text-aqua-300">
+      {post.data.title}
+    </a>
+  </h3>
+  <p class="mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+    {post.data.description}
+  </p>
+  {
+    post.data.tags.length > 0 && (
+      <div class="mt-4 flex flex-wrap gap-1.5">
+        {post.data.tags.map((tag) => (
+          <a href={`/blog/tags/${encodeURIComponent(tag)}/`} class="chip no-underline hover:border-aqua-500/40">
+            #{tag}
+          </a>
+        ))}
+      </div>
+    )
+  }
+</article>

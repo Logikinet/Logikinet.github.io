@@ -1,0 +1,43 @@
+---
+interface Props {
+  page: number;
+  totalPages: number;
+  basePath: string;
+}
+
+const { page, totalPages, basePath } = Astro.props;
+const root = basePath.replace(/\/$/, "");
+
+function hrefFor(p: number): string {
+  if (p <= 1) return `${root}/`;
+  return `${root}/page/${p}/`;
+}
+---
+
+{
+  totalPages > 1 && (
+    <nav class="mt-10 flex items-center justify-center gap-3" aria-label="分页">
+      {page > 1 ? (
+        <a href={hrefFor(page - 1)} class="btn-secondary" rel="prev">
+          上一页
+        </a>
+      ) : (
+        <span class="btn-secondary pointer-events-none opacity-40" aria-disabled="true">
+          上一页
+        </span>
+      )}
+      <span class="text-sm text-ink-600 dark:text-ink-300">
+        第 {page} / {totalPages} 页
+      </span>
+      {page < totalPages ? (
+        <a href={hrefFor(page + 1)} class="btn-secondary" rel="next">
+          下一页
+        </a>
+      ) : (
+        <span class="btn-secondary pointer-events-none opacity-40" aria-disabled="true">
+          下一页
+        </span>
+      )}
+    </nav>
+  )
+}

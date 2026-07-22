@@ -1,0 +1,75 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
+import { projects } from "@/data/projects";
+---
+
+<BaseLayout title="在线简历" description={`${SITE.name}的在线简历：方向、成果与精选项目摘要。`}>
+  <div class="container-page section-space">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="label-meta">Resume</p>
+        <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{SITE.name}</h1>
+        <p class="mt-2 text-ink-600 dark:text-ink-300">学生 / 独立开发者 · {SITE.title}</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href={SITE.github} class="btn-primary" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="/about/" class="btn-secondary">关于我</a>
+      </div>
+    </div>
+
+    <section class="mt-10 card">
+      <h2 class="text-xl font-semibold">简介</h2>
+      <p class="mt-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+        关注 AI Agent / Harness 工程、Agent Skills / Tools / Hooks 与工程约束、仓颉语言与鸿蒙开发、AI 应用落地，以及 ROS 机器人与智能硬件。偏好可控、可靠、高效的系统设计，并重视 Token 成本与 CLI 工程优化。
+      </p>
+    </section>
+
+    <section class="mt-6 card">
+      <h2 class="text-xl font-semibold">方向</h2>
+      <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+        {
+          FOCUS_AREAS.map((area) => (
+            <li>
+              <p class="font-medium">{area.title}</p>
+              <p class="mt-1 text-sm text-ink-600 dark:text-ink-300">{area.description}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-6 card">
+      <h2 class="text-xl font-semibold">精选项目</h2>
+      <ul class="mt-4 space-y-4">
+        {
+          projects
+            .filter((p) => p.featured)
+            .map((p) => (
+              <li class="border-b border-ink-100 pb-4 last:border-0 last:pb-0 dark:border-ink-800">
+                <div class="flex flex-wrap items-center gap-2">
+                  <a href={`/projects/${p.id}/`} class="font-medium text-ink-900 no-underline hover:text-aqua-600 dark:text-ink-50 dark:hover:text-aqua-300">
+                    {p.title}
+                  </a>
+                  <span class="chip">{p.status}</span>
+                </div>
+                <p class="mt-1 text-sm text-ink-600 dark:text-ink-300">{p.summary}</p>
+              </li>
+            ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-6 card">
+      <h2 class="text-xl font-semibold">成果</h2>
+      <ul class="mt-4 space-y-2">
+        {
+          ACHIEVEMENTS.map((item) => (
+            <li class="text-sm text-ink-700 dark:text-ink-200">· {item}</li>
+          ))
+        }
+      </ul>
+      <p class="mt-4 text-xs text-ink-500">本页仅汇总已确认公开信息，不包含未核实的工作经历或商业指标。</p>
+    </section>
+  </div>
+</BaseLayout>

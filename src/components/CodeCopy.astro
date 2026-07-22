@@ -1,0 +1,38 @@
+---
+// Injected on blog post pages for copy buttons on code blocks
+---
+
+<script>
+  function enhanceCodeBlocks() {
+    document.querySelectorAll("pre").forEach((pre) => {
+      if (pre.parentElement?.classList.contains("code-block-wrap")) return;
+      const wrap = document.createElement("div");
+      wrap.className = "code-block-wrap relative group";
+      pre.parentNode?.insertBefore(wrap, pre);
+      wrap.appendChild(pre);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className =
+        "absolute right-2 top-2 rounded-md border border-white/10 bg-black/40 px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100 focus:opacity-100";
+      btn.textContent = "复制";
+      btn.setAttribute("aria-label", "复制代码");
+      btn.addEventListener("click", async () => {
+        const code = pre.querySelector("code")?.textContent ?? pre.textContent ?? "";
+        try {
+          await navigator.clipboard.writeText(code);
+          btn.textContent = "已复制";
+          setTimeout(() => {
+            btn.textContent = "复制";
+          }, 1500);
+        } catch {
+          btn.textContent = "失败";
+        }
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  enhanceCodeBlocks();
+  document.addEventListener("astro:page-load", enhanceCodeBlocks);
+</script>

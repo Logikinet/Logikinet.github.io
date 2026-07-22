@@ -1,0 +1,102 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: SITE.name,
+  url: `${SITE.url}/about/`,
+  jobTitle: "学生 / 独立开发者",
+  sameAs: [SITE.github],
+  description: SITE.description,
+};
+---
+
+<BaseLayout title="关于我" description={`${SITE.name}：学生 / 独立开发者，关注 AI Agent、Harness 工程、鸿蒙与仓颉、AI 应用开发。`} jsonLd={jsonLd}>
+  <div class="container-page section-space">
+    <p class="label-meta">About</p>
+    <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">关于我</h1>
+    <p class="mt-4 max-w-2xl text-base leading-relaxed text-ink-600 dark:text-ink-300">
+      你好，我是{SITE.name}。当前身份是学生与独立开发者，持续在 Agent 工程化、鸿蒙/仓颉与 AI 应用落地之间探索。
+    </p>
+
+    <div class="mt-10 grid gap-6 lg:grid-cols-3">
+      <section class="card lg:col-span-2">
+        <h2 class="text-xl font-semibold">我在做什么</h2>
+        <div class="mt-4 space-y-4 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+          <p>
+            我更关心「系统如何可靠工作」，而不是单次对话的惊艳感。Agent 需要边界、可观测性与可复现路径；工具链需要克制依赖、控制 Token 成本；应用需要从原型走到真实使用。
+          </p>
+          <p>
+            这个站点（AquaLeap）用于沉淀项目、文章、工具与小型实验——流动、跃迁、探索，是我希望保留的工程气质。
+          </p>
+        </div>
+        <h3 class="mt-8 text-lg font-semibold">重点方向</h3>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+          {
+            FOCUS_AREAS.map((area) => (
+              <li class="rounded-xl border border-ink-200/80 p-4 dark:border-ink-700">
+                <p class="font-medium text-ink-900 dark:text-ink-50">{area.title}</p>
+                <p class="mt-1 text-sm text-ink-600 dark:text-ink-300">{area.description}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <aside class="space-y-6">
+        <section class="card">
+          <h2 class="text-lg font-semibold">基本信息</h2>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div>
+              <dt class="text-ink-500">姓名</dt>
+              <dd class="font-medium text-ink-900 dark:text-ink-50">{SITE.name}</dd>
+            </div>
+            <div>
+              <dt class="text-ink-500">身份</dt>
+              <dd class="font-medium text-ink-900 dark:text-ink-50">学生 / 独立开发者</dd>
+            </div>
+            <div>
+              <dt class="text-ink-500">GitHub</dt>
+              <dd>
+                <a href={SITE.github} class="text-aqua-600 no-underline hover:underline dark:text-aqua-300" target="_blank" rel="noopener noreferrer">
+                  @{SITE.githubUser}
+                </a>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-ink-500">站点</dt>
+              <dd>
+                <a href={SITE.url} class="text-aqua-600 no-underline hover:underline dark:text-aqua-300">{SITE.url.replace("https://", "")}</a>
+              </dd>
+            </div>
+          </dl>
+        </section>
+        <section class="card">
+          <h2 class="text-lg font-semibold">更多页面</h2>
+          <div class="mt-4 flex flex-col gap-2">
+            <a href="/resume/" class="btn-secondary">在线简历</a>
+            <a href="/projects/" class="btn-ghost">项目作品集</a>
+            <a href="/blog/" class="btn-ghost">技术博客</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="mt-10 card" aria-labelledby="awards">
+      <h2 id="awards" class="text-xl font-semibold">已知成果</h2>
+      <p class="mt-2 text-sm text-ink-500">以下仅列可确认信息，不包含未核实的公司经历、用户量或商业数据。</p>
+      <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+        {
+          ACHIEVEMENTS.map((item) => (
+            <li class="flex gap-3 text-sm text-ink-700 dark:text-ink-200">
+              <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>

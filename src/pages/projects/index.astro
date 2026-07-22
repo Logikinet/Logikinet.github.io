@@ -1,0 +1,18 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
+import { projects } from "@/data/projects";
+---
+
+<BaseLayout title="项目作品集" description="AquaLeap 项目作品集：Agent Harness、鸿蒙、AI 工作台、ROS 机器人与智能硬件相关实践。">
+  <div class="container-page section-space">
+    <p class="label-meta">Projects</p>
+    <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">项目作品集</h1>
+    <p class="mt-4 max-w-2xl text-base text-ink-600 dark:text-ink-300">
+      用结构化数据维护项目信息。链接未确定时标注「整理中」，不虚构演示或用户数据。
+    </p>
+    <div class="mt-10 grid gap-5 sm:grid-cols-2">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </div>
+</BaseLayout>

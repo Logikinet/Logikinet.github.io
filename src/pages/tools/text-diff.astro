@@ -1,0 +1,144 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="文本差异对比" description="左右文本行级差异对比，标出新增、删除与修改，本地运行。">
+  <div class="container-page section-space">
+    <p class="label-meta">Tool</p>
+    <h1 class="mt-3 text-3xl font-semibold tracking-tight">文本差异对比</h1>
+    <p class="mt-3 text-sm text-ink-600 dark:text-ink-300">
+      基础行级差异：显示新增、删除和修改。处理在浏览器本地完成。
+    </p>
+
+    <div class="mt-6 grid gap-4 lg:grid-cols-2">
+      <div>
+        <label for="left" class="mb-1.5 block text-sm font-medium">原文（左）</label>
+        <textarea id="left" class="tool-textarea min-h-56" spellcheck="false" placeholder="粘贴原文"></textarea>
+      </div>
+      <div>
+        <label for="right" class="mb-1.5 block text-sm font-medium">对比文本（右）</label>
+        <textarea id="right" class="tool-textarea min-h-56" spellcheck="false" placeholder="粘贴对比文本"></textarea>
+      </div>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button type="button" id="diff-btn" class="btn-primary">对比</button>
+      <button type="button" id="clear-btn" class="btn-secondary">一键清空</button>
+    </div>
+
+    <section class="mt-8" aria-live="polite">
+      <h2 class="text-lg font-semibold">对比结果</h2>
+      <p class="mt-1 text-xs text-ink-500">
+        <span class="text-emerald-600 dark:text-emerald-400">绿色新增</span>
+        ·
+        <span class="text-red-600 dark:text-red-400">红色删除</span>
+        ·
+        <span class="text-amber-600 dark:text-amber-400">黄色修改</span>
+      </p>
+      <div id="result" class="mt-4 space-y-1 rounded-xl border border-ink-200 bg-white p-4 font-mono text-xs leading-relaxed dark:border-ink-700 dark:bg-ink-900">
+        <p class="text-ink-500">点击「对比」查看行级差异。</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    type DiffKind = "same" | "add" | "del" | "mod";
+
+    interface DiffLine {
+      kind: DiffKind;
+      left?: string;
+      right?: string;
+      index: number;
+    }
+
+    /** Simple line-level LCS-inspired diff for readability (not Myers). */
+    function diffLines(a: string[], b: string[]): DiffLine[] {
+      const n = a.length;
+      const m = b.length;
+      const dp: number[][] = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+      for (let i = n - 1; i >= 0; i--) {
+        for (let j = m - 1; j >= 0; j--) {
+          dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+      const out: DiffLine[] = [];
+      let i = 0;
+      let j = 0;
+      let idx = 1;
+      while (i < n && j < m) {
+        if (a[i] === b[j]) {
+          out.push({ kind: "same", left: a[i], right: b[j], index: idx++ });
+          i++;
+          j++;
+        } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+          out.push({ kind: "del", left: a[i], index: idx++ });
+          i++;
+        } else {
+          out.push({ kind: "add", right: b[j], index: idx++ });
+          j++;
+        }
+      }
+      while (i < n) {
+        out.push({ kind: "del", left: a[i++], index: idx++ });
+      }
+      while (j < m) {
+        out.push({ kind: "add", right: b[j++], index: idx++ });
+      }
+
+      // Merge adjacent del+add into mod for clarity
+      const merged: DiffLine[] = [];
+      for (let k = 0; k < out.length; k++) {
+        const cur = out[k];
+        const next = out[k + 1];
+        if (cur.kind === "del" && next?.kind === "add") {
+          merged.push({ kind: "mod", left: cur.left, right: next.right, index: cur.index });
+          k++;
+        } else {
+          merged.push(cur);
+        }
+      }
+      return merged;
+    }
+
+    const result = document.getElementById("result");
+
+    document.getElementById("diff-btn")?.addEventListener("click", () => {
+      const left = (document.getElementById("left") as HTMLTextAreaElement).value.split(/\r?\n/);
+      const right = (document.getElementById("right") as HTMLTextAreaElement).value.split(/\r?\n/);
+      const lines = diffLines(left, right);
+      if (!result) return;
+      if (lines.length === 0) {
+        result.innerHTML = `<p class="text-ink-500">两边都为空。</p>`;
+        return;
+      }
+      result.innerHTML = lines
+        .map((line) => {
+          if (line.kind === "same") {
+            return `<div class="rounded px-2 py-1 text-ink-600 dark:text-ink-300"><span class="mr-2 opacity-40">${line.index}</span>${escapeHtml(line.left ?? "")}</div>`;
+          }
+          if (line.kind === "add") {
+            return `<div class="rounded bg-emerald-500/10 px-2 py-1 text-emerald-800 dark:text-emerald-300"><span class="mr-2">+</span>${escapeHtml(line.right ?? "")}</div>`;
+          }
+          if (line.kind === "del") {
+            return `<div class="rounded bg-red-500/10 px-2 py-1 text-red-800 dark:text-red-300"><span class="mr-2">−</span>${escapeHtml(line.left ?? "")}</div>`;
+          }
+          return `<div class="rounded bg-amber-500/10 px-2 py-1 text-amber-900 dark:text-amber-200"><div><span class="mr-2">~</span><span class="opacity-70">旧</span> ${escapeHtml(line.left ?? "")}</div><div class="mt-0.5"><span class="mr-2">~</span><span class="opacity-70">新</span> ${escapeHtml(line.right ?? "")}</div></div>`;
+        })
+        .join("");
+    });
+
+    document.getElementById("clear-btn")?.addEventListener("click", () => {
+      (document.getElementById("left") as HTMLTextAreaElement).value = "";
+      (document.getElementById("right") as HTMLTextAreaElement).value = "";
+      if (result) result.innerHTML = `<p class="text-ink-500">已清空。点击「对比」查看行级差异。</p>`;
+    });
+
+    function escapeHtml(s: string): string {
+      return s
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+  </script>
+</BaseLayout>

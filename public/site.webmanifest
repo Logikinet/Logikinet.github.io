@@ -1,0 +1,18 @@
+{
+  "name": "AquaLeap",
+  "short_name": "AquaLeap",
+  "description": "王子健的个人技术空间：AI Agent、Harness、鸿蒙与仓颉、工程实践。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a1018",
+  "theme_color": "#0a1018",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

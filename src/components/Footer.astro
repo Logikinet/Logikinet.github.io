@@ -1,0 +1,65 @@
+---
+import { SITE, NAV } from "@/config";
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-ink-200/80 bg-white/50 dark:border-ink-800 dark:bg-ink-950/50">
+  <div class="container-page section-space !py-10">
+    <div class="grid gap-8 md:grid-cols-3">
+      <div>
+        <p class="text-lg font-semibold text-ink-900 dark:text-ink-50">{SITE.title}</p>
+        <p class="mt-2 max-w-sm text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+          构建可控、可靠且高效的智能系统。记录从想法到真实产品的工程实践。
+        </p>
+      </div>
+      <div>
+        <p class="label-meta mb-3">导航</p>
+        <ul class="space-y-2 text-sm">
+          {
+            NAV.map((item) => (
+              <li>
+                <a class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300" href={item.href}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300" href="/resume/">
+              简历
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <p class="label-meta mb-3">连接</p>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a
+              class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300"
+              href={SITE.github}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub · {SITE.githubUser}
+            </a>
+          </li>
+          <li>
+            <a class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300" href="/rss.xml">
+              RSS 订阅
+            </a>
+          </li>
+          <li>
+            <a class="text-ink-600 no-underline hover:text-aqua-600 dark:text-ink-300 dark:hover:text-aqua-300" href="/sitemap-index.xml">
+              Sitemap
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-10 flex flex-col gap-2 border-t border-ink-200 pt-6 text-xs text-ink-500 dark:border-ink-800 dark:text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} {SITE.name} · {SITE.title}</p>
+      <p>静态生成 · 本地优先 · 部署于 GitHub Pages</p>
+    </div>
+  </div>
+</footer>

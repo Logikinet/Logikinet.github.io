@@ -1,0 +1,52 @@
+---
+import type { Project } from "@/data/projects";
+
+interface Props {
+  project: Project;
+  compact?: boolean;
+}
+
+const { project, compact = false } = Astro.props;
+---
+
+<article class="card flex h-full flex-col">
+  <div class="mb-3 flex flex-wrap items-center gap-2">
+    {
+      project.featured && (
+        <span class="chip border-aqua-500/30 bg-aqua-500/10 text-aqua-700 dark:text-aqua-300">精选</span>
+      )
+    }
+    <span class="chip">{project.status}</span>
+    {project.year && <span class="text-xs text-ink-500 dark:text-ink-400">{project.year}</span>}
+  </div>
+  <h3 class:list={["font-semibold tracking-tight text-ink-900 dark:text-ink-50", compact ? "text-base" : "text-lg"]}>
+    <a href={`/projects/${project.id}/`} class="no-underline hover:text-aqua-600 dark:hover:text-aqua-300">
+      {project.title}
+    </a>
+  </h3>
+  <p class="mt-2 flex-1 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+    {project.summary}
+  </p>
+  <div class="mt-4 flex flex-wrap gap-1.5">
+    {project.stack.slice(0, 5).map((tech) => <span class="chip">{tech}</span>)}
+  </div>
+  <div class="mt-5 flex flex-wrap gap-2">
+    <a href={`/projects/${project.id}/`} class="btn-secondary !px-3 !py-1.5 text-xs">详情</a>
+    {
+      project.github ? (
+        <a href={project.github} class="btn-ghost !px-3 !py-1.5 text-xs" target="_blank" rel="noopener noreferrer">
+          GitHub
+        </a>
+      ) : (
+        <span class="px-2 py-1.5 text-xs text-ink-400">GitHub 整理中</span>
+      )
+    }
+    {
+      project.demo ? (
+        <a href={project.demo} class="btn-ghost !px-3 !py-1.5 text-xs" target="_blank" rel="noopener noreferrer">
+          Demo
+        </a>
+      ) : null
+    }
+  </div>
+</article>

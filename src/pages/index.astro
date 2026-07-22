@@ -1,0 +1,148 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ProjectCard from "@/components/ProjectCard.astro";
+import PostCard from "@/components/PostCard.astro";
+import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
+import { getFeaturedProjects } from "@/data/projects";
+import { tools } from "@/data/tools";
+import { getPublishedPosts } from "@/utils/blog";
+
+const featuredProjects = getFeaturedProjects(4);
+const posts = (await getPublishedPosts()).slice(0, 3);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.title,
+  url: SITE.url,
+  description: SITE.description,
+  author: {
+    "@type": "Person",
+    name: SITE.name,
+    url: SITE.url,
+    sameAs: [SITE.github],
+  },
+};
+---
+
+<BaseLayout jsonLd={jsonLd}>
+  <section class="hero-glow border-b border-ink-200/60 dark:border-ink-800/80">
+    <div class="container-page section-space">
+      <p class="label-meta">{SITE.title}</p>
+      <h1 class="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-ink-900 dark:text-ink-50 sm:text-5xl lg:text-[3.25rem] lg:leading-[1.15]">
+        构建可控、可靠且高效的智能系统
+      </h1>
+      <p class="mt-6 max-w-2xl text-base leading-relaxed text-ink-600 dark:text-ink-300 sm:text-lg">
+        {SITE.name}的个人技术空间，记录 AI Agent、Harness 工程、鸿蒙与仓颉开发，以及从想法到真实产品的完整实践。
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/projects/" class="btn-primary">查看项目</a>
+        <a href="/blog/" class="btn-secondary">阅读博客</a>
+        <a href={SITE.github} class="btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-space" aria-labelledby="featured-projects">
+    <div class="container-page">
+      <div class="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p class="label-meta">Projects</p>
+          <h2 id="featured-projects" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">精选项目</h2>
+        </div>
+        <a href="/projects/" class="text-sm text-aqua-600 no-underline hover:underline dark:text-aqua-300">全部项目</a>
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2">
+        {featuredProjects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-space border-y border-ink-200/70 bg-white/40 dark:border-ink-800 dark:bg-ink-900/20" aria-labelledby="focus-areas">
+    <div class="container-page">
+      <p class="label-meta">Focus</p>
+      <h2 id="focus-areas" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">技术方向</h2>
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        {
+          FOCUS_AREAS.map((area) => (
+            <article class="card">
+              <h3 class="text-lg font-semibold text-ink-900 dark:text-ink-50">{area.title}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-ink-600 dark:text-ink-300">{area.description}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section-space" aria-labelledby="latest-posts">
+    <div class="container-page">
+      <div class="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p class="label-meta">Blog</p>
+          <h2 id="latest-posts" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">最新文章</h2>
+        </div>
+        <a href="/blog/" class="text-sm text-aqua-600 no-underline hover:underline dark:text-aqua-300">全部文章</a>
+      </div>
+      <div class="grid gap-5">
+        {posts.map((post) => <PostCard post={post} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section-space border-y border-ink-200/70 bg-white/40 dark:border-ink-800 dark:bg-ink-900/20" aria-labelledby="tools">
+    <div class="container-page">
+      <div class="mb-8 flex items-end justify-between gap-4">
+        <div>
+          <p class="label-meta">Tools</p>
+          <h2 id="tools" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">在线工具</h2>
+          <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">全部在浏览器本地运行，不上传用户数据。</p>
+        </div>
+        <a href="/tools/" class="text-sm text-aqua-600 no-underline hover:underline dark:text-aqua-300">工具箱</a>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-3">
+        {
+          tools.map((tool) => (
+            <a href={tool.href} class="card no-underline">
+              <h3 class="font-semibold text-ink-900 dark:text-ink-50">{tool.title}</h3>
+              <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">{tool.summary}</p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section-space" aria-labelledby="achievements">
+    <div class="container-page grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="label-meta">Highlights</p>
+        <h2 id="achievements" class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">获奖与成果摘要</h2>
+        <ul class="mt-6 space-y-3">
+          {
+            ACHIEVEMENTS.map((item) => (
+              <li class="flex gap-3 text-sm leading-relaxed text-ink-700 dark:text-ink-200">
+                <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-aqua-500" aria-hidden="true" />
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div class="card">
+        <p class="label-meta">Contact</p>
+        <h2 class="mt-2 text-xl font-semibold">GitHub 与联系方式</h2>
+        <p class="mt-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+          开源与实验代码集中在 GitHub。如需交流 Agent 工程、鸿蒙/仓颉或项目合作，欢迎通过 GitHub 联系。
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href={SITE.github} class="btn-primary" target="_blank" rel="noopener noreferrer">
+            @{SITE.githubUser}
+          </a>
+          <a href="/about/" class="btn-secondary">关于我</a>
+          <a href="/resume/" class="btn-ghost">在线简历</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,154 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Sarasa Mono SC", ui-monospace, monospace;
+
+  --color-ink-50: #f4f7fb;
+  --color-ink-100: #e6edf5;
+  --color-ink-200: #c9d7e8;
+  --color-ink-300: #9bb0c9;
+  --color-ink-400: #6d87a6;
+  --color-ink-500: #4d6684;
+  --color-ink-600: #3a4f69;
+  --color-ink-700: #2c3d53;
+  --color-ink-800: #1c2838;
+  --color-ink-900: #121a26;
+  --color-ink-950: #0a1018;
+
+  --color-aqua-300: #7ecfc4;
+  --color-aqua-400: #4fb8ab;
+  --color-aqua-500: #2f9b90;
+  --color-aqua-600: #247c73;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-800 antialiased dark:bg-ink-950 dark:text-ink-100;
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-aqua-400/30 text-ink-900 dark:text-ink-50;
+  }
+
+  a {
+    @apply underline-offset-4;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-aqua-500;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-5xl px-5 sm:px-6 lg:px-8;
+  }
+
+  .section-space {
+    @apply py-14 sm:py-16 lg:py-20;
+  }
+
+  .prose-aqualeap {
+    @apply prose prose-slate max-w-none dark:prose-invert
+      prose-headings:scroll-mt-24 prose-headings:font-semibold prose-headings:tracking-tight
+      prose-a:text-aqua-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-aqua-300
+      prose-code:rounded prose-code:bg-ink-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-ink-800
+      prose-pre:bg-ink-900 prose-pre:text-ink-50
+      prose-blockquote:border-aqua-500/50
+      prose-hr:border-ink-200 dark:prose-hr:border-ink-700;
+  }
+
+  .card {
+    @apply rounded-2xl border border-ink-200/80 bg-white/80 p-5 shadow-sm transition
+      hover:border-aqua-500/40 hover:shadow-md
+      dark:border-ink-700/80 dark:bg-ink-900/60 dark:hover:border-aqua-400/30;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
+      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
+      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
+      bg-ink-900 text-white hover:bg-ink-800 dark:bg-aqua-500 dark:text-ink-950 dark:hover:bg-aqua-400;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
+      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
+      border border-ink-300 bg-transparent text-ink-800 hover:border-aqua-500/60 hover:bg-ink-100/60
+      dark:border-ink-600 dark:text-ink-100 dark:hover:border-aqua-400/50 dark:hover:bg-ink-800/80;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
+      transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500
+      text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-300 dark:hover:bg-ink-800 dark:hover:text-white;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-ink-200 bg-ink-50 px-2.5 py-0.5 text-xs text-ink-600
+      dark:border-ink-700 dark:bg-ink-900 dark:text-ink-300;
+  }
+
+  .label-meta {
+    @apply text-xs font-medium uppercase tracking-[0.14em] text-aqua-600 dark:text-aqua-400;
+  }
+
+  .hero-glow {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(47 155 144 / 0.16), transparent 55%),
+      radial-gradient(ellipse 40% 30% at 90% 10%, rgb(109 135 166 / 0.12), transparent 50%);
+  }
+
+  .dark .hero-glow {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(47 155 144 / 0.12), transparent 55%),
+      radial-gradient(ellipse 40% 30% at 85% 5%, rgb(30 60 90 / 0.35), transparent 50%);
+  }
+
+  .tool-input {
+    @apply w-full rounded-xl border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 shadow-sm
+      placeholder:text-ink-400 focus:border-aqua-500 focus:outline-none focus:ring-2 focus:ring-aqua-500/20
+      dark:border-ink-700 dark:bg-ink-900 dark:text-ink-100 dark:placeholder:text-ink-500;
+  }
+
+  .tool-textarea {
+    @apply w-full min-h-28 resize-y rounded-xl border border-ink-200 bg-white px-3 py-2.5 font-mono text-[13px]
+      leading-relaxed text-ink-800 shadow-sm
+      placeholder:text-ink-400 focus:border-aqua-500 focus:outline-none focus:ring-2 focus:ring-aqua-500/20
+      dark:border-ink-700 dark:bg-ink-900 dark:text-ink-100 dark:placeholder:text-ink-500;
+  }
+}
