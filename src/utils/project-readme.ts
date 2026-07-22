@@ -49,17 +49,19 @@ function readFileSafe(abs: string): string | null {
 export function resolveProjectReadme(project: Project, cwd = process.cwd()): ResolvedReadme {
   const meta = getGeneratedMeta(project.id);
 
+  // 只要 generated md 存在且扫描通过就用（公开仓 / 已确认可公开的私有仓）
+  const genPath = path.join(cwd, "src/generated/projects", `${project.id}.md`);
+  const generatedMd = readFileSafe(genPath);
   const canUseGenerated =
-    meta?.readmeIncluded &&
-    meta.securityScanPassed &&
-    (project.repositoryStatus === "public" || project.readmePublicSafe === true);
+    Boolean(generatedMd?.trim()) &&
+    meta?.readmeIncluded !== false &&
+    meta?.securityScanPassed !== false &&
+    (project.repositoryStatus === "public" ||
+      project.readmePublicSafe === true ||
+      meta?.readmePublicSafe === true);
 
-  if (canUseGenerated) {
-    const genPath = path.join(cwd, "src/generated/projects", `${project.id}.md`);
-    const md = readFileSafe(genPath);
-    if (md?.trim()) {
-      return { source: "generated", markdown: md, meta };
-    }
+  if (canUseGenerated && generatedMd?.trim()) {
+    return { source: "generated", markdown: generatedMd, meta };
   }
 
   if (project.localReadmePath) {

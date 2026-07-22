@@ -1,69 +1,124 @@
 {
-  "generatedAt": "2026-07-22T11:11:06.099Z",
+  "generatedAt": "2026-07-22T12:46:09.056Z",
   "githubUser": "Logikinet",
   "sourceRepository": null,
   "sourceSha": null,
   "syncReason": "manual",
   "projectIds": [
     "harmony-ticket-agent",
+    "zhonghe",
+    "offer-pilot",
+    "cangjie-ict",
+    "personal-ai-workbench",
     "workbench",
     "aether",
     "zhishen-dun",
     "zhidun",
     "smart-silver",
-    "digital-bomb",
-    "zhonghe",
-    "offer-pilot",
-    "cangjie-ict",
-    "personal-ai-workbench"
+    "digital-bomb"
   ],
   "report": {
-    "synced": [],
-    "cached": [
-      "harmony-ticket-agent",
-      "workbench",
-      "aether",
-      "zhishen-dun",
-      "zhidun",
-      "smart-silver",
-      "digital-bomb"
-    ],
-    "readmeBlocked": [],
-    "privateSkippedNoToken": [
-      "zhonghe",
-      "offer-pilot",
-      "cangjie-ict",
-      "personal-ai-workbench"
-    ],
-    "errors": [
+    "synced": [
       {
         "id": "harmony-ticket-agent",
-        "type": "GitHub HTTP 403"
+        "readme": "remote-redacted",
+        "repository": "Logikinet/harmony-ticket-agent"
+      },
+      {
+        "id": "zhonghe",
+        "readme": "remote",
+        "repository": "Logikinet/zhonghe"
+      },
+      {
+        "id": "offer-pilot",
+        "readme": "remote",
+        "repository": "Logikinet/OfferPilot"
+      },
+      {
+        "id": "cangjie-ict",
+        "readme": "remote",
+        "repository": "Logikinet/cangjie-ict"
+      },
+      {
+        "id": "personal-ai-workbench",
+        "readme": "remote-redacted",
+        "repository": "Logikinet/personal-ai-workbench"
       },
       {
         "id": "workbench",
-        "type": "GitHub HTTP 403"
+        "readme": "remote-redacted",
+        "repository": "Logikinet/workbench"
       },
       {
         "id": "aether",
-        "type": "GitHub HTTP 403"
+        "readme": "remote-redacted",
+        "repository": "Logikinet/Aether"
       },
       {
         "id": "zhishen-dun",
-        "type": "GitHub HTTP 403"
+        "readme": "remote",
+        "repository": "Logikinet/zhishen-dun"
       },
       {
         "id": "zhidun",
-        "type": "GitHub HTTP 403"
+        "readme": "remote-redacted",
+        "repository": "Logikinet/zhidun"
       },
       {
         "id": "smart-silver",
-        "type": "GitHub HTTP 403"
+        "readme": "remote",
+        "repository": "Logikinet/smart-silver"
       },
       {
         "id": "digital-bomb",
-        "type": "GitHub HTTP 403"
+        "readme": "remote",
+        "repository": "Logikinet/digital-bomb"
       }
-    ]
+    ],
+    "cached": [],
+    "readmeBlocked": [
+      {
+        "id": "harmony-ticket-agent",
+        "reasons": [
+          "private_ip_url"
+        ],
+        "file": "README.md",
+        "severity": "soft"
+      },
+      {
+        "id": "personal-ai-workbench",
+        "reasons": [
+          "private_ip_url"
+        ],
+        "file": "README.md",
+        "severity": "soft"
+      },
+      {
+        "id": "workbench",
+        "reasons": [
+          "private_ip_url"
+        ],
+        "file": "README.md",
+        "severity": "soft"
+      },
+      {
+        "id": "aether",
+        "reasons": [
+          "private_ip_url"
+        ],
+        "file": "README.md",
+        "severity": "soft"
+      },
+      {
+        "id": "zhidun",
+        "reasons": [
+          "private_ip_url"
+        ],
+        "file": "README.md",
+        "severity": "soft"
+      }
+    ],
+    "privateSkippedNoToken": [],
+    "errors": []
   }
 }

@@ -42,29 +42,34 @@ const headers = {
 };
 if (TOKEN) headers.Authorization = `Bearer ${TOKEN}`;
 
-const SECRET_PATTERNS = [
+/** 硬风险：阻断发布新 README，保留上一次安全版本 */
+const HARD_SECRET_PATTERNS = [
   { name: "github_token", re: /\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b/g },
   { name: "github_pat", re: /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g },
   { name: "openai_key", re: /\bsk-[A-Za-z0-9]{20,}\b/g },
   { name: "aws_key", re: /\bAKIA[0-9A-Z]{16}\b/g },
   {
     name: "kv_secret",
-    re: /(?<=(?:api[_-]?key|token|password|secret|authorization|cookie)\s*[:=]\s*)["'][^"'\n]{6,}["']/gi,
+    re: /(?<=(?:api[_-]?key|token|password|secret|authorization|cookie)\s*[:=]\s*)["'][^"'\n]{8,}["']/gi,
   },
+  { name: "id_card_cn", re: /(?<!\d)\d{17}[\dXx](?!\d)/g },
+  { name: "phone_cn", re: /(?<!\d)1[3-9]\d{9}(?!\d)/g },
+];
+
+/** 软风险：脱敏后仍允许发布（避免误杀整篇公开 README） */
+const SOFT_SECRET_PATTERNS = [
   { name: "win_path", re: /C:\\\\Users\\\\[^\s"'`]+/gi },
   { name: "unix_home", re: /\/Users\/[A-Za-z0-9._-]+(?:\/[^\s"'`]*)?/g },
   {
     name: "private_ip_url",
     re: /https?:\/\/(?:localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(?::\d+)?[^\s)'"`]*/gi,
   },
-  { name: "phone_cn", re: /(?<!\d)1[3-9]\d{9}(?!\d)/g },
-  { name: "id_card_cn", re: /(?<!\d)\d{17}[\dXx](?!\d)/g },
   { name: "student_id_hint", re: /学号\s*[:：]?\s*\d{6,}/g },
 ];
 
-function scanSecrets(text) {
+function scanPatterns(text, patterns) {
   const hits = [];
-  for (const { name, re } of SECRET_PATTERNS) {
+  for (const { name, re } of patterns) {
     re.lastIndex = 0;
     if (re.test(text)) hits.push(name);
   }
@@ -73,7 +78,9 @@ function scanSecrets(text) {
 
 function redactSecrets(md) {
   let out = md;
-  for (const { re } of SECRET_PATTERNS) out = out.replace(re, "[REDACTED]");
+  for (const { re } of [...HARD_SECRET_PATTERNS, ...SOFT_SECRET_PATTERNS]) {
+    out = out.replace(re, "[REDACTED]");
+  }
   return out;
 }
 
@@ -222,7 +229,8 @@ async function syncOne(cfg, cache, report, now, localPaths) {
     let readmeSource = "none";
     let riskTypes = [];
 
-    const allowReadme = cfg.syncReadme && (isPrivate ? cfg.readmePublicSafe : true);
+    // 公开仓始终同步 README；私有仓仅当 readmePublicSafe 时把正文写入公开构建
+    const allowReadme = cfg.syncReadme && (!isPrivate || cfg.readmePublicSafe);
 
     if (allowReadme) {
       const readmeRef =
@@ -232,11 +240,12 @@ async function syncOne(cfg, cache, report, now, localPaths) {
           : undefined;
       const raw = await fetchReadmeRaw(owner, name, readmeRef);
       if (raw) {
-        const hits = scanSecrets(raw);
-        if (hits.length) {
-          riskTypes = hits;
-          console.warn(`  ⚠ secret scan ${owner}/${name}: ${hits.join(",")}`);
-          report.readmeBlocked.push({ id, reasons: hits, file: "README.md" });
+        const hard = scanPatterns(raw, HARD_SECRET_PATTERNS);
+        const soft = scanPatterns(raw, SOFT_SECRET_PATTERNS);
+        if (hard.length) {
+          riskTypes = hard;
+          console.warn(`  ⚠ hard secret scan ${owner}/${name}: ${hard.join(",")}`);
+          report.readmeBlocked.push({ id, reasons: hard, file: "README.md", severity: "hard" });
           const prev = cache.get(id);
           if (prev?.md) {
             await writeMd(id, prev.md);
@@ -246,23 +255,26 @@ async function syncOne(cfg, cache, report, now, localPaths) {
             console.log(`  · kept previous safe README ${id}`);
           }
         } else {
+          if (soft.length) {
+            console.warn(`  · soft redact ${owner}/${name}: ${soft.join(",")}`);
+            report.readmeBlocked.push({ id, reasons: soft, file: "README.md", severity: "soft" });
+          }
           await writeMd(id, redactSecrets(raw));
           readmeIncluded = true;
           securityScanPassed = true;
-          readmeSource = "remote";
-          console.log(`  ✓ README ${owner}/${name}`);
+          readmeSource = soft.length ? "remote-redacted" : "remote";
+          console.log(`  ✓ README ${owner}/${name}${soft.length ? " (redacted)" : ""}`);
         }
       }
     } else if (isPrivate && !cfg.readmePublicSafe) {
-      console.log(`  · skip private README body (not public-safe) ${id}`);
-      // 仍可用本地安全稿
+      console.log(`  · private README not published (readmePublicSafe=false) ${id}`);
       const localRel = localPaths.get(id);
       if (localRel) {
         try {
           const local = await fs.readFile(path.join(root, localRel), "utf8");
           const body = local.replace(/^---[\s\S]*?---\s*/, "");
-          const hits = scanSecrets(body);
-          if (!hits.length) {
+          const hard = scanPatterns(body, HARD_SECRET_PATTERNS);
+          if (!hard.length) {
             await writeMd(id, redactSecrets(body));
             readmeIncluded = true;
             securityScanPassed = true;
@@ -275,6 +287,8 @@ async function syncOne(cfg, cache, report, now, localPaths) {
       }
     }
 
+    // 公开仓始终写入可点击 URL；私有仓仅 expose=true 时写入
+    const publicUrl = repo.html_url || `https://github.com/${owner}/${name}`;
     const meta = {
       id,
       name: repo.name,
@@ -294,12 +308,14 @@ async function syncOne(cfg, cache, report, now, localPaths) {
       sourceSha: SOURCE_SHA || null,
       syncReason: SYNC_REASON,
       readmeIncluded,
-      readmePublicSafe: allowReadme && securityScanPassed,
+      readmePublicSafe: readmeIncluded && securityScanPassed,
       securityScanPassed,
       readmeSource,
       riskTypes: riskTypes.length ? riskTypes : undefined,
     };
-    if (exposeRepositoryUrl && repo.html_url) meta.repositoryUrl = repo.html_url;
+    if (!repo.private || exposeRepositoryUrl) {
+      meta.repositoryUrl = publicUrl;
+    }
 
     await writeJson(id, meta);
     report.synced.push({ id, readme: readmeSource, repository: `${owner}/${name}` });

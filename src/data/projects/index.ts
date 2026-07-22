@@ -107,10 +107,20 @@ export function getSyncFile(): GeneratedIndex | null {
   return getGeneratedIndex();
 }
 
+/**
+ * 页面可点击仓库链接。
+ * - public：始终可跳转（优先 catalog/generated URL，否则拼 owner/name）
+ * - private + exposeRepositoryUrl：可跳转真实地址
+ * - private + !expose：不返回 URL（不进 HTML）
+ */
 export function getExposedRepositoryUrl(project: Project): string | undefined {
   if (project.repositoryStatus === "unpublished") return undefined;
-  if (!project.exposeRepositoryUrl) return undefined;
+
+  const isPublic = project.repositoryStatus === "public";
+  if (!isPublic && !project.exposeRepositoryUrl) return undefined;
+
   if (project.repositoryUrl) return project.repositoryUrl;
+
   if (project.repositoryOwner && project.repositoryName) {
     const provider: RepositoryProvider = project.repositoryProvider ?? "github";
     if (provider === "github") {
@@ -137,8 +147,17 @@ export function getProviderLabel(project: Project): string {
 
 export function toPageSafeProject(project: Project): Project {
   const safe = { ...project };
-  if (!safe.exposeRepositoryUrl || safe.repositoryStatus === "unpublished") {
+  const isPublic = safe.repositoryStatus === "public";
+  // 私有且未授权暴露：剥离 URL，避免进 HTML
+  if ((!isPublic && !safe.exposeRepositoryUrl) || safe.repositoryStatus === "unpublished") {
     delete safe.repositoryUrl;
+  } else if (!safe.repositoryUrl && safe.repositoryOwner && safe.repositoryName) {
+    // 公开仓保证一定有可跳转 URL
+    const provider = safe.repositoryProvider ?? "github";
+    safe.repositoryUrl =
+      provider === "gitee"
+        ? `https://gitee.com/${safe.repositoryOwner}/${safe.repositoryName}`
+        : `https://github.com/${safe.repositoryOwner}/${safe.repositoryName}`;
   }
   return safe;
 }

@@ -1,18 +1,18 @@
 {
-  "id": "digital-bomb",
-  "name": "digital-bomb",
-  "description": "",
+  "id": "cangjie-ict",
+  "name": "cangjie-ict",
+  "description": "Cangjie ICT team project core source release",
   "repositoryProvider": "github",
   "repositoryOwner": "Logikinet",
-  "repositoryName": "digital-bomb",
-  "repositoryStatus": "public",
-  "defaultBranch": "master",
-  "language": "TypeScript",
+  "repositoryName": "cangjie-ict",
+  "repositoryStatus": "private",
+  "defaultBranch": "main",
+  "language": "Cangjie",
   "topics": [],
   "stars": 0,
   "forks": 0,
   "homepage": null,
-  "pushedAt": "2026-03-08T01:36:14Z",
+  "pushedAt": "2026-07-22T11:11:41Z",
   "syncedAt": "2026-07-22T12:46:09.056Z",
   "sourceSha": null,
   "syncReason": "manual",
@@ -20,5 +20,5 @@
   "readmePublicSafe": true,
   "securityScanPassed": true,
   "readmeSource": "remote",
-  "repositoryUrl": "https://github.com/Logikinet/digital-bomb"
+  "repositoryUrl": "https://github.com/Logikinet/cangjie-ict"
 }

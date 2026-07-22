@@ -44,9 +44,9 @@ const pageDescription = safe.summary;
 
 const showRepoLink = Boolean(repoUrl);
 const showPrivateNoLink =
-  safe.repositoryStatus === "private" && !safe.exposeRepositoryUrl;
+  safe.repositoryStatus === "private" && !safe.exposeRepositoryUrl && !repoUrl;
 const showPrivateWithLink =
-  safe.repositoryStatus === "private" && safe.exposeRepositoryUrl && Boolean(repoUrl);
+  safe.repositoryStatus === "private" && Boolean(repoUrl);
 
 // 技术栈：过滤空与「整理中」占位
 const stackTags = [
@@ -147,23 +147,17 @@ if (safe.verificationStatus) {
 
       <div class="mt-7 flex flex-wrap gap-3">
         {
-          showRepoLink && showPrivateWithLink && (
+          showRepoLink && showPrivateWithLink ? (
             <a href={repoUrl} class="btn-primary" target="_blank" rel="noopener noreferrer">
-              私有 {providerLabel} 仓库
+              打开 {providerLabel} 仓库
             </a>
-          )
-        }
-        {
-          showRepoLink && !showPrivateWithLink && (
+          ) : showRepoLink ? (
             <a href={repoUrl} class="btn-primary" target="_blank" rel="noopener noreferrer">
               查看 {providerLabel}
             </a>
-          )
-        }
-        {
-          showPrivateNoLink && (
+          ) : showPrivateNoLink ? (
             <span class="btn-secondary opacity-90 pointer-events-none">私有仓库</span>
-          )
+          ) : null
         }
         {
           demoUrl ? (
@@ -176,7 +170,7 @@ if (safe.verificationStatus) {
       </div>
       {
         showPrivateWithLink && (
-          <p class="mt-3 text-xs text-ink-500">访问私有仓库需要相应权限。</p>
+          <p class="mt-3 text-xs text-ink-500">私有仓库：打开后需登录且具备访问权限。</p>
         )
       }
     </header>
@@ -185,9 +179,31 @@ if (safe.verificationStatus) {
       <div class="min-w-0">
         <div class="prose-aqualeap project-readme" set:html={readmeHtml} />
         {
-          resolved.source === "local" && (
+          resolved.source === "local" && showRepoLink && (
             <p class="mt-8 text-xs text-ink-500">
-              正文来自本地说明。若仓库 README 已确认可公开，设置 readmePublicSafe 并配置 PROJECTS_READ_TOKEN 后重新同步。
+              当前展示本地说明。完整 README 请
+              <a class="text-aqua-600 underline-offset-2 hover:underline dark:text-aqua-400" href={repoUrl} target="_blank" rel="noopener noreferrer">
+                在 {providerLabel} 查看
+              </a>
+              。
+            </p>
+          )
+        }
+        {
+          resolved.source === "local" && !showRepoLink && safe.repositoryStatus === "private" && (
+            <p class="mt-8 text-xs text-ink-500">
+              当前为本地说明；私有 README 未设为可公开同步（readmePublicSafe）。
+            </p>
+          )
+        }
+        {
+          resolved.source === "description" && showRepoLink && (
+            <p class="mt-8 text-xs text-ink-500">
+              尚未同步到 README 正文时，可
+              <a class="text-aqua-600 underline-offset-2 hover:underline dark:text-aqua-400" href={repoUrl} target="_blank" rel="noopener noreferrer">
+                在 {providerLabel} 打开仓库
+              </a>
+              。
             </p>
           )
         }

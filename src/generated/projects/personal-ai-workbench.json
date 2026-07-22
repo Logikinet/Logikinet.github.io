@@ -1,18 +1,18 @@
 {
-  "id": "aether",
-  "name": "Aether",
-  "description": "Aether —— 个人多智能体工作流平台",
+  "id": "personal-ai-workbench",
+  "name": "personal-ai-workbench",
+  "description": "Personal AI Workbench private release",
   "repositoryProvider": "github",
   "repositoryOwner": "Logikinet",
-  "repositoryName": "Aether",
-  "repositoryStatus": "public",
-  "defaultBranch": "master",
+  "repositoryName": "personal-ai-workbench",
+  "repositoryStatus": "private",
+  "defaultBranch": "main",
   "language": "TypeScript",
   "topics": [],
   "stars": 0,
   "forks": 0,
   "homepage": null,
-  "pushedAt": "2026-07-22T11:11:48Z",
+  "pushedAt": "2026-07-22T11:11:43Z",
   "syncedAt": "2026-07-22T12:46:09.056Z",
   "sourceSha": null,
   "syncReason": "manual",
@@ -20,5 +20,5 @@
   "readmePublicSafe": true,
   "securityScanPassed": true,
   "readmeSource": "remote-redacted",
-  "repositoryUrl": "https://github.com/Logikinet/Aether"
+  "repositoryUrl": "https://github.com/Logikinet/personal-ai-workbench"
 }
