@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>喜欢你</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background:
+                radial-gradient(circle, #2b0b18, #000);
+            font-family: "Microsoft YaHei";
+        }
+
+
+        .word {
+            position: absolute;
+            color: #fff;
+            font-size: 20px;
+            opacity: 0.8;
+            animation: float 8s linear forwards;
+            text-shadow:
+                0 0 10px #ff4d88,
+                0 0 20px #ff4d88;
+        }
+
+
+        @keyframes float {
+
+            0% {
+                transform:
+                    translateY(100vh) scale(0.5) rotate(0deg);
+
+                opacity: 0;
+            }
+
+
+            20% {
+                opacity: 1;
+            }
+
+
+            100% {
+                transform:
+                    translateY(-20vh) scale(1.5) rotate(360deg);
+
+                opacity: 0;
+            }
+        }
+
+
+        .center {
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+            color: white;
+            font-size: 40px;
+
+            text-align: center;
+
+            text-shadow:
+                0 0 20px pink;
+
+        }
+
+
+        .heart {
+
+            position: absolute;
+            font-size: 30px;
+
+            animation:
+                boom 1s ease forwards;
+
+        }
+
+
+        @keyframes boom {
+
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+   
+
+
+
+    <script>
+
+
+        let words = [
+
+            "喜欢你",
+            "想见你",
+            "陪着你",
+            "一直在",
+            "晚安",
+            "好想你",
+            "小幸运",
+            "遇见你真好",
+            "偷偷开心",
+            "心动了",
+            "我的宝藏",
+            "刚好是你",
+            "偏爱你",
+            "永远支持你"
+
+        ];
+
+
+
+        function createWord() {
+
+
+            let span = document.createElement("div");
+
+            span.className = "word";
+
+
+            span.innerHTML =
+                words[
+                Math.floor(Math.random() * words.length)
+                ];
+
+
+            span.style.left =
+                Math.random() * 100 + "vw";
+
+
+            span.style.fontSize =
+                15 +
+                Math.random() * 25
+                + "px";
+
+
+            span.style.animationDuration =
+                5 +
+                Math.random() * 5
+                + "s";
+
+
+
+            document.body.appendChild(span);
+
+
+
+            setTimeout(() => {
+
+                span.remove();
+
+            }, 9000);
+
+
+        }
+
+
+
+
+        setInterval(createWord, 300);
+
+
+
+
+        // 点击爱心
+
+        document.onclick = function (e) {
+
+
+            let heart = document.createElement("div");
+
+            heart.className = "heart";
+
+            heart.innerHTML = "❤️";
+
+
+            heart.style.left = e.clientX + "px";
+
+            heart.style.top = e.clientY + "px";
+
+
+            document.body.appendChild(heart);
+
+
+
+            setTimeout(() => {
+
+                heart.remove();
+
+            }, 1000);
+
+
+
+        }
+
+
+
+    </script>
+
+
+</body>
+
+</html>
