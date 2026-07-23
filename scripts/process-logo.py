@@ -102,6 +102,8 @@ def main() -> None:
         PUBLIC / "icon-192.png": 192,
         PUBLIC / "icon-512.png": 512,
         ASSETS / "logo-64.png": 64,
+        ASSETS / "logo-128.png": 128,
+        ASSETS / "logo-256.png": 256,
     }
     for path, size in outputs.items():
         make_square(cropped, size).save(path, "PNG", optimize=True)

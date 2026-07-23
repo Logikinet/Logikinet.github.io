@@ -14,12 +14,13 @@ function isActive(href: string): boolean {
 >
   <div class="container-page flex h-[3.75rem] items-center justify-between gap-4 sm:h-16">
     <a href="/" class="group flex items-center gap-2.5 no-underline" aria-label={`${SITE.title} 首页`}>
+      {/* App 图标本身已带圆角浅底；勿再套 rounded 裁切，并用 2x 资源 */}
       <img
-        src="/assets/logo-64.png"
+        src="/assets/logo-128.png?v=20260723b"
         alt=""
         width="32"
         height="32"
-        class="h-8 w-8 rounded-[0.65rem] shadow-sm ring-1 ring-ink-200/60 dark:ring-ink-700/60"
+        class="h-8 w-8 shrink-0 object-contain drop-shadow-sm"
         decoding="async"
       />
       <span
