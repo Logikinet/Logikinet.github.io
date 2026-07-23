@@ -197,6 +197,28 @@ export const projectCatalog: Project[] = [
     ownership: "original",
     verificationStatus: "pending",
   }),
+  withRepo({
+    id: "ai-output-formatter",
+    title: "AI Output Formatter",
+    summary:
+      "浏览器本地运行的 AI 输出整理工具，支持 Markdown 清洗、场景化排版、论文与报告格式转换、Markdown 实时预览及多格式导出。",
+    description:
+      "面向 ChatGPT、Claude、Gemini、Cursor 等 AI 输出内容的浏览器端整理工作台，核心规则处理默认在本地完成。",
+    stack: [
+      "React",
+      "TypeScript",
+      "Vite",
+      "Markdown",
+      "PWA",
+    ],
+    status: "进行中",
+    featured: true,
+    visibility: "public",
+    demo: "/tools/ai-output-formatter/",
+    year: "2026",
+    ownership: "original",
+    verificationStatus: "verified",
+  }),
   // 本地汇总（无远程映射）
   {
     id: "harmonyos-dev",

@@ -1,21 +1,22 @@
 {
-  "generatedAt": "2026-07-22T12:46:09.056Z",
+  "generatedAt": "2026-07-23T11:41:24.340Z",
   "githubUser": "Logikinet",
   "sourceRepository": null,
   "sourceSha": null,
   "syncReason": "manual",
   "projectIds": [
     "harmony-ticket-agent",
-    "zhonghe",
-    "offer-pilot",
-    "cangjie-ict",
-    "personal-ai-workbench",
     "workbench",
     "aether",
     "zhishen-dun",
     "zhidun",
     "smart-silver",
-    "digital-bomb"
+    "digital-bomb",
+    "ai-output-formatter",
+    "zhonghe",
+    "offer-pilot",
+    "cangjie-ict",
+    "personal-ai-workbench"
   ],
   "report": {
     "synced": [
@@ -23,26 +24,6 @@
         "id": "harmony-ticket-agent",
         "readme": "remote-redacted",
         "repository": "Logikinet/harmony-ticket-agent"
-      },
-      {
-        "id": "zhonghe",
-        "readme": "remote",
-        "repository": "Logikinet/zhonghe"
-      },
-      {
-        "id": "offer-pilot",
-        "readme": "remote",
-        "repository": "Logikinet/OfferPilot"
-      },
-      {
-        "id": "cangjie-ict",
-        "readme": "remote",
-        "repository": "Logikinet/cangjie-ict"
-      },
-      {
-        "id": "personal-ai-workbench",
-        "readme": "remote-redacted",
-        "repository": "Logikinet/personal-ai-workbench"
       },
       {
         "id": "workbench",
@@ -73,20 +54,22 @@
         "id": "digital-bomb",
         "readme": "remote",
         "repository": "Logikinet/digital-bomb"
+      },
+      {
+        "id": "ai-output-formatter",
+        "readme": "remote",
+        "repository": "Logikinet/AI-Output-Formatter"
       }
     ],
-    "cached": [],
+    "cached": [
+      "zhonghe",
+      "offer-pilot",
+      "cangjie-ict",
+      "personal-ai-workbench"
+    ],
     "readmeBlocked": [
       {
         "id": "harmony-ticket-agent",
-        "reasons": [
-          "private_ip_url"
-        ],
-        "file": "README.md",
-        "severity": "soft"
-      },
-      {
-        "id": "personal-ai-workbench",
         "reasons": [
           "private_ip_url"
         ],
@@ -118,7 +101,12 @@
         "severity": "soft"
       }
     ],
-    "privateSkippedNoToken": [],
+    "privateSkippedNoToken": [
+      "zhonghe",
+      "offer-pilot",
+      "cangjie-ict",
+      "personal-ai-workbench"
+    ],
     "errors": []
   }
 }

@@ -173,6 +173,19 @@ export const projectRepositories: ProjectRepositoryConfig[] = [
     notifyEnabled: false,
     notes: "默认关闭即时通知；可按需开启",
   },
+  {
+    projectId: "ai-output-formatter",
+    repository: "Logikinet/AI-Output-Formatter",
+    provider: "github",
+    visibility: "public",
+    defaultBranch: "main",
+    exposeRepositoryUrl: true,
+    readmePublicSafe: true,
+    syncReadme: true,
+    syncMetadata: true,
+    notifyEnabled: true,
+    notes: "AI 输出清洗、场景排版与 Markdown 预览工具",
+  },
 ];
 
 /** 未确认 / 不存在映射，需人工处理 */

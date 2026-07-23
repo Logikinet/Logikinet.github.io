@@ -103,21 +103,8 @@ const jsonLd = {
           stats.map((s) => (
             <a href={s.href} class="stat-item group">
               <span class="sr-only">{s.label}</span>
-              <div class="stat-value flex items-center justify-between">
-                <span>{s.value}</span>
-                <svg
-                  class="h-4 w-4 text-ink-400 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-aqua-600 dark:group-hover:text-aqua-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.69l3.72-3.72a.75.75 0 111.06 1.06l-5 5a.75.75 0 01-1.06 0l-5-5a.75.75 0 111.06-1.06l3.72 3.72V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <p class="stat-label flex items-center justify-between">
-                <span>{s.label}</span>
-                <span class="text-[11px] font-medium text-aqua-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-aqua-400">直达 ↓</span>
-              </p>
+              <p class="stat-value">{s.value}</p>
+              <p class="stat-label">{s.label}</p>
             </a>
           ))
         }
