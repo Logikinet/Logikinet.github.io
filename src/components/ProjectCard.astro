@@ -72,14 +72,20 @@ const providerLabel = getProviderLabel(project);
     }
     {
       project.demo ? (
-        <a
-          href={project.demo}
-          class="btn-ghost !px-3 !py-1.5 text-xs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Demo
-        </a>
+        project.demo.startsWith("/") ? (
+          <a href={project.demo} class="btn-ghost !px-3 !py-1.5 text-xs">
+            {project.demo.startsWith("/tools/") ? "打开工具" : "打开"}
+          </a>
+        ) : (
+          <a
+            href={project.demo}
+            class="btn-ghost !px-3 !py-1.5 text-xs"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Demo
+          </a>
+        )
       ) : null
     }
   </div>
