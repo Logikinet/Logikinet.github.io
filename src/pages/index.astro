@@ -26,7 +26,9 @@ const stats = [
   { value: String(listedProjects.length), label: "项目实践", href: "#projects" },
   { value: String(allPosts.length), label: "技术文章", href: "#latest-posts" },
   { value: String(tools.length), label: "本地工具", href: "#tools" },
-  { value: String(labItems.length), label: "实验室 Demo", href: "#lab" },
+  ...(labItems.length > 0
+    ? [{ value: String(labItems.length), label: "实验室 Demo", href: "#lab" }]
+    : []),
 ] as const;
 
 const heroTags = ["Agent & Harness", "HarmonyOS", "Cangjie", "AI Apps", "ROS & IoT"] as const;
@@ -262,37 +264,47 @@ const jsonLd = {
     </div>
   </section>
 
-  <!-- Lab preview -->
-  <section id="lab" class="scroll-mt-16 sm:scroll-mt-20 band section-space" aria-labelledby="lab-heading">
-    <div class="container-page">
-      <div class="mb-9 flex items-end justify-between gap-4">
-        <div>
-          <p class="label-meta">Lab</p>
-          <h2 id="lab-heading" class="section-heading mt-2.5">实验室 Demo</h2>
-          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-            小型实验与 Demo 集合——用于验证想法、保留趣味原型与交互片段。
-          </p>
-        </div>
-        <a href="/lab/" class="section-link shrink-0">进入实验室 →</a>
-      </div>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
-        {
-          labItems.map((item) => (
-            <a href={item.href} class="card card-interactive group">
-              <div class="mb-3 flex flex-wrap gap-1.5">
-                <span class="chip">{item.tech}</span>
-              </div>
-              <h3 class="card-title !text-base">{item.title}</h3>
-              <p class="card-body">{item.summary}</p>
-              <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
-                打开 Demo →
+  <!-- Lab preview（无 Demo 时整块隐藏） -->
+  {
+    labItems.length > 0 && (
+      <section
+        id="lab"
+        class="scroll-mt-16 sm:scroll-mt-20 band section-space"
+        aria-labelledby="lab-heading"
+      >
+        <div class="container-page">
+          <div class="mb-9 flex items-end justify-between gap-4">
+            <div>
+              <p class="label-meta">Lab</p>
+              <h2 id="lab-heading" class="section-heading mt-2.5">
+                实验室 Demo
+              </h2>
+              <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+                小型实验与 Demo 集合——用于验证想法、保留趣味原型与交互片段。
               </p>
+            </div>
+            <a href="/lab/" class="section-link shrink-0">
+              进入实验室 →
             </a>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+            {labItems.map((item) => (
+              <a href={item.href} class="card card-interactive group">
+                <div class="mb-3 flex flex-wrap gap-1.5">
+                  <span class="chip">{item.tech}</span>
+                </div>
+                <h3 class="card-title !text-base">{item.title}</h3>
+                <p class="card-body">{item.summary}</p>
+                <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
+                  打开 Demo →
+                </p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   <!-- Highlights + contact -->
   <section class="section-space" aria-labelledby="achievements">

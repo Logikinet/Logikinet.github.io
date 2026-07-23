@@ -58,11 +58,7 @@ npm run dev
 backup/pre-astro-migration
 ```
 
-其中保留原「喜欢你」文字漂浮小游戏的单页版本。现网迁移后 Demo 路径为：
-
-```text
-https://aqualeap.dev/lab/love/
-```
+初版「喜欢你」文字漂浮小游戏已从站点移除（仅保留在备份分支 `backup/pre-astro-migration`）。
 
 ## 内容如何更新
 
@@ -163,7 +159,7 @@ curl -X POST \
 
 1. 静态 Demo 可放在 `public/lab/<name>/`
 2. 在 `src/data/lab.ts` 增加卡片说明
-3. 现有小游戏：`public/lab/love/index.html`
+3. 无条目时首页不展示实验室区块，`/lab/` 显示空状态
 
 ## 目录结构（核心）
 
@@ -177,7 +173,6 @@ src/
   styles/         # 全局样式（AquaLeap 主题）
   utils/          # 博客工具函数
 public/
-  lab/love/       # 迁移保留的小游戏
   CNAME
   favicon.svg
   robots.txt

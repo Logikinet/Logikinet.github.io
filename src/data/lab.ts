@@ -7,13 +7,5 @@ export interface LabItem {
   external?: boolean;
 }
 
-export const labItems: LabItem[] = [
-  {
-    id: "love",
-    title: "喜欢你 · 文字漂浮",
-    summary:
-      "点击屏幕产生爱心，屏幕中持续漂浮暖心短句的轻量小游戏。从站点初版迁移保留。",
-    tech: "HTML · CSS · Vanilla JS",
-    href: "/lab/love/",
-  },
-];
+/** 实验室 Demo 列表（静态页放 public/lab/<name>/） */
+export const labItems: LabItem[] = [];

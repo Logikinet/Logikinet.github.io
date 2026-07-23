@@ -3,7 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { labItems } from "@/data/lab";
 ---
 
-<BaseLayout title="实验室" description="AquaLeap 实验室：小型实验与 Demo，包括从站点初版迁移的喜欢你文字漂浮小游戏。">
+<BaseLayout title="实验室" description="AquaLeap 实验室：小型实验与交互 Demo 集合。">
   <div class="container-page section-space">
     <p class="label-meta">Lab</p>
     <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">实验室</h1>
@@ -11,26 +11,34 @@ import { labItems } from "@/data/lab";
       小型实验与 Demo 集合。用于验证想法、保留趣味原型，并沉淀可复用的前端与交互片段。
     </p>
 
-    <div class="mt-10 grid gap-5 sm:grid-cols-2">
-      {
-        labItems.map((item) => (
-          <article class="card flex h-full flex-col">
-            <p class="chip w-fit">{item.tech}</p>
-            <h2 class="mt-3 text-xl font-semibold text-ink-900 dark:text-ink-50">{item.title}</h2>
-            <p class="mt-2 flex-1 text-sm leading-relaxed text-ink-600 dark:text-ink-300">{item.summary}</p>
-            <div class="mt-5">
-              <a
-                href={item.href}
-                class="btn-primary"
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noopener noreferrer" : undefined}
-              >
-                打开 Demo
-              </a>
-            </div>
-          </article>
-        ))
-      }
-    </div>
+    {
+      labItems.length === 0 ? (
+        <p class="mt-10 text-sm text-ink-500 dark:text-ink-400">
+          当前暂无公开 Demo。新实验会放在此处。
+        </p>
+      ) : (
+        <div class="mt-10 grid gap-5 sm:grid-cols-2">
+          {labItems.map((item) => (
+            <article class="card flex h-full flex-col">
+              <p class="chip w-fit">{item.tech}</p>
+              <h2 class="mt-3 text-xl font-semibold text-ink-900 dark:text-ink-50">{item.title}</h2>
+              <p class="mt-2 flex-1 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+                {item.summary}
+              </p>
+              <div class="mt-5">
+                <a
+                  href={item.href}
+                  class="btn-primary"
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noopener noreferrer" : undefined}
+                >
+                  打开 Demo
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
   </div>
 </BaseLayout>
