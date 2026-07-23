@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Preline: structure variants + class source only — do NOT import theme.css (keeps AquaLeap palette).
+   package.json exports omit variants.css, so use a relative path into node_modules. */
+@import "../../node_modules/preline/variants.css";
+@source "../../node_modules/preline/dist/*.js";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {

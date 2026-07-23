@@ -1,15 +1,23 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import FlagshipProjectBay from "@/components/FlagshipProjectBay.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import PostCard from "@/components/PostCard.astro";
 import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
-import { getFeaturedProjects, getListedProjects } from "@/data/projects";
+import {
+  getFlagshipProject,
+  getListedProjects,
+  getMoreProjects,
+} from "@/data/projects";
 import { tools } from "@/data/tools";
 import { labItems } from "@/data/lab";
 import { resourceSections } from "@/data/resources";
 import { getPublishedPosts } from "@/utils/blog";
 
-const featuredProjects = getFeaturedProjects(4);
+const flagshipProject = getFlagshipProject();
+const moreProjects = flagshipProject
+  ? getMoreProjects(flagshipProject.id, 3)
+  : getMoreProjects("", 3);
 const listedProjects = getListedProjects();
 const allPosts = await getPublishedPosts();
 const posts = allPosts.slice(0, 3);
@@ -41,7 +49,7 @@ const jsonLd = {
 <BaseLayout jsonLd={jsonLd}>
   <!-- Hero -->
   <section class="hero-surface" aria-labelledby="hero-title">
-    <div class="container-page section-space !pb-14 sm:!pb-16 lg:!pb-20">
+    <div class="container-page section-space !pb-6 sm:!pb-8 lg:!pb-10">
       <div class="hero-kicker">
         <span class="hero-kicker-dot" aria-hidden="true"></span>
         <span class="font-mono text-[11px] tracking-[0.12em] uppercase text-ink-500 dark:text-ink-400">
@@ -104,22 +112,42 @@ const jsonLd = {
     </div>
   </section>
 
-  <!-- Featured projects -->
-  <section class="section-space" aria-labelledby="featured-projects">
+  <!-- Flagship project bay (replaces old featured grid) -->
+  {
+    flagshipProject && (
+      <section
+        class="flagship-follow pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-14 lg:pb-14"
+        aria-label="旗舰项目展示舱"
+      >
+        <div class="container-page">
+          <FlagshipProjectBay project={flagshipProject} />
+        </div>
+      </section>
+    )
+  }
+
+  <!-- More projects — compact remainder -->
+  <section class="pb-16 sm:pb-20 lg:pb-24" aria-labelledby="more-projects">
     <div class="container-page">
-      <div class="mb-9 flex items-end justify-between gap-4">
+      <div class="mb-7 flex items-end justify-between gap-4 sm:mb-8">
         <div>
           <p class="label-meta">Projects</p>
-          <h2 id="featured-projects" class="section-heading mt-2.5">精选项目</h2>
+          <h2 id="more-projects" class="section-heading mt-2.5">更多项目</h2>
           <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-            从 Agent 工程到机器人与硬件，精选可说明问题的实践。
+            其余精选实践的紧凑入口。
           </p>
         </div>
         <a href="/projects/" class="section-link shrink-0">全部项目 →</a>
       </div>
-      <div class="grid gap-5 sm:grid-cols-2 sm:gap-6">
-        {featuredProjects.map((project) => <ProjectCard project={project} />)}
-      </div>
+      {
+        moreProjects.length > 0 && (
+          <div class="grid gap-4 sm:grid-cols-3 sm:gap-5">
+            {moreProjects.map((project) => (
+              <ProjectCard project={project} compact />
+            ))}
+          </div>
+        )
+      }
     </div>
   </section>
 

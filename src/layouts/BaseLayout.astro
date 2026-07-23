@@ -101,5 +101,9 @@ const jsonLdList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
       <slot />
     </main>
     <Footer />
+    <!-- Preline: CSS variants + card/bento markup only.
+         Full preline.js is not loaded (no HS plugins on this site yet;
+         avoids shipping ~400KB unused charts/datepicker bundle).
+         Re-enable via src/scripts/preline.ts when HS components are needed. -->
   </body>
 </html>

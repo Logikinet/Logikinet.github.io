@@ -99,6 +99,20 @@ export function getProjectById(id: string): Project | undefined {
   return getListedProjects().find((p) => p.id === id);
 }
 
+/** 首页旗舰展示舱默认项目（仓颉 Agent Harness / CLI 优化） */
+export const FLAGSHIP_PROJECT_ID = "cangjie-ict";
+
+export function getFlagshipProject(id: string = FLAGSHIP_PROJECT_ID): Project | undefined {
+  return getProjectById(id) ?? getFeaturedProjects(1)[0];
+}
+
+/** 更多项目：精选中排除旗舰后的紧凑列表 */
+export function getMoreProjects(flagshipId: string, limit = 3): Project[] {
+  return getListedProjects()
+    .filter((p) => p.featured && p.id !== flagshipId)
+    .slice(0, limit);
+}
+
 export function getGeneratedMeta(id: string): GeneratedProjectMeta | undefined {
   return getAllGeneratedMeta().get(id);
 }

@@ -1,0 +1,301 @@
+---
+/**
+ * Flagship project bay — Preline Card / Stats / Bento / Action Bar structure,
+ * restyled with AquaLeap tokens (ink + aqua). No Preline theme.css.
+ */
+import {
+  type Project,
+  getExposedRepositoryUrl,
+  getProviderLabel,
+  repositoryLabel,
+  toPageSafeProject,
+} from "@/data/projects";
+
+interface Props {
+  project: Project;
+}
+
+const { project: raw } = Astro.props;
+const project = toPageSafeProject(raw);
+const repoUrl = getExposedRepositoryUrl(project);
+const repoLabel = repositoryLabel(project);
+const providerLabel = getProviderLabel(project);
+
+const stack = project.stack.filter((t) => t && t !== "整理中" && t.trim().length > 0).slice(0, 8);
+
+const capabilityTags = [
+  "Agent",
+  "Cangjie",
+  "Harness",
+  "Skills",
+  "Tools",
+  "Hooks",
+  "Token Optimization",
+] as const;
+
+const stageByStatus: Record<Project["status"], string> = {
+  进行中: "迭代开发",
+  实验中: "实验验证",
+  已完成: "维护阶段",
+  整理中: "资料整理",
+};
+const stage = stageByStatus[project.status] ?? project.status;
+
+const updatedLabel = project.updatedAt
+  ? project.updatedAt
+  : project.year
+    ? project.year
+    : null;
+
+const projectHref = `/projects/${project.id}/`;
+const relatedBlogHref = "/blog/tags/Harness/";
+const devLogHref = "/blog/tags/Agent/";
+
+// Architecture preview lines (code-style visual — not a blank image frame)
+const previewLines = [
+  { dim: true, text: "# Agent Harness · CLI" },
+  { dim: false, text: "harness run --trace --budget" },
+  { dim: true, text: "→ skills.compose(tools, hooks)" },
+  { dim: false, text: "→ observe · retry · report" },
+] as const;
+---
+
+<!--
+  Structure adapted from Preline UI Card / Stats / Bento patterns:
+  https://preline.co/docs/card.html
+  Uses flex/grid + rounded-xl + header/body/footer regions,
+  restyled with AquaLeap .card / ink / aqua tokens.
+-->
+<div class="flex flex-col gap-4" aria-labelledby="flagship-title">
+  <!-- Bento grid: feature + stats + capabilities -->
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)]">
+    <!-- Left: Feature / Project Summary Card (Preline large card + media) -->
+    <article
+      class="card flex flex-col overflow-hidden !p-0 lg:col-span-2 lg:row-span-2"
+    >
+      <!-- Header -->
+      <div
+        class="flex flex-wrap items-center gap-2 border-b border-ink-100 px-4 py-3 sm:px-5 dark:border-ink-800/80"
+      >
+        <span class="chip-accent">旗舰项目</span>
+        <span class="chip">{project.status}</span>
+        <span class="chip">{repoLabel}</span>
+        {
+          project.year && (
+            <span class="card-meta ml-auto font-mono">{project.year}</span>
+          )
+        }
+      </div>
+
+      <!-- Media: architecture / code visual (no empty screenshot frame) -->
+      <div
+        class="relative isolate overflow-hidden border-b border-ink-100 bg-ink-50/90 dark:border-ink-800/80 dark:bg-ink-950/50"
+        aria-hidden="true"
+      >
+        <div
+          class="pointer-events-none absolute inset-0 opacity-40"
+          style="background-image: linear-gradient(to right, rgb(90 113 140 / 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgb(90 113 140 / 0.08) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(120deg, black 35%, transparent 92%);"
+        >
+        </div>
+        <div
+          class="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-aqua-500/10 blur-2xl motion-reduce:blur-none"
+        >
+        </div>
+        <div class="relative px-4 py-5 sm:px-5 sm:py-6">
+          <div class="mb-3 flex items-center gap-2.5">
+            <span
+              class="flex h-10 w-10 items-center justify-center rounded-xl border border-aqua-500/25 bg-white/80 text-base font-semibold text-aqua-700 dark:border-aqua-400/25 dark:bg-ink-900/60 dark:text-aqua-300"
+              style="font-family: var(--font-display);"
+            >
+              仓
+            </span>
+            <span
+              class="text-[11px] uppercase tracking-[0.14em] text-ink-500 dark:text-ink-400"
+              style="font-family: var(--font-mono);"
+            >
+              Agent Harness · CLI
+            </span>
+          </div>
+          <div
+            class="rounded-xl border border-ink-200/70 bg-white/75 px-3.5 py-3 dark:border-ink-700/50 dark:bg-ink-900/45"
+            style="font-family: var(--font-mono);"
+          >
+            <ul class="space-y-1.5 text-[11px] leading-relaxed sm:text-xs">
+              {
+                previewLines.map((line) => (
+                  <li
+                    class={
+                      line.dim
+                        ? "text-ink-400 dark:text-ink-500"
+                        : "text-ink-700 dark:text-ink-200"
+                    }
+                  >
+                    {line.text}
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex flex-1 flex-col p-4 sm:p-5 md:p-6">
+        <h2
+          id="flagship-title"
+          class="card-title !text-xl sm:!text-2xl"
+          style="text-wrap: balance;"
+        >
+          <a href={projectHref} class="no-underline">
+            {project.title}
+          </a>
+        </h2>
+        <p class="card-body mt-2.5 max-w-prose">
+          {project.summary}
+        </p>
+
+        {
+          stack.length > 0 && (
+            <div class="mt-4 flex flex-wrap gap-1.5" aria-label="技术栈">
+              {stack.map((tech) => (
+                <span class="chip">{tech}</span>
+              ))}
+            </div>
+          )
+        }
+
+        <div class="relative z-10 mt-6 flex flex-wrap items-center gap-2.5">
+          <a href={projectHref} class="btn-primary !px-4 !py-2 text-sm">
+            查看项目
+          </a>
+          {
+            project.demo ? (
+              <a
+                href={project.demo}
+                class="btn-secondary !px-4 !py-2 text-sm"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Demo
+              </a>
+            ) : null
+          }
+        </div>
+      </div>
+    </article>
+
+    <!-- Right top: Stats Card (Preline stats-style list) -->
+    <article class="card flex flex-col !p-0">
+      <div
+        class="border-b border-ink-100 px-4 py-3 dark:border-ink-800/80"
+      >
+        <p class="label-meta">状态概览</p>
+        <h3 class="mt-1 text-sm font-semibold text-ink-900 dark:text-ink-50">
+          项目指标
+        </h3>
+      </div>
+      <dl class="grid flex-1 grid-cols-2 gap-px bg-ink-100/80 dark:bg-ink-800/60">
+        <div class="bg-white p-4 dark:bg-ink-900/80">
+          <dt class="text-[11px] uppercase tracking-wider text-ink-400">当前状态</dt>
+          <dd class="mt-1.5 text-sm font-medium text-ink-900 dark:text-ink-50">
+            {project.status}
+          </dd>
+        </div>
+        <div class="bg-white p-4 dark:bg-ink-900/80">
+          <dt class="text-[11px] uppercase tracking-wider text-ink-400">当前阶段</dt>
+          <dd class="mt-1.5 text-sm font-medium text-ink-900 dark:text-ink-50">
+            {stage}
+          </dd>
+        </div>
+        <div class="bg-white p-4 dark:bg-ink-900/80">
+          <dt class="text-[11px] uppercase tracking-wider text-ink-400">仓库可见性</dt>
+          <dd class="mt-1.5 text-sm font-medium text-ink-900 dark:text-ink-50">
+            {repoLabel}
+          </dd>
+        </div>
+        <div class="bg-white p-4 dark:bg-ink-900/80">
+          <dt class="text-[11px] uppercase tracking-wider text-ink-400">最近更新</dt>
+          <dd class="mt-1.5 font-mono text-sm font-medium text-ink-900 dark:text-ink-50">
+            {updatedLabel ?? "—"}
+          </dd>
+        </div>
+      </dl>
+    </article>
+
+    <!-- Right bottom: Capability tags card -->
+    <article class="card flex flex-col !p-0">
+      <div
+        class="border-b border-ink-100 px-4 py-3 dark:border-ink-800/80"
+      >
+        <p class="label-meta">能力域</p>
+        <h3 class="mt-1 text-sm font-semibold text-ink-900 dark:text-ink-50">
+          工程关键词
+        </h3>
+      </div>
+      <div class="flex flex-1 flex-wrap content-start gap-2 p-4">
+        {
+          capabilityTags.map((tag) => (
+            <span class="chip">{tag}</span>
+          ))
+        }
+      </div>
+    </article>
+  </div>
+
+  <!-- Bottom: Action Bar (Preline card footer / panel actions pattern) -->
+  <nav
+    class="card flex flex-col gap-3 !py-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:!py-3"
+    aria-label="旗舰项目操作"
+  >
+    <p class="text-xs text-ink-500 dark:text-ink-400">
+      快速入口
+    </p>
+    <ul class="flex flex-wrap items-center gap-2">
+      <li>
+        <a href={projectHref} class="btn-secondary !px-3 !py-1.5 text-xs">
+          项目详情
+        </a>
+      </li>
+      <li>
+        <a href={relatedBlogHref} class="btn-ghost !px-3 !py-1.5 text-xs">
+          相关博客
+        </a>
+      </li>
+      <li>
+        <a href={devLogHref} class="btn-ghost !px-3 !py-1.5 text-xs">
+          开发日志
+        </a>
+      </li>
+      {
+        repoUrl ? (
+          <li>
+            <a
+              href={repoUrl}
+              class="btn-ghost !px-3 !py-1.5 text-xs"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {project.repositoryStatus === "private"
+                ? `私有 ${providerLabel}`
+                : `${providerLabel} 仓库`}
+            </a>
+          </li>
+        ) : null
+      }
+      {
+        project.demo ? (
+          <li>
+            <a
+              href={project.demo}
+              class="btn-ghost !px-3 !py-1.5 text-xs"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Demo
+            </a>
+          </li>
+        ) : null
+      }
+    </ul>
+  </nav>
+</div>

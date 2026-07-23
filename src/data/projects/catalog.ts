@@ -50,10 +50,11 @@ function withRepo(
 export const projectCatalog: Project[] = [
   withRepo({
     id: "cangjie-ict",
-    title: "仓颉 ICT / Agent Harness",
-    summary: "Cangjie ICT 团队项目核心源码（仓颉 Agent / Harness 相关实践）。",
+    title: "仓颉 Agent Harness / CLI 优化",
+    summary:
+      "仓颉 Agent Harness 与 CLI 工程优化：可控执行、可观测链路与终端工作流实践。",
     description: "私有仓库 cangjie-ict。正文需 PROJECTS_READ_TOKEN 且 readmePublicSafe 确认后同步。",
-    stack: ["仓颉", "Agent"],
+    stack: ["仓颉", "Agent", "CLI"],
     status: "进行中",
     featured: true,
     visibility: "private",
