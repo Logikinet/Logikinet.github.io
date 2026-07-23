@@ -161,9 +161,15 @@ if (safe.verificationStatus) {
         }
         {
           demoUrl ? (
-            <a href={demoUrl} class="btn-secondary" target="_blank" rel="noopener noreferrer">
-              打开 Demo
-            </a>
+            demoUrl.startsWith("/") ? (
+              <a href={demoUrl} class="btn-secondary">
+                {demoUrl.startsWith("/tools/") ? "打开工具" : "打开"}
+              </a>
+            ) : (
+              <a href={demoUrl} class="btn-secondary" target="_blank" rel="noopener noreferrer">
+                打开 Demo
+              </a>
+            )
           ) : null
         }
         <a href="/projects/" class="btn-ghost">返回列表</a>
