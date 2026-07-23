@@ -10,5 +10,13 @@
     "resolveJsonModule": true
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "node_modules", "public/lab", "scripts"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "public/lab",
+    "public/tools/ai-output-formatter",
+    "scripts",
+    "external"
+  ]
 }
+

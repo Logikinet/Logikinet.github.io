@@ -29,4 +29,12 @@ export const tools: ToolItem[] = [
     href: "/tools/text-diff/",
     tags: ["Diff", "文本"],
   },
+  {
+    id: "ai-output-formatter",
+    title: "AI Output Formatter",
+    summary:
+      "将 AI 生成的 Markdown 内容整理成适合微信、论文、报告和内容平台使用的文本，并支持 Markdown 实时预览。",
+    href: "/tools/ai-output-formatter/",
+    tags: ["AI", "Markdown", "文本处理"],
+  },
 ];

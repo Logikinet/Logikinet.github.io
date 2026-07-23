@@ -26,7 +26,9 @@ on:
     - cron: "20 18 * * *"
 
   repository_dispatch:
-    types: [sync-projects]
+    types:
+      - sync-projects
+      - sync-ai-output-formatter
 
 permissions:
   contents: read
@@ -44,13 +46,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout AI Output Formatter
+        uses: actions/checkout@v4
+        with:
+          repository: Logikinet/AI-Output-Formatter
+          ref: main
+          path: external/AI-Output-Formatter
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            external/AI-Output-Formatter/package-lock.json
 
-      - name: Install dependencies
+      - name: Install site dependencies
+        run: npm ci
+
+      - name: Install AI Output Formatter dependencies
+        working-directory: external/AI-Output-Formatter
         run: npm ci
 
       - name: Log sync context
@@ -78,8 +94,22 @@ jobs:
           SYNC_REASON: ${{ inputs.sync_reason || github.event.client_payload.sync_reason || github.event_name }}
         run: npm run sync:projects
 
+      - name: Build AI Output Formatter
+        working-directory: external/AI-Output-Formatter
+        env:
+          VITE_BASE_PATH: /tools/ai-output-formatter/
+        run: npm run build
+
       - name: Build site
         run: npm run build:ci
+
+      - name: Integrate AI Output Formatter
+        run: |
+          rm -rf dist/tools/ai-output-formatter
+          mkdir -p dist/tools/ai-output-formatter
+          cp -R external/AI-Output-Formatter/dist/. dist/tools/ai-output-formatter/
+          test -f dist/tools/ai-output-formatter/index.html
+          echo "Integrated AOF into dist/tools/ai-output-formatter/"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

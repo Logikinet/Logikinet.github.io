@@ -6,7 +6,11 @@
   "description": "AquaLeap — personal site of 王子健 (Logikinet)",
   "scripts": {
     "dev": "astro dev",
+    "studio": "node scripts/studio.mjs",
+    "studio:api": "node scripts/content-server.mjs",
+    "content:migrate": "tsx scripts/migrate-resources-to-content.ts",
     "sync:projects": "node scripts/sync-projects.mjs",
+    "sync:aof": "node scripts/sync-ai-output-formatter.mjs",
     "install:notify": "node scripts/install-notify-workflows.mjs",
     "build": "npm run sync:projects && astro check && astro build && pagefind --site dist",
     "build:ci": "astro check && astro build && pagefind --site dist",
@@ -31,5 +35,9 @@
     "sharp": "^0.34.2",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3",
+    "tsx": "^4.23.1"
   }
 }
