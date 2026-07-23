@@ -23,10 +23,10 @@ const allPosts = await getPublishedPosts();
 const posts = allPosts.slice(0, 3);
 
 const stats = [
-  { value: String(listedProjects.length), label: "项目实践" },
-  { value: String(allPosts.length), label: "技术文章" },
-  { value: String(tools.length), label: "本地工具" },
-  { value: String(labItems.length), label: "实验室 Demo" },
+  { value: String(listedProjects.length), label: "项目实践", href: "#projects" },
+  { value: String(allPosts.length), label: "技术文章", href: "#latest-posts" },
+  { value: String(tools.length), label: "本地工具", href: "#tools" },
+  { value: String(labItems.length), label: "实验室 Demo", href: "#lab" },
 ] as const;
 
 const heroTags = ["Agent & Harness", "HarmonyOS", "Cangjie", "AI Apps", "ROS & IoT"] as const;
@@ -98,17 +98,30 @@ const jsonLd = {
         }
       </ul>
 
-      <dl class="stat-bar" aria-label="站点概览">
+      <div class="stat-bar" aria-label="站点概览">
         {
           stats.map((s) => (
-            <div class="stat-item">
-              <dt class="sr-only">{s.label}</dt>
-              <dd class="stat-value">{s.value}</dd>
-              <p class="stat-label">{s.label}</p>
-            </div>
+            <a href={s.href} class="stat-item group">
+              <span class="sr-only">{s.label}</span>
+              <div class="stat-value flex items-center justify-between">
+                <span>{s.value}</span>
+                <svg
+                  class="h-4 w-4 text-ink-400 opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-aqua-600 dark:group-hover:text-aqua-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.69l3.72-3.72a.75.75 0 111.06 1.06l-5 5a.75.75 0 01-1.06 0l-5-5a.75.75 0 111.06-1.06l3.72 3.72V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <p class="stat-label flex items-center justify-between">
+                <span>{s.label}</span>
+                <span class="text-[11px] font-medium text-aqua-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-aqua-400">直达 ↓</span>
+              </p>
+            </a>
           ))
         }
-      </dl>
+      </div>
     </div>
   </section>
 
@@ -116,7 +129,8 @@ const jsonLd = {
   {
     flagshipProject && (
       <section
-        class="flagship-follow pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-14 lg:pb-14"
+        id="projects"
+        class="scroll-mt-16 sm:scroll-mt-20 flagship-follow pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-14 lg:pb-14"
         aria-label="旗舰项目展示舱"
       >
         <div class="container-page">
@@ -180,12 +194,12 @@ const jsonLd = {
   </section>
 
   <!-- Latest posts -->
-  <section class="section-space" aria-labelledby="latest-posts">
+  <section id="latest-posts" class="scroll-mt-16 sm:scroll-mt-20 section-space" aria-labelledby="latest-posts-heading">
     <div class="container-page">
       <div class="mb-9 flex items-end justify-between gap-4">
         <div>
           <p class="label-meta">Blog</p>
-          <h2 id="latest-posts" class="section-heading mt-2.5">最新文章</h2>
+          <h2 id="latest-posts-heading" class="section-heading mt-2.5">最新文章</h2>
           <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
             工程判断、工作流与可复用框架，而非一次性提示词技巧。
           </p>
@@ -228,12 +242,12 @@ const jsonLd = {
   </section>
 
   <!-- Tools -->
-  <section class="section-space" aria-labelledby="tools">
+  <section id="tools" class="scroll-mt-16 sm:scroll-mt-20 section-space" aria-labelledby="tools-heading">
     <div class="container-page">
       <div class="mb-9 flex items-end justify-between gap-4">
         <div>
           <p class="label-meta">Tools</p>
-          <h2 id="tools" class="section-heading mt-2.5">在线工具</h2>
+          <h2 id="tools-heading" class="section-heading mt-2.5">在线工具</h2>
           <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
             全部在浏览器本地运行，不上传用户数据。
           </p>
@@ -253,6 +267,38 @@ const jsonLd = {
               <p class="card-body">{tool.summary}</p>
               <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
                 打开工具 →
+              </p>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Lab preview -->
+  <section id="lab" class="scroll-mt-16 sm:scroll-mt-20 band section-space" aria-labelledby="lab-heading">
+    <div class="container-page">
+      <div class="mb-9 flex items-end justify-between gap-4">
+        <div>
+          <p class="label-meta">Lab</p>
+          <h2 id="lab-heading" class="section-heading mt-2.5">实验室 Demo</h2>
+          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
+            小型实验与 Demo 集合——用于验证想法、保留趣味原型与交互片段。
+          </p>
+        </div>
+        <a href="/lab/" class="section-link shrink-0">进入实验室 →</a>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
+        {
+          labItems.map((item) => (
+            <a href={item.href} class="card card-interactive group">
+              <div class="mb-3 flex flex-wrap gap-1.5">
+                <span class="chip">{item.tech}</span>
+              </div>
+              <h3 class="card-title !text-base">{item.title}</h3>
+              <p class="card-body">{item.summary}</p>
+              <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
+                打开 Demo →
               </p>
             </a>
           ))
