@@ -10,6 +10,14 @@ export interface LabItem {
 /** 实验室 Demo 列表（静态页放 public/lab/<name>/） */
 export const labItems: LabItem[] = [
   {
+    id: "rainfall-viz",
+    title: "实时降雨数据可视化",
+    summary:
+      "基于 Canvas 与多普勒雷达图层的降雨物理粒子与风场实时仿真。包含雨滴粒子线、地表涟漪、等雨量热图色块与交互式气象控制面板。",
+    tech: "Canvas · WebGL · Doppler Radar",
+    href: "/lab/rainfall-viz/",
+  },
+  {
     id: "sticker-forge",
     title: "Sticker Forge",
     summary:

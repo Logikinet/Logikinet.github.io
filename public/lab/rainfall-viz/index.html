@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实时降雨数据可视化 · AquaLeap Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080d14;
+      --card-bg: rgba(18, 28, 41, 0.75);
+      --border-color: rgba(126, 212, 200, 0.25);
+      --accent-aqua: #2fa89a;
+      --accent-glow: #7ed4c8;
+      --text-main: #f5f7fb;
+      --text-sub: #a4b5cb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
+    }
+
+    /* Fullscreen Radar & Particle Canvas */
+    #viz-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    /* Top Glass Dock Navigation Header */
+    .header-dock {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      items-center: center;
+      gap: 16px;
+      padding: 10px 20px;
+      background: rgba(12, 18, 27, 0.75);
+      border: 1px solid var(--border-color);
+      border-radius: 999px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-dock a {
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .header-dock a:hover {
+      color: var(--accent-glow);
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.1);
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #34d399;
+      box-shadow: 0 0 8px #34d399;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Main Floating Glass Control Panel */
+    .control-panel {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      z-index: 10;
+      width: 360px;
+      padding: 22px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .panel-title {
+      font-family: "Sora", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: rgba(8, 13, 20, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 12px 14px;
+      border-radius: 12px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-val {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent-glow);
+      margin-top: 4px;
+    }
+
+    .stat-val span {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 400;
+    }
+
+    /* Sliders & Controls */
+    .control-group {
+      margin-top: 16px;
+    }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-aqua);
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Mode Buttons */
+    .mode-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .btn-mode {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-sub);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-mode.active, .btn-mode:hover {
+      background: rgba(47, 168, 154, 0.2);
+      border-color: var(--accent-aqua);
+      color: var(--text-main);
+    }
+
+    /* Trend Mini Chart */
+    .chart-container {
+      margin-top: 16px;
+      height: 60px;
+      width: 100%;
+    }
+
+    /* Right Legend Panel */
+    .legend-panel {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      z-index: 10;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      width: 180px;
+    }
+
+    .legend-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+    }
+
+    .legend-bar {
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(to right, #24877c, #34d399, #fbbf24, #ef4444, #a855f7);
+      margin-bottom: 6px;
+    }
+
+    .legend-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-sub);
+      font-family: "IBM Plex Mono", monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Visualization Canvas -->
+  <canvas id="viz-canvas"></canvas>
+
+  <!-- Top Glass Dock Navigation Header -->
+  <header class="header-dock">
+    <a href="/lab/">← 返回 AquaLeap 实验室</a>
+    <span style="color: rgba(255,255,255,0.2)">|</span>
+    <span style="font-weight: 600; color: #fff;">实时降雨数据可视化</span>
+    <span class="badge-live">
+      <span class="badge-dot"></span> LIVE DATA
+    </span>
+  </header>
+
+  <!-- Legend Panel -->
+  <div class="legend-panel">
+    <div class="legend-title">雷达反射率 (dBZ)</div>
+    <div class="legend-bar"></div>
+    <div class="legend-labels">
+      <span>10</span>
+      <span>30</span>
+      <span>45</span>
+      <span>60+</span>
+    </div>
+  </div>
+
+  <!-- Floating Control Panel -->
+  <div class="control-panel">
+    <div class="panel-title">
+      <span>气象监测控制台</span>
+      <span style="font-size: 11px; font-weight: normal; color: var(--accent-glow); font-family: 'IBM Plex Mono';">RADAR-V3</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">实时降雨强度</div>
+        <div class="stat-val" id="val-rate">32.5 <span>mm/h</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">风速 / 风向</div>
+        <div class="stat-val" id="val-wind">14 <span>km/h SW</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">今日累计降水</div>
+        <div class="stat-val" id="val-accum">84.2 <span>mm</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">活跃粒子数</div>
+        <div class="stat-val" id="val-particles">1,200</div>
+      </div>
+    </div>
+
+    <!-- Sliders -->
+    <div class="control-group">
+      <div class="control-label">
+        <span>降雨强度模拟</span>
+        <span id="label-intensity">暴雨 (Heavy)</span>
+      </div>
+      <input type="range" id="input-intensity" min="1" max="100" value="65">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>风速角度模拟</span>
+        <span id="label-wind-angle">225°</span>
+      </div>
+      <input type="range" id="input-wind-angle" min="0" max="360" value="225">
+    </div>
+
+    <!-- Mode Selector Buttons -->
+    <div class="mode-buttons">
+      <button class="btn-mode active" id="btn-radar">多普勒雷达</button>
+      <button class="btn-mode" id="btn-particles">粒子雨流</button>
+      <button class="btn-mode" id="btn-heatmap">等雨量热图</button>
+    </div>
+
+    <!-- Mini 24h Trend Chart -->
+    <div class="chart-container">
+      <canvas id="chart-canvas"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Canvas Initialization
+    const canvas = document.getElementById("viz-canvas");
+    const ctx = canvas.getContext("2d");
+    const chartCanvas = document.getElementById("chart-canvas");
+    const chartCtx = chartCanvas.getContext("2d");
+
+    let width, height;
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      chartCanvas.width = chartCanvas.parentElement.clientWidth;
+      chartCanvas.height = chartCanvas.parentElement.clientHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // Simulation Parameters
+    let rainIntensity = 0.65;
+    let windAngle = 225 * (Math.PI / 180);
+    let activeMode = "radar"; // "radar", "particles", "heatmap"
+
+    // UI Event Handlers
+    document.getElementById("input-intensity").addEventListener("input", (e) => {
+      rainIntensity = e.target.value / 100;
+      const rate = (rainIntensity * 55).toFixed(1);
+      document.getElementById("val-rate").innerHTML = `${rate} <span>mm/h</span>`;
+      document.getElementById("val-particles").innerText = Math.floor(rainIntensity * 1800);
+      
+      const label = document.getElementById("label-intensity");
+      if (rainIntensity < 0.25) label.innerText = "小雨 (Light)";
+      else if (rainIntensity < 0.5) label.innerText = "中雨 (Moderate)";
+      else if (rainIntensity < 0.75) label.innerText = "大雨到暴雨 (Heavy)";
+      else label.innerText = "特大暴雨 (Torrential)";
+    });
+
+    document.getElementById("input-wind-angle").addEventListener("input", (e) => {
+      const deg = parseInt(e.target.value);
+      windAngle = deg * (Math.PI / 180);
+      document.getElementById("label-wind-angle").innerText = `${deg}°`;
+      document.getElementById("val-wind").innerHTML = `${(deg / 15).toFixed(0)} <span>km/h SW</span>`;
+    });
+
+    const modeBtns = [
+      { id: "btn-radar", mode: "radar" },
+      { id: "btn-particles", mode: "particles" },
+      { id: "btn-heatmap", mode: "heatmap" }
+    ];
+
+    modeBtns.forEach((b) => {
+      document.getElementById(b.id).addEventListener("click", () => {
+        modeBtns.forEach((x) => document.getElementById(x.id).classList.remove("active"));
+        document.getElementById(b.id).classList.add("active");
+        activeMode = b.mode;
+      });
+    });
+
+    // Particle Physics Setup
+    const particles = [];
+    const ripples = [];
+    const MAX_PARTICLES = 2000;
+
+    class RainDrop {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * (width + 400) - 200;
+        this.y = Math.random() * -height;
+        this.z = Math.random() * 0.8 + 0.2; // Depth
+        this.length = (Math.random() * 20 + 15) * this.z;
+        this.speed = (Math.random() * 15 + 20) * this.z;
+        this.opacity = Math.random() * 0.5 + 0.3;
+      }
+
+      update() {
+        const vx = Math.cos(windAngle) * this.speed * 0.5;
+        const vy = Math.sin(windAngle) * this.speed * 0.5 + this.speed;
+
+        this.x += vx;
+        this.y += vy;
+
+        if (this.y > height || this.x < -200 || this.x > width + 200) {
+          if (Math.random() < 0.3) {
+            ripples.push(new Ripple(this.x, height - Math.random() * 60));
+          }
+          this.reset();
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(126, 212, 200, ${this.opacity * this.z})`;
+        ctx.lineWidth = 1.2 * this.z;
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x + Math.cos(windAngle) * this.length, this.y + this.length);
+        ctx.stroke();
+      }
+    }
+
+    class Ripple {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 1;
+        this.maxRadius = Math.random() * 14 + 6;
+        this.opacity = 0.6;
+      }
+
+      update() {
+        this.radius += 0.8;
+        this.opacity -= 0.025;
+      }
+
+      draw() {
+        if (this.opacity <= 0) return;
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(126, 212, 200, ${this.opacity})`;
+        ctx.lineWidth = 1;
+        ctx.ellipse(this.x, this.y, this.radius * 2, this.radius, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      particles.push(new RainDrop());
+    }
+
+    // Doppler Radar Sweep simulation
+    let sweepAngle = 0;
+    const radarClusters = [
+      { x: 0.35, y: 0.45, radius: 120, intensity: 0.8 },
+      { x: 0.62, y: 0.38, radius: 180, intensity: 0.95 },
+      { x: 0.48, y: 0.65, radius: 90, intensity: 0.6 },
+    ];
+
+    function drawRadarMap() {
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      // Concentric Distance Circles
+      ctx.strokeStyle = "rgba(126, 212, 200, 0.08)";
+      ctx.lineWidth = 1;
+      for (let r = 100; r < Math.max(width, height); r += 120) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Grid Axes
+      ctx.beginPath();
+      ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height);
+      ctx.moveTo(0, centerY); ctx.lineTo(width, centerY);
+      ctx.stroke();
+
+      // Radar Intensity Clusters
+      radarClusters.forEach((c) => {
+        const cx = c.x * width;
+        const cy = c.y * height;
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, c.radius * rainIntensity * 1.5);
+        grad.addColorStop(0, "rgba(239, 68, 68, 0.5)");   // Red core
+        grad.addColorStop(0.3, "rgba(251, 191, 36, 0.4)"); // Yellow
+        grad.addColorStop(0.6, "rgba(52, 211, 153, 0.3)"); // Green
+        grad.addColorStop(1, "rgba(36, 135, 124, 0)");     // Fade
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, c.radius * rainIntensity * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Rotating Radar Sweep Line
+      sweepAngle += 0.015;
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      const sweepGrad = ctx.createConicGradient(sweepAngle, 0, 0);
+      sweepGrad.addColorStop(0, "rgba(47, 168, 154, 0.25)");
+      sweepGrad.addColorStop(0.1, "rgba(47, 168, 154, 0)");
+      sweepGrad.addColorStop(1, "rgba(47, 168, 154, 0)");
+
+      ctx.fillStyle = sweepGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(width, height), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Mini Trend Chart Rendering
+    function drawChart() {
+      chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+      const w = chartCanvas.width;
+      const h = chartCanvas.height;
+
+      chartCtx.beginPath();
+      chartCtx.strokeStyle = "#2fa89a";
+      chartCtx.lineWidth = 2;
+
+      const points = 20;
+      const step = w / (points - 1);
+      chartCtx.moveTo(0, h - 15);
+
+      for (let i = 0; i < points; i++) {
+        const x = i * step;
+        const noise = Math.sin(i * 0.6 + Date.now() * 0.002) * 12;
+        const y = h - 20 - (Math.sin(i * 0.4) * 0.5 + 0.5) * (h - 25) * rainIntensity + noise;
+        if (i === 0) chartCtx.moveTo(x, y);
+        else chartCtx.lineTo(x, y);
+      }
+      chartCtx.stroke();
+    }
+
+    // Main Render Loop
+    function animate() {
+      ctx.fillStyle = "rgba(8, 13, 20, 0.25)";
+      ctx.fillRect(0, 0, width, height);
+
+      drawRadarMap();
+
+      // Update & Draw Rain Drops
+      const activeCount = Math.floor(particles.length * rainIntensity);
+      for (let i = 0; i < activeCount; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+
+      // Update Ripples
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        ripples[i].update();
+        ripples[i].draw();
+        if (ripples[i].opacity <= 0) ripples.splice(i, 1);
+      }
+
+      drawChart();
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
