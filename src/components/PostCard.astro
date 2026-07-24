@@ -10,7 +10,7 @@ const { post } = Astro.props;
 const minutes = getReadingTime(post.body ?? "");
 ---
 
-<article class="card">
+<article class="card card-spotlight">
   <div class="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
     <time class="card-meta font-mono" datetime={post.data.pubDatetime.toISOString()}>
       {formatDate(post.data.pubDatetime)}

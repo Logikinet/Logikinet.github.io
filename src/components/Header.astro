@@ -10,17 +10,19 @@ function isActive(href: string): boolean {
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-ink-200/60 bg-ink-50/75 backdrop-blur-xl dark:border-ink-800/60 dark:bg-ink-950/70"
+  class="sticky top-3 z-40 mx-auto w-[calc(100%-1.5rem)] max-w-5xl transition-all duration-300"
 >
-  <div class="container-page flex h-[3.75rem] items-center justify-between gap-4 sm:h-16">
+  <div
+    class="relative flex h-[3.75rem] items-center justify-between gap-4 rounded-2xl border border-ink-200/80 bg-white/75 px-4 shadow-lg backdrop-blur-xl transition-colors duration-300 dark:border-ink-700/60 dark:bg-ink-950/75 dark:shadow-ink-975/50 sm:h-16 sm:px-6"
+  >
     <a href="/" class="group flex items-center gap-2.5 no-underline" aria-label={`${SITE.title} 首页`}>
-      {/* App 图标本身已带圆角浅底；勿再套 rounded 裁切，并用 2x 资源 */}
+      {/* App 图标 */}
       <img
         src="/assets/logo-128.png?v=20260723b"
         alt=""
         width="32"
         height="32"
-        class="h-8 w-8 shrink-0 object-contain drop-shadow-sm"
+        class="h-8 w-8 shrink-0 object-contain drop-shadow-sm transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110"
         decoding="async"
       />
       <span
@@ -31,16 +33,18 @@ function isActive(href: string): boolean {
       </span>
     </a>
 
-    <nav class="hidden items-center gap-0.5 md:flex" aria-label="主导航">
+    <!-- macOS Glass Dock Navigation -->
+    <nav id="dock-nav" class="relative hidden items-center gap-1 rounded-xl bg-ink-100/50 p-1 backdrop-blur-md dark:bg-ink-900/50 md:flex" aria-label="主导航">
       {
         NAV.map((item) => (
           <a
             href={item.href}
+            data-dock-item
             class:list={[
-              "rounded-lg px-3 py-2 text-[13px] no-underline transition duration-200",
+              "dock-link relative rounded-lg px-3.5 py-1.5 text-[13px] font-medium no-underline transition-all duration-200 ease-out",
               isActive(item.href)
-                ? "bg-ink-100/90 font-medium text-ink-900 dark:bg-ink-800/90 dark:text-white"
-                : "text-ink-600 hover:bg-ink-100/70 hover:text-ink-900 dark:text-ink-300 dark:hover:bg-ink-800/70 dark:hover:text-white",
+                ? "bg-white text-ink-900 shadow-sm dark:bg-ink-800 dark:text-white"
+                : "text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-white",
             ]}
             aria-current={isActive(item.href) ? "page" : undefined}
           >
@@ -50,12 +54,12 @@ function isActive(href: string): boolean {
       }
     </nav>
 
-    <div class="flex items-center gap-1">
+    <div class="flex items-center gap-1.5">
       <a
         href={SITE.github}
         target="_blank"
         rel="noopener noreferrer"
-        class="btn-ghost p-2"
+        class="btn-ghost p-2 rounded-xl transition-transform duration-200 hover:scale-110"
         aria-label="GitHub（新窗口打开）"
       >
         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -70,7 +74,7 @@ function isActive(href: string): boolean {
       <button
         type="button"
         id="theme-toggle"
-        class="btn-ghost p-2"
+        class="btn-ghost p-2 rounded-xl transition-transform duration-300 hover:rotate-45"
         aria-label="切换深浅色主题"
       >
         <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -97,14 +101,14 @@ function isActive(href: string): boolean {
     </div>
   </div>
 
-  <div id="mobile-menu" class="hidden border-t border-ink-200 dark:border-ink-800 md:hidden" hidden>
-    <nav class="container-page flex flex-col gap-1 py-3" aria-label="移动端导航">
+  <div id="mobile-menu" class="hidden border-t border-ink-200 mt-2 rounded-xl bg-white/95 p-2 shadow-lg backdrop-blur-lg dark:border-ink-800 dark:bg-ink-950/95 md:hidden" hidden>
+    <nav class="container-page flex flex-col gap-1 py-2" aria-label="移动端导航">
       {
         NAV.map((item) => (
           <a
             href={item.href}
             class:list={[
-              "rounded-lg px-3 py-2.5 text-sm no-underline",
+              "rounded-lg px-3 py-2.5 text-sm no-underline transition-colors",
               isActive(item.href)
                 ? "bg-ink-100 font-medium text-ink-900 dark:bg-ink-800 dark:text-white"
                 : "text-ink-700 dark:text-ink-200",
@@ -126,6 +130,43 @@ function isActive(href: string): boolean {
 </header>
 
 <script>
+  // Fisheye scaling dock effect script
+  function initDockEffect() {
+    const dockNav = document.getElementById("dock-nav");
+    if (!dockNav || window.matchMedia("(pointer: coarse)").matches) return;
+
+    const items = dockNav.querySelectorAll<HTMLElement>("[data-dock-item]");
+    const maxDistance = 100;
+    const maxScale = 1.16;
+
+    dockNav.addEventListener("mousemove", (e) => {
+      const mouseX = e.clientX;
+      items.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const itemCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(mouseX - itemCenter);
+        if (distance < maxDistance) {
+          const scale = 1 + (maxScale - 1) * Math.cos((distance / maxDistance) * (Math.PI / 2));
+          item.style.transform = `scale(${scale})`;
+        } else {
+          item.style.transform = "scale(1)";
+        }
+      });
+    });
+
+    dockNav.addEventListener("mouseleave", () => {
+      items.forEach((item) => {
+        item.style.transform = "scale(1)";
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initDockEffect);
+  } else {
+    initDockEffect();
+  }
+
   const themeBtn = document.getElementById("theme-toggle");
   const menuBtn = document.getElementById("menu-toggle");
   const menu = document.getElementById("mobile-menu");

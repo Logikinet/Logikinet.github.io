@@ -1,15 +1,14 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { resourceLinks, type LinkCategory } from "@/data/resources";
+import type { LinkCategory } from "@/data/resources";
+import { getPublishedLinks } from "@/lib/resources/load";
 
+const resourceLinks = await getPublishedLinks();
 const categories = [...new Set(resourceLinks.map((l) => l.category))] as LinkCategory[];
 const allTags = [...new Set(resourceLinks.flatMap((l) => l.tags))].sort((a, b) =>
   a.localeCompare(b, "zh-CN"),
 );
-const sorted = [...resourceLinks].sort((a, b) => {
-  if (a.featured !== b.featured) return a.featured ? -1 : 1;
-  return a.title.localeCompare(b.title, "zh-CN");
-});
+const sorted = resourceLinks;
 ---
 
 <BaseLayout title="常用网址" description="AquaLeap 资源库 · 常用网址：开发平台、文档、AI 平台、开源与论文工具。">

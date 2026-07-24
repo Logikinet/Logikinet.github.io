@@ -39,7 +39,21 @@ export const resourceSections: ResourceSection[] = [
   },
 ];
 
-export * from "./links";
-export * from "./prompts";
-export * from "./skills";
-export * from "./workflows";
+// Types & categories (content lives in src/content/resources/**)
+export type {
+  PromptCategory,
+  ResourcePrompt,
+} from "./prompts";
+export type { ResourceSkill, SkillOwnership, SkillStatus } from "./skills";
+export type { LinkCategory, ResourceLink } from "./links";
+export type { WorkflowCategory, ResourceWorkflow } from "./workflows";
+
+export {
+  PROMPT_CATEGORIES,
+} from "./prompts";
+export {
+  LINK_CATEGORIES,
+} from "./links";
+export {
+  WORKFLOW_CATEGORIES,
+} from "./workflows";

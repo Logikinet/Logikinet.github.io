@@ -8,6 +8,9 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://aqualeap.dev",
   trailingSlash: "ignore",
+  devToolbar: {
+    enabled: false,
+  },
   integrations: [mdx(), sitemap()],
   vite: {
     // @tailwindcss/vite plugin types may diverge from Astro's nested Vite types.

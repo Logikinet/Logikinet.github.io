@@ -1,0 +1,729 @@
+---
+/**
+ * Content Studio — local development only.
+ * Production static build returns 404 and should not be linked publicly.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+if (import.meta.env.PROD) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+---
+
+<BaseLayout title="Content Studio" description="本地内容管理中心（仅开发模式）" noindex>
+  <div class="studio" id="studio-app">
+    <aside class="studio-nav" aria-label="内容类型">
+      <p class="label-meta px-1">Content Studio</p>
+      <p class="mt-1 px-1 text-xs text-ink-500">仅 localhost · 不自动 push</p>
+      <nav class="mt-4 flex flex-col gap-1">
+        {
+          [
+            ["prompts", "Prompt"],
+            ["skills", "Skills"],
+            ["links", "常用网址"],
+            ["workflows", "Workflows"],
+            ["drafts", "草稿"],
+            ["risks", "风险项"],
+          ].map(([id, label]) => (
+            <button type="button" class="studio-nav-btn" data-nav={id}>
+              {label}
+            </button>
+          ))
+        }
+      </nav>
+      <div class="mt-6 rounded-xl border border-ink-200/80 p-3 text-xs dark:border-ink-700">
+        <p class="font-medium text-ink-800 dark:text-ink-100">Git 状态</p>
+        <p id="git-count" class="mt-1 text-ink-500">检测中…</p>
+        <ul id="git-files" class="mt-2 max-h-28 space-y-0.5 overflow-auto font-mono text-[11px] text-ink-500"></ul>
+        <button type="button" id="copy-git" class="btn-ghost mt-2 !px-2 !py-1 text-[11px]">复制提交命令</button>
+      </div>
+      <a href="/resources/" class="section-link mt-4 block px-1 text-xs">← 资源库前台</a>
+    </aside>
+
+    <section class="studio-list" aria-label="条目列表">
+      <div class="flex flex-wrap items-center gap-2">
+        <input id="search" type="search" class="tool-input !py-2" placeholder="搜索…" />
+        <select id="filter-cat" class="tool-input !w-auto !py-2 text-sm">
+          <option value="">全部分类</option>
+        </select>
+        <button type="button" id="btn-new" class="btn-primary !py-2 text-sm">新建</button>
+      </div>
+      <ul id="entry-list" class="mt-4 space-y-2"></ul>
+      <p id="list-empty" class="mt-6 hidden text-sm text-ink-500">暂无条目</p>
+    </section>
+
+    <section class="studio-editor" aria-label="编辑器">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 pb-3 dark:border-ink-800">
+        <div>
+          <p class="label-meta">编辑</p>
+          <p id="editor-title" class="text-sm font-medium text-ink-800 dark:text-ink-100">未选择</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" id="btn-dup" class="btn-ghost !py-1.5 text-xs" disabled>复制为新</button>
+          <button type="button" id="btn-del" class="btn-ghost !py-1.5 text-xs text-red-600" disabled>删除</button>
+          <button type="button" id="btn-export" class="btn-ghost !py-1.5 text-xs" disabled>导出 MD</button>
+          <button type="button" id="btn-import" class="btn-secondary !py-1.5 text-xs">导入 MD</button>
+          <button type="button" id="btn-save" class="btn-primary !py-1.5 text-xs" disabled>保存 Ctrl+S</button>
+        </div>
+      </div>
+
+      <div id="risk-box" class="mt-3 hidden rounded-xl border border-amber-500/40 bg-amber-50/80 p-3 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-100"></div>
+      <p id="status-line" class="mt-2 text-xs text-ink-500" role="status"></p>
+
+      <form id="editor-form" class="mt-3 space-y-3" onsubmit="return false">
+        <div id="fields" class="grid gap-3 sm:grid-cols-2"></div>
+        <div>
+          <div class="mb-1 flex items-center justify-between gap-2">
+            <label class="text-xs font-medium text-ink-600" for="field-content">正文 / 内容</label>
+            <div class="flex gap-1">
+              <button type="button" class="chip filter-chip is-active text-[11px]" data-preview="raw">原文</button>
+              <button type="button" class="chip filter-chip text-[11px]" data-preview="preview">预览</button>
+              <button type="button" class="btn-ghost !px-2 !py-0.5 text-[11px]" id="btn-copy-content">复制正文</button>
+            </div>
+          </div>
+          <textarea id="field-content" class="tool-input min-h-[220px] font-mono text-[13px] leading-relaxed" rows="14"></textarea>
+          <div id="content-preview" class="prose-aqualeap mt-2 hidden max-h-[320px] overflow-auto rounded-xl border border-ink-200 p-4 text-sm dark:border-ink-700"></div>
+        </div>
+      </form>
+      <input type="file" id="import-file" accept=".md,text/markdown,text/plain" class="hidden" />
+    </section>
+  </div>
+
+  <script is:inline>
+    window.__STUDIO_API__ = "http://127.0.0.1:4322";
+  </script>
+  <script>
+    const API = (window as any).__STUDIO_API__ || "http://127.0.0.1:4322";
+
+    type ResourceType = "prompts" | "skills" | "links" | "workflows";
+    type NavId = ResourceType | "drafts" | "risks";
+
+    const FIELD_META: Record<ResourceType, Array<{ key: string; label: string; kind?: string }>> = {
+      prompts: [
+        { key: "id", label: "id" },
+        { key: "title", label: "title" },
+        { key: "summary", label: "summary", kind: "textarea" },
+        { key: "category", label: "category", kind: "prompt-cat" },
+        { key: "tags", label: "tags (逗号分隔)", kind: "tags" },
+        { key: "models", label: "models (逗号分隔)", kind: "tags" },
+        { key: "version", label: "version" },
+        { key: "updatedAt", label: "updatedAt" },
+        { key: "featured", label: "featured", kind: "bool" },
+        { key: "draft", label: "draft", kind: "bool" },
+        { key: "private", label: "private", kind: "bool" },
+        { key: "safetyNote", label: "safetyNote", kind: "textarea" },
+      ],
+      skills: [
+        { key: "id", label: "id" },
+        { key: "name", label: "name" },
+        { key: "summary", label: "summary", kind: "textarea" },
+        { key: "platform", label: "platform (逗号分隔)", kind: "tags" },
+        { key: "author", label: "author" },
+        { key: "origin", label: "origin" },
+        { key: "license", label: "license" },
+        { key: "ownership", label: "ownership", kind: "ownership" },
+        { key: "status", label: "status", kind: "status" },
+        { key: "repository", label: "repository" },
+        { key: "documentation", label: "documentation" },
+        { key: "tags", label: "tags (逗号分隔)", kind: "tags" },
+        { key: "allowPublicLink", label: "allowPublicLink", kind: "bool" },
+        { key: "draft", label: "draft", kind: "bool" },
+        { key: "private", label: "private", kind: "bool" },
+      ],
+      links: [
+        { key: "id", label: "id" },
+        { key: "title", label: "title" },
+        { key: "description", label: "description", kind: "textarea" },
+        { key: "url", label: "url" },
+        { key: "category", label: "category", kind: "link-cat" },
+        { key: "tags", label: "tags (逗号分隔)", kind: "tags" },
+        { key: "featured", label: "featured", kind: "bool" },
+        { key: "lastChecked", label: "lastChecked" },
+        { key: "draft", label: "draft", kind: "bool" },
+        { key: "private", label: "private", kind: "bool" },
+      ],
+      workflows: [
+        { key: "id", label: "id" },
+        { key: "title", label: "title" },
+        { key: "summary", label: "summary", kind: "textarea" },
+        { key: "category", label: "category", kind: "wf-cat" },
+        { key: "tags", label: "tags (逗号分隔)", kind: "tags" },
+        { key: "updatedAt", label: "updatedAt" },
+        { key: "draft", label: "draft", kind: "bool" },
+        { key: "private", label: "private", kind: "bool" },
+      ],
+    };
+
+    const PROMPT_CATS = ["项目规划","代码实现","代码审查","安全检查","文档写作","论文与报告","项目盘点","GitHub 发布","图片与设计"];
+    const LINK_CATS = ["开发平台","官方文档","AI 平台","开源项目","设计参考","论文工具","其他"];
+    const WF_CATS = ["AGENTS.md","项目约束","开发流程","安全发布","验收清单","计划与实现","Agent Hooks","Harness 规则"];
+
+    let nav: NavId = "prompts";
+    let type: ResourceType = "prompts";
+    let entries: any[] = [];
+    let currentId: string | null = null;
+    let dirty = false;
+    let isNew = false;
+
+    const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as T | null;
+    const listEl = $("#entry-list")!;
+    const emptyEl = $("#list-empty")!;
+    const fieldsEl = $("#fields")!;
+    const contentEl = $("#field-content") as HTMLTextAreaElement;
+    const statusEl = $("#status-line")!;
+    const riskBox = $("#risk-box")!;
+    const editorTitle = $("#editor-title")!;
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function slugify(s: string) {
+      return s
+        .toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fff]+/gi, "-")
+        .replace(/[^a-z0-9-]+/g, "")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60) || "item";
+    }
+
+    async function api(path: string, init?: RequestInit) {
+      const res = await fetch(API + path, {
+        ...init,
+        headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error(data.error || res.statusText) as any;
+        err.data = data;
+        err.status = res.status;
+        throw err;
+      }
+      return data;
+    }
+
+    function setDirty(v: boolean) {
+      dirty = v;
+      document.title = (dirty ? "• " : "") + "Content Studio · AquaLeap";
+    }
+
+    function parseTags(v: string) {
+      return v
+        .split(/[,，]/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    function activeType(): ResourceType {
+      if (nav === "drafts" || nav === "risks") return type;
+      return nav as ResourceType;
+    }
+
+    function renderNav() {
+      document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.nav === nav);
+      });
+    }
+
+    function fillCatFilter() {
+      const sel = $("#filter-cat") as HTMLSelectElement;
+      const t = activeType();
+      let opts: string[] = [];
+      if (t === "prompts") opts = PROMPT_CATS;
+      else if (t === "links") opts = LINK_CATS;
+      else if (t === "workflows") opts = WF_CATS;
+      else opts = [];
+      sel.innerHTML = `<option value="">全部分类</option>` + opts.map((o) => `<option value="${o}">${o}</option>`).join("");
+    }
+
+    function filteredEntries() {
+      const q = (($("#search") as HTMLInputElement).value || "").trim().toLowerCase();
+      const cat = (($("#filter-cat") as HTMLSelectElement).value || "").trim();
+      return entries.filter((e) => {
+        if (nav === "drafts" && !e.draft) return false;
+        if (nav === "risks" && !e.private && !e.draft) {
+          /* risk view shows draft+private; keep both */
+        }
+        if (nav === "risks" && !(e.private || e.draft)) return false;
+        if (cat && e.category !== cat) return false;
+        if (!q) return true;
+        const hay = JSON.stringify(e).toLowerCase();
+        return hay.includes(q);
+      });
+    }
+
+    function renderList() {
+      const items = filteredEntries();
+      listEl.innerHTML = "";
+      emptyEl.classList.toggle("hidden", items.length > 0);
+      for (const e of items) {
+        const li = document.createElement("li");
+        const title = e.title || e.name || e.id;
+        const meta = [e.category || e.ownership || e.status, e.draft ? "draft" : "", e.private ? "private" : ""]
+          .filter(Boolean)
+          .join(" · ");
+        li.innerHTML = `<button type="button" class="studio-item ${e.id === currentId ? "is-active" : ""}" data-id="${e.id}">
+          <span class="block text-sm font-medium text-ink-900 dark:text-ink-50">${escapeHtml(title)}</span>
+          <span class="mt-0.5 block text-[11px] text-ink-500">${escapeHtml(meta)}</span>
+        </button>`;
+        li.querySelector("button")!.addEventListener("click", () => selectEntry(e.id));
+        listEl.appendChild(li);
+      }
+    }
+
+    function escapeHtml(s: string) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function fieldHtml(meta: { key: string; label: string; kind?: string }, value: any) {
+      const id = `f-${meta.key}`;
+      if (meta.kind === "bool") {
+        return `<label class="flex items-center gap-2 text-sm"><input type="checkbox" id="${id}" data-key="${meta.key}" ${value ? "checked" : ""}/> ${meta.label}</label>`;
+      }
+      if (meta.kind === "textarea") {
+        return `<label class="block sm:col-span-2 text-xs"><span class="text-ink-500">${meta.label}</span><textarea id="${id}" data-key="${meta.key}" class="tool-input mt-1 min-h-[64px]" rows="2">${escapeHtml(value ?? "")}</textarea></label>`;
+      }
+      if (meta.kind === "prompt-cat") {
+        return `<label class="block text-xs"><span class="text-ink-500">${meta.label}</span><select id="${id}" data-key="${meta.key}" class="tool-input mt-1">${PROMPT_CATS.map((c) => `<option ${c === value ? "selected" : ""}>${c}</option>`).join("")}</select></label>`;
+      }
+      if (meta.kind === "link-cat") {
+        return `<label class="block text-xs"><span class="text-ink-500">${meta.label}</span><select id="${id}" data-key="${meta.key}" class="tool-input mt-1">${LINK_CATS.map((c) => `<option ${c === value ? "selected" : ""}>${c}</option>`).join("")}</select></label>`;
+      }
+      if (meta.kind === "wf-cat") {
+        return `<label class="block text-xs"><span class="text-ink-500">${meta.label}</span><select id="${id}" data-key="${meta.key}" class="tool-input mt-1">${WF_CATS.map((c) => `<option ${c === value ? "selected" : ""}>${c}</option>`).join("")}</select></label>`;
+      }
+      if (meta.kind === "ownership") {
+        const opts = ["original", "modified", "third-party", "unknown"];
+        return `<label class="block text-xs"><span class="text-ink-500">${meta.label}</span><select id="${id}" data-key="${meta.key}" class="tool-input mt-1">${opts.map((c) => `<option ${c === value ? "selected" : ""}>${c}</option>`).join("")}</select></label>`;
+      }
+      if (meta.kind === "status") {
+        const opts = ["available", "experimental", "draft", "retired"];
+        return `<label class="block text-xs"><span class="text-ink-500">${meta.label}</span><select id="${id}" data-key="${meta.key}" class="tool-input mt-1">${opts.map((c) => `<option ${c === value ? "selected" : ""}>${c}</option>`).join("")}</select></label>`;
+      }
+      let display = value;
+      if (Array.isArray(value)) display = value.join(", ");
+      return `<label class="block text-xs"><span class="text-ink-500">${meta.label}</span><input id="${id}" data-key="${meta.key}" class="tool-input mt-1" value="${escapeHtml(display ?? "")}"/></label>`;
+    }
+
+    function blankEntry(t: ResourceType): any {
+      const base: any = {
+        id: "",
+        tags: [],
+        draft: true,
+        private: false,
+        content: "",
+      };
+      if (t === "prompts") {
+        return {
+          ...base,
+          title: "新 Prompt",
+          summary: "用途简介",
+          category: "代码实现",
+          models: [],
+          version: "1.0",
+          updatedAt: today(),
+          featured: false,
+        };
+      }
+      if (t === "skills") {
+        return {
+          ...base,
+          name: "新 Skill",
+          summary: "简介",
+          platform: [],
+          author: "王子健",
+          origin: "AquaLeap",
+          license: "整理中",
+          ownership: "original",
+          status: "draft",
+          allowPublicLink: false,
+        };
+      }
+      if (t === "links") {
+        return {
+          ...base,
+          title: "新网址",
+          description: "简介",
+          url: "https://example.com",
+          category: "其他",
+          featured: false,
+          lastChecked: today(),
+        };
+      }
+      return {
+        ...base,
+        title: "新工作流",
+        summary: "简介",
+        category: "项目约束",
+        updatedAt: today(),
+      };
+    }
+
+    function loadForm(entry: any) {
+      const t = activeType();
+      const metas = FIELD_META[t];
+      fieldsEl.innerHTML = metas.map((m) => fieldHtml(m, entry[m.key])).join("");
+      contentEl.value = entry.content || "";
+      editorTitle.textContent = entry.title || entry.name || entry.id || "新条目";
+      fieldsEl.querySelectorAll("input, textarea, select").forEach((el) => {
+        el.addEventListener("input", () => setDirty(true));
+        el.addEventListener("change", () => setDirty(true));
+      });
+      contentEl.oninput = () => {
+        setDirty(true);
+        updatePreview();
+      };
+      ($("#btn-dup") as HTMLButtonElement).disabled = false;
+      ($("#btn-del") as HTMLButtonElement).disabled = isNew;
+      ($("#btn-export") as HTMLButtonElement).disabled = false;
+      ($("#btn-save") as HTMLButtonElement).disabled = false;
+      updatePreview();
+      setDirty(false);
+    }
+
+    function readForm(): any {
+      const t = activeType();
+      const entry: any = { content: contentEl.value };
+      for (const meta of FIELD_META[t]) {
+        const el = document.getElementById(`f-${meta.key}`) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+        if (!el) continue;
+        if (meta.kind === "bool") {
+          entry[meta.key] = (el as HTMLInputElement).checked;
+        } else if (meta.kind === "tags") {
+          entry[meta.key] = parseTags((el as HTMLInputElement).value);
+        } else {
+          entry[meta.key] = (el as HTMLInputElement).value;
+        }
+      }
+      if (!entry.id) {
+        entry.id = slugify(entry.title || entry.name || "item");
+      } else {
+        entry.id = slugify(entry.id);
+      }
+      // clean empty urls
+      if (entry.repository === "") delete entry.repository;
+      if (entry.documentation === "") delete entry.documentation;
+      return entry;
+    }
+
+    function updatePreview() {
+      const box = $("#content-preview")!;
+      if (box.classList.contains("hidden")) return;
+      // lightweight markdown-ish: escape + newlines
+      box.innerHTML = escapeHtml(contentEl.value).replace(/\n/g, "<br/>");
+    }
+
+    async function loadEntries() {
+      const t = activeType();
+      type = t === "prompts" || t === "skills" || t === "links" || t === "workflows" ? t : type;
+      if (nav === "prompts" || nav === "skills" || nav === "links" || nav === "workflows") {
+        type = nav;
+      }
+      try {
+        const data = await api(`/api/entries/${type}`);
+        entries = data.entries || [];
+        statusEl.textContent = `已加载 ${entries.length} 条 · API ${API}`;
+      } catch (e: any) {
+        entries = [];
+        statusEl.textContent = `无法连接内容服务（${API}）。请用 npm run studio 启动。`;
+      }
+      fillCatFilter();
+      renderList();
+    }
+
+    async function selectEntry(id: string) {
+      if (dirty && !confirm("有未保存更改，切换将丢弃。继续？")) return;
+      isNew = false;
+      currentId = id;
+      const data = await api(`/api/entries/${type}/${id}`);
+      loadForm(data.entry);
+      renderList();
+    }
+
+    function newEntry() {
+      if (dirty && !confirm("有未保存更改，继续？")) return;
+      isNew = true;
+      currentId = null;
+      const entry = blankEntry(type);
+      loadForm(entry);
+      setDirty(true);
+      renderList();
+    }
+
+    async function saveEntry(replaceSecrets = false) {
+      const entry = readForm();
+      try {
+        if (isNew || !currentId) {
+          await api(`/api/entries/${type}`, {
+            method: "POST",
+            body: JSON.stringify({ entry, replaceSecrets }),
+          });
+        } else {
+          await api(`/api/entries/${type}/${currentId}`, {
+            method: "PUT",
+            body: JSON.stringify({ entry, replaceSecrets }),
+          });
+        }
+        statusEl.textContent = `已保存 ${entry.id}.md`;
+        riskBox.classList.add("hidden");
+        isNew = false;
+        currentId = entry.id;
+        setDirty(false);
+        await loadEntries();
+        await refreshGit();
+      } catch (e: any) {
+        if (e.data?.findings) {
+          showRisks(e.data.findings);
+          statusEl.textContent = "保存被敏感信息检查拦截";
+        } else if (e.data?.issues) {
+          statusEl.textContent = "校验失败：" + e.data.issues.map((i: any) => i.path?.join(".") + " " + i.message).join("; ");
+        } else {
+          statusEl.textContent = e.message || "保存失败";
+        }
+      }
+    }
+
+    function showRisks(findings: any[]) {
+      riskBox.classList.remove("hidden");
+      riskBox.innerHTML =
+        `<p class="font-medium">敏感信息警告（值已脱敏）</p><ul class="mt-2 space-y-1">` +
+        findings
+          .map(
+            (f) =>
+              `<li>L${f.line} · <strong>${escapeHtml(f.type)}</strong> · ${escapeHtml(f.severity)} · ${escapeHtml(f.hint)} → ${escapeHtml(f.placeholder)}</li>`,
+          )
+          .join("") +
+        `</ul><button type="button" id="btn-sanitize" class="btn-secondary mt-2 !py-1 text-xs">替换为安全占位符并重试</button>`;
+      $("#btn-sanitize")?.addEventListener("click", () => saveEntry(true));
+    }
+
+    async function deleteEntry() {
+      if (!currentId || isNew) return;
+      if (!confirm(`确认删除 ${currentId}？将移入本地 .trash（可恢复）。`)) return;
+      if (!confirm("再次确认：删除后前台将不再显示（草稿/正式均移入 trash）。")) return;
+      await api(`/api/entries/${type}/${currentId}`, { method: "DELETE" });
+      currentId = null;
+      isNew = false;
+      setDirty(false);
+      fieldsEl.innerHTML = "";
+      contentEl.value = "";
+      editorTitle.textContent = "未选择";
+      statusEl.textContent = "已移入 trash";
+      await loadEntries();
+      await refreshGit();
+    }
+
+    function duplicateEntry() {
+      const entry = readForm();
+      entry.id = slugify((entry.id || "item") + "-copy");
+      if (entry.title) entry.title = entry.title + " (副本)";
+      if (entry.name) entry.name = entry.name + " (副本)";
+      entry.draft = true;
+      isNew = true;
+      currentId = null;
+      loadForm(entry);
+      setDirty(true);
+      statusEl.textContent = "已复制为新条目（未保存）";
+    }
+
+    function exportMd() {
+      const entry = readForm();
+      const lines = ["---"];
+      for (const [k, v] of Object.entries(entry)) {
+        if (k === "content") continue;
+        if (Array.isArray(v)) {
+          lines.push(`${k}:`);
+          for (const i of v) lines.push(`  - ${i}`);
+        } else {
+          lines.push(`${k}: ${v}`);
+        }
+      }
+      lines.push("---", "", entry.content || "", "");
+      const b = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(b);
+      a.download = `${entry.id || "export"}.md`;
+      a.click();
+    }
+
+    async function importMd(file: File) {
+      const text = await file.text();
+      // very light parse
+      let body = text;
+      let data: any = blankEntry(type);
+      if (text.startsWith("---")) {
+        const end = text.indexOf("\n---", 3);
+        if (end !== -1) {
+          const fm = text.slice(3, end);
+          body = text.slice(end + 4);
+          for (const line of fm.split("\n")) {
+            const m = line.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
+            if (m) data[m[1]] = m[2];
+          }
+        }
+      }
+      data.content = body.trim();
+      isNew = true;
+      currentId = null;
+      loadForm(data);
+      setDirty(true);
+      statusEl.textContent = "已导入（未保存）";
+    }
+
+    async function refreshGit() {
+      try {
+        const g = await api("/api/git-status");
+        $("#git-count")!.textContent = `${g.count} 个未提交改动`;
+        $("#git-files")!.innerHTML = (g.files || []).map((f: string) => `<li>${escapeHtml(f)}</li>`).join("");
+        ($("#copy-git") as HTMLButtonElement).onclick = async () => {
+          await navigator.clipboard.writeText((g.suggest || []).join("\n"));
+          statusEl.textContent = "已复制 git 命令";
+        };
+      } catch {
+        $("#git-count")!.textContent = "Git 不可用";
+      }
+    }
+
+    // events
+    document.querySelectorAll<HTMLButtonElement>("[data-nav]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (dirty && !confirm("有未保存更改，继续？")) return;
+        nav = btn.dataset.nav as NavId;
+        if (nav === "prompts" || nav === "skills" || nav === "links" || nav === "workflows") type = nav;
+        renderNav();
+        currentId = null;
+        isNew = false;
+        setDirty(false);
+        await loadEntries();
+      });
+    });
+
+    $("#btn-new")!.addEventListener("click", newEntry);
+    $("#btn-save")!.addEventListener("click", () => saveEntry(false));
+    $("#btn-del")!.addEventListener("click", () => deleteEntry());
+    $("#btn-dup")!.addEventListener("click", duplicateEntry);
+    $("#btn-export")!.addEventListener("click", exportMd);
+    $("#btn-import")!.addEventListener("click", () => ($("#import-file") as HTMLInputElement).click());
+    $("#import-file")!.addEventListener("change", (ev) => {
+      const f = (ev.target as HTMLInputElement).files?.[0];
+      if (f) importMd(f);
+    });
+    $("#search")!.addEventListener("input", renderList);
+    $("#filter-cat")!.addEventListener("change", renderList);
+    $("#btn-copy-content")!.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(contentEl.value);
+      statusEl.textContent = "正文已复制";
+    });
+
+    document.querySelectorAll<HTMLButtonElement>("[data-preview]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-preview]").forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        const mode = btn.dataset.preview;
+        const prev = $("#content-preview")!;
+        if (mode === "preview") {
+          contentEl.classList.add("hidden");
+          prev.classList.remove("hidden");
+          updatePreview();
+        } else {
+          contentEl.classList.remove("hidden");
+          prev.classList.add("hidden");
+        }
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        saveEntry(false);
+      }
+    });
+
+    window.addEventListener("beforeunload", (e) => {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+
+    renderNav();
+    loadEntries();
+    refreshGit();
+  </script>
+
+  <style>
+    .studio {
+      display: grid;
+      grid-template-columns: 13rem minmax(14rem, 1fr) minmax(20rem, 1.4fr);
+      gap: 0;
+      min-height: calc(100vh - 4rem);
+      border-top: 1px solid rgb(208 219 234 / 0.5);
+    }
+    @media (max-width: 960px) {
+      .studio {
+        grid-template-columns: 1fr;
+      }
+    }
+    .studio-nav {
+      border-right: 1px solid rgb(208 219 234 / 0.6);
+      padding: 1rem 0.75rem;
+      background: rgb(245 247 251 / 0.6);
+    }
+    :global(.dark) .studio-nav {
+      background: rgb(12 18 27 / 0.5);
+      border-right-color: rgb(52 70 89 / 0.5);
+    }
+    .studio-nav-btn {
+      text-align: left;
+      border-radius: 0.65rem;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.875rem;
+      color: var(--color-ink-700);
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+    .studio-nav-btn.is-active,
+    .studio-nav-btn:hover {
+      background: color-mix(in oklab, var(--color-aqua-500) 12%, transparent);
+      color: var(--color-aqua-700);
+    }
+    .studio-list {
+      border-right: 1px solid rgb(208 219 234 / 0.6);
+      padding: 1rem;
+      overflow: auto;
+    }
+    :global(.dark) .studio-list {
+      border-right-color: rgb(52 70 89 / 0.5);
+    }
+    .studio-editor {
+      padding: 1rem 1.1rem 2rem;
+      overflow: auto;
+    }
+    .studio-item {
+      width: 100%;
+      text-align: left;
+      border-radius: 0.75rem;
+      border: 1px solid rgb(208 219 234 / 0.7);
+      background: white;
+      padding: 0.65rem 0.75rem;
+      cursor: pointer;
+    }
+    :global(.dark) .studio-item {
+      background: rgb(18 28 41 / 0.55);
+      border-color: rgb(52 70 89 / 0.55);
+    }
+    .studio-item.is-active {
+      border-color: color-mix(in oklab, var(--color-aqua-500) 45%, transparent);
+      box-shadow: 0 0 0 1px color-mix(in oklab, var(--color-aqua-500) 25%, transparent);
+    }
+    .filter-chip.is-active {
+      border-color: color-mix(in oklab, var(--color-aqua-500) 45%, transparent);
+      background: color-mix(in oklab, var(--color-aqua-500) 12%, transparent);
+    }
+  </style>
+</BaseLayout>

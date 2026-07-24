@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { resourceSkills, type SkillOwnership } from "@/data/resources";
+import type { SkillOwnership } from "@/data/resources";
+import { getPublishedSkills } from "@/lib/resources/load";
 
+const resourceSkills = await getPublishedSkills();
 const ownerships = [...new Set(resourceSkills.map((s) => s.ownership))] as SkillOwnership[];
 
 const ownershipLabel: Record<SkillOwnership, string> = {

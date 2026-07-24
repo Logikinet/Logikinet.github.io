@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { resourcePrompts, type PromptCategory } from "@/data/resources";
+import type { PromptCategory } from "@/data/resources";
+import { getPublishedPrompts } from "@/lib/resources/load";
 
+const resourcePrompts = await getPublishedPrompts();
 const categories = [...new Set(resourcePrompts.map((p) => p.category))] as PromptCategory[];
 const allTags = [...new Set(resourcePrompts.flatMap((p) => p.tags))].sort((a, b) =>
   a.localeCompare(b, "zh-CN"),
@@ -72,7 +74,7 @@ const allTags = [...new Set(resourcePrompts.flatMap((p) => p.tags))].sort((a, b)
               <dl class="mt-3 grid gap-2 text-sm text-ink-600 dark:text-ink-300 sm:grid-cols-2">
                 <div>
                   <dt class="text-xs text-ink-500">适用模型</dt>
-                  <dd class="mt-0.5">{prompt.models}</dd>
+                  <dd class="mt-0.5">{Array.isArray(prompt.models) ? prompt.models.join(" · ") : prompt.models}</dd>
                 </div>
                 <div>
                   <dt class="text-xs text-ink-500">更新</dt>

@@ -1,0 +1,189 @@
+---
+// Magnetic Fluid Cursor Component (iPad/macOS style inspired by oooo.so)
+---
+
+<div id="magnetic-cursor-container" aria-hidden="true" class="pointer-events-none fixed inset-0 z-50 overflow-hidden hidden md:block">
+  <div
+    id="cursor-dot"
+    class="fixed left-0 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-aqua-500 transition-opacity duration-300 dark:bg-aqua-400"
+  ></div>
+  <div
+    id="cursor-ring"
+    class="fixed left-0 top-0 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-aqua-500/40 bg-aqua-500/10 backdrop-blur-[1px] transition-opacity duration-200 dark:border-aqua-400/50 dark:bg-aqua-400/15"
+  ></div>
+</div>
+
+<script>
+  function initMagneticCursor() {
+    // Disable on touch devices or reduced motion
+    if (window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const containerEl = document.getElementById("magnetic-cursor-container");
+    const dotEl = document.getElementById("cursor-dot");
+    const ringEl = document.getElementById("cursor-ring");
+
+    if (!containerEl || !dotEl || !ringEl) return;
+
+    const container: HTMLElement = containerEl;
+    const dot: HTMLElement = dotEl;
+    const ring: HTMLElement = ringEl;
+
+    // Raw physical mouse position
+    let rawX = -100;
+    let rawY = -100;
+
+    // Current animated ring & dot positions
+    let ringX = -100;
+    let ringY = -100;
+    let dotX = -100;
+    let dotY = -100;
+
+    // Target ring size and position
+    let targetRingX = -100;
+    let targetRingY = -100;
+    let targetWidth = 36;
+    let targetHeight = 36;
+    let currentWidth = 36;
+    let currentHeight = 36;
+    let targetRadius = "50%";
+    let isMagnetized = false;
+
+    // Show cursor on first mousemove
+    window.addEventListener(
+      "mousemove",
+      (e) => {
+        rawX = e.clientX;
+        rawY = e.clientY;
+        ringX = rawX;
+        ringY = rawY;
+        dotX = rawX;
+        dotY = rawY;
+        container.style.display = "block";
+      },
+      { once: true }
+    );
+
+    window.addEventListener("mousemove", (e) => {
+      rawX = e.clientX;
+      rawY = e.clientY;
+    });
+
+    document.addEventListener("mouseleave", () => {
+      dot.style.opacity = "0";
+      ring.style.opacity = "0";
+    });
+
+    document.addEventListener("mouseenter", () => {
+      dot.style.opacity = "1";
+      ring.style.opacity = "1";
+    });
+
+    // Active mouse down effect
+    window.addEventListener("mousedown", () => {
+      ring.style.transform = "translate(-50%, -50%) scale(0.88)";
+      dot.style.transform = "translate(-50%, -50%) scale(1.4)";
+    });
+
+    window.addEventListener("mouseup", () => {
+      ring.style.transform = "translate(-50%, -50%) scale(1)";
+      dot.style.transform = "translate(-50%, -50%) scale(1)";
+    });
+
+    // Check target under RAW mouse position
+    function updateMagneticTarget() {
+      if (rawX < 0 || rawY < 0) return;
+
+      const el = document.elementFromPoint(rawX, rawY) as HTMLElement | null;
+      if (!el) {
+        isMagnetized = false;
+        targetRingX = rawX;
+        targetRingY = rawY;
+        targetWidth = 36;
+        targetHeight = 36;
+        targetRadius = "50%";
+        return;
+      }
+
+      // Only magnetize compact interactive elements (buttons, nav items, chips, stats, explicitly marked magnetic elements)
+      const buttonEl = el.closest(".btn, button, .dock-link, .chip, .stat-item, [data-magnetic]") as HTMLElement | null;
+      const cardEl = el.closest(".card, .card-spotlight") as HTMLElement | null;
+
+      if (buttonEl) {
+        const rect = buttonEl.getBoundingClientRect();
+        // Filter out large blocks or card overlay links
+        if (rect.width < 350 && rect.height < 100) {
+          isMagnetized = true;
+          const paddingX = 8;
+          const paddingY = 6;
+          
+          targetWidth = rect.width + paddingX * 2;
+          targetHeight = rect.height + paddingY * 2;
+          targetRadius = getComputedStyle(buttonEl).borderRadius || "12px";
+          targetRingX = rect.left + rect.width / 2;
+          targetRingY = rect.top + rect.height / 2;
+          return;
+        }
+      }
+
+      if (cardEl) {
+        isMagnetized = false;
+        targetWidth = 52;
+        targetHeight = 52;
+        targetRadius = "50%";
+        targetRingX = rawX;
+        targetRingY = rawY;
+        return;
+      }
+
+      // Default free cursor
+      isMagnetized = false;
+      targetWidth = 36;
+      targetHeight = 36;
+      targetRadius = "50%";
+      targetRingX = rawX;
+      targetRingY = rawY;
+    }
+
+    // Smooth lerp loop
+    function render() {
+      updateMagneticTarget();
+
+      const lerpSpeed = isMagnetized ? 0.22 : 0.2;
+      const sizeLerpSpeed = 0.2;
+
+      // Lerp position
+      ringX += (targetRingX - ringX) * lerpSpeed;
+      ringY += (targetRingY - ringY) * lerpSpeed;
+
+      dotX += (rawX - dotX) * 0.35;
+      dotY += (rawY - dotY) * 0.35;
+
+      // Lerp dimensions
+      currentWidth += (targetWidth - currentWidth) * sizeLerpSpeed;
+      currentHeight += (targetHeight - currentHeight) * sizeLerpSpeed;
+
+      // Update DOM
+      dot.style.left = `${dotX}px`;
+      dot.style.top = `${dotY}px`;
+
+      ring.style.left = `${ringX}px`;
+      ring.style.top = `${ringY}px`;
+      ring.style.width = `${currentWidth}px`;
+      ring.style.height = `${currentHeight}px`;
+      ring.style.borderRadius = targetRadius;
+
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  // Re-init on page navigation
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMagneticCursor);
+  } else {
+    initMagneticCursor();
+  }
+</script>

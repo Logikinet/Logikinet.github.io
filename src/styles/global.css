@@ -148,6 +148,39 @@
     @apply relative rounded-[1.15rem] border border-ink-200/70 bg-white/90 p-5 sm:p-6
       transition-[transform,box-shadow,border-color,background-color] duration-300 ease-out;
     box-shadow: var(--shadow-card);
+    transform-style: preserve-3d;
+  }
+
+  /* 3D Tilt & Spotlight Glow */
+  .card-spotlight {
+    position: relative;
+    overflow: hidden;
+    transform: perspective(1000px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+
+  .card-spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: var(--spotlight-opacity, 0);
+    transition: opacity 0.3s ease;
+    background: radial-gradient(
+      500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(47, 168, 154, 0.14),
+      transparent 40%
+    );
+  }
+
+  .dark .card-spotlight::before {
+    background: radial-gradient(
+      500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(126, 212, 200, 0.16),
+      transparent 40%
+    );
   }
 
   .card:hover {
@@ -172,9 +205,18 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .card:hover {
-      transform: none;
+    .card:hover, .card-spotlight {
+      transform: none !important;
     }
+  }
+
+  /* Tactile active click spring effect */
+  .btn, .card, .chip, .stat-item, .dock-link {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .btn:active, .card:active, .chip:active, .stat-item:active, .dock-link:active {
+    transform: scale(0.96) !important;
   }
 
   .card-interactive {

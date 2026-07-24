@@ -1,19 +1,9 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import {
-  resourceSections,
-  resourceLinks,
-  resourcePrompts,
-  resourceSkills,
-  resourceWorkflows,
-} from "@/data/resources";
+import { resourceSections } from "@/data/resources";
+import { getResourceCounts } from "@/lib/resources/load";
 
-const counts: Record<string, number> = {
-  links: resourceLinks.length,
-  prompts: resourcePrompts.length,
-  skills: resourceSkills.length,
-  workflows: resourceWorkflows.length,
-};
+const counts = await getResourceCounts();
 ---
 
 <BaseLayout

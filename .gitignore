@@ -26,3 +26,10 @@ Thumbs.db
 
 # pagefind (generated on build; public copy optional)
 public/pagefind/
+
+# Content Studio local trash (deleted entries)
+src/content/resources/.trash/
+
+# Python
+scripts/__pycache__/
+**/__pycache__/

@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { resourceWorkflows, type WorkflowCategory } from "@/data/resources";
+import type { WorkflowCategory } from "@/data/resources";
+import { getPublishedWorkflows } from "@/lib/resources/load";
 
+const resourceWorkflows = await getPublishedWorkflows();
 const categories = [...new Set(resourceWorkflows.map((w) => w.category))] as WorkflowCategory[];
 ---
 

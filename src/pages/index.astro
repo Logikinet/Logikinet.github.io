@@ -53,20 +53,36 @@ const jsonLd = {
   <section class="hero-surface" aria-labelledby="hero-title">
     <div class="container-page section-space !pb-6 sm:!pb-8 lg:!pb-10">
       <div class="hero-kicker">
-        <span class="hero-kicker-dot" aria-hidden="true"></span>
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-aqua-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-aqua-500"></span>
+        </span>
         <span class="font-mono text-[11px] tracking-[0.12em] uppercase text-ink-500 dark:text-ink-400">
           {SITE.title}
         </span>
         <span class="text-ink-300 dark:text-ink-600" aria-hidden="true">·</span>
-        <span>{SITE.name}</span>
+        <span>王子健 (Logikinet)</span>
       </div>
 
-      <h1 id="hero-title" class="hero-title mt-7 sm:mt-8">
-        构建可控、可靠<br class="hidden sm:block" />且高效的智能系统
-      </h1>
+      <div class="mt-6 flex items-center gap-3.5">
+        <img
+          src="/assets/logo-128.png?v=20260723b"
+          alt=""
+          width="48"
+          height="48"
+          class="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl object-contain drop-shadow-md transition-transform hover:scale-105"
+        />
+        <h1 id="hero-title" class="text-3xl font-bold tracking-tight text-ink-900 sm:text-5xl lg:text-6xl dark:text-ink-50" style="font-family: var(--font-display)">
+          Hi, I'm <span class="bg-gradient-to-r from-ink-900 via-aqua-600 to-aqua-500 bg-clip-text text-transparent dark:from-white dark:via-aqua-300 dark:to-aqua-400">王子健</span>
+        </h1>
+      </div>
 
-      <p class="hero-lead">
-        {SITE.name}的个人技术空间。记录 AI Agent、Harness 工程、鸿蒙与仓颉开发，以及从想法到真实产品的完整实践。
+      <p class="mt-4 flex flex-wrap items-center gap-2 text-lg sm:text-xl font-normal text-ink-600 dark:text-ink-300">
+        <span>Building AI systems & fullstack apps as a</span>
+        <span class="inline-flex items-center rounded-lg border border-ink-200/80 bg-white/80 px-2.5 py-0.5 font-mono text-base sm:text-lg font-medium italic text-ink-800 shadow-xs backdrop-blur-xs dark:border-ink-700/80 dark:bg-ink-800/80 dark:text-ink-100">
+          <span id="typewriter-text" class="text-aqua-600 dark:text-aqua-400">&lt;developer /&gt;</span>
+          <span class="animate-pulse ml-0.5 font-bold text-aqua-500">|</span>
+        </span>
       </p>
 
       <div class="mt-9 flex flex-wrap items-center gap-3">
@@ -342,4 +358,58 @@ const jsonLd = {
       </div>
     </div>
   </section>
+
+  <script>
+    function initTypewriter() {
+      const typewriterEl = document.getElementById("typewriter-text");
+      if (!typewriterEl) return;
+      const el: HTMLElement = typewriterEl;
+
+      const words = [
+        "<developer />",
+        "<agent_builder />",
+        "<fullstack_dev />",
+        "<harmonyos_dev />",
+        "<open_sourcer />"
+      ];
+
+      let wordIdx = 0;
+      let charIdx = words[0].length;
+      let isDeleting = false;
+      let typingSpeed = 100;
+
+      function type() {
+        const currentWord = words[wordIdx];
+
+        if (isDeleting) {
+          charIdx--;
+          typingSpeed = 50;
+        } else {
+          charIdx++;
+          typingSpeed = 100;
+        }
+
+        el.textContent = currentWord.substring(0, charIdx);
+
+        if (!isDeleting && charIdx === currentWord.length) {
+          typingSpeed = 2200;
+          isDeleting = true;
+        } else if (isDeleting && charIdx === 0) {
+          isDeleting = false;
+          wordIdx = (wordIdx + 1) % words.length;
+          typingSpeed = 350;
+        }
+
+        setTimeout(type, typingSpeed);
+      }
+
+      setTimeout(type, 1000);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initTypewriter);
+    } else {
+      initTypewriter();
+    }
+  </script>
 </BaseLayout>
