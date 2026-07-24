@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T10:11:11.764Z",
+  "generatedAt": "2026-07-24T10:16:02.370Z",
   "githubUser": "Logikinet",
   "sourceRepository": null,
   "sourceSha": null,
@@ -11,12 +11,12 @@
     "zhishen-dun",
     "zhidun",
     "smart-silver",
-    "digital-bomb",
-    "ai-output-formatter",
     "zhonghe",
     "offer-pilot",
     "cangjie-ict",
-    "personal-ai-workbench"
+    "personal-ai-workbench",
+    "digital-bomb",
+    "ai-output-formatter"
   ],
   "report": {
     "synced": [
@@ -49,23 +49,15 @@
         "id": "smart-silver",
         "readme": "remote",
         "repository": "Logikinet/smart-silver"
-      },
-      {
-        "id": "digital-bomb",
-        "readme": "remote",
-        "repository": "Logikinet/digital-bomb"
-      },
-      {
-        "id": "ai-output-formatter",
-        "readme": "remote",
-        "repository": "Logikinet/AI-Output-Formatter"
       }
     ],
     "cached": [
       "zhonghe",
       "offer-pilot",
       "cangjie-ict",
-      "personal-ai-workbench"
+      "personal-ai-workbench",
+      "digital-bomb",
+      "ai-output-formatter"
     ],
     "readmeBlocked": [
       {
@@ -107,6 +99,15 @@
       "cangjie-ict",
       "personal-ai-workbench"
     ],
-    "errors": []
+    "errors": [
+      {
+        "id": "digital-bomb",
+        "type": "GitHub HTTP 403"
+      },
+      {
+        "id": "ai-output-formatter",
+        "type": "GitHub HTTP 403"
+      }
+    ]
   }
 }
