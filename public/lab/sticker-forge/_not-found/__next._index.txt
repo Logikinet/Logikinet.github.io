@@ -1,0 +1,7 @@
+1:"$Sreact.fragment"
+2:I[7121,[],""]
+3:I[4581,[],""]
+4:I[8955,["177","static/chunks/app/layout-182d8ddf0178e3dd.js"],"DebugPanel"]
+5:I[3544,["177","static/chunks/app/layout-182d8ddf0178e3dd.js"],"MobileDemoMode"]
+:HL["/lab/sticker-forge/_next/static/css/f138fc605ef462a4.css","style"]
+0:{"rsc":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/lab/sticker-forge/_next/static/css/f138fc605ef462a4.css","precedence":"next"}]],["$","html",null,{"lang":"zh-CN","children":[["$","head",null,{"children":[["$","meta",null,{"name":"viewport","content":"width=device-width, initial-scale=1, viewport-fit=cover"}],["$","meta",null,{"name":"apple-mobile-web-app-capable","content":"yes"}],["$","meta",null,{"name":"apple-mobile-web-app-status-bar-style","content":"black-translucent"}]]}],["$","body",null,{"children":[["$","$L2",null,{"parallelRouterKey":"children","template":["$","$L3",null,{}]}],["$","$L4",null,{}],["$","$L5",null,{}]]}]]}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"Zt18OSM7IA3UCNrGip85x"}

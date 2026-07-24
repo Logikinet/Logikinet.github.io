@@ -11,6 +11,7 @@
     "content:migrate": "tsx scripts/migrate-resources-to-content.ts",
     "sync:projects": "node scripts/sync-projects.mjs",
     "sync:aof": "node scripts/sync-ai-output-formatter.mjs",
+    "sync:sticker-forge": "node scripts/sync-sticker-forge.mjs",
     "install:notify": "node scripts/install-notify-workflows.mjs",
     "build": "npm run sync:projects && astro check && astro build && pagefind --site dist",
     "build:ci": "astro check && astro build && pagefind --site dist",
