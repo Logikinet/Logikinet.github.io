@@ -33,8 +33,8 @@ export const tools: ToolItem[] = [
     id: "ai-output-formatter",
     title: "AI Output Formatter",
     summary:
-      "将 AI 生成的 Markdown 内容整理成适合微信、论文、报告和内容平台使用的文本，并支持 Markdown 实时预览。",
+      "AI 文本整理 + Markdown 预览 + Word 排版 + LaTeX 工程 + Pandoc 文档转换。浏览器本地优先，可选转换服务。",
     href: "/tools/ai-output-formatter/",
-    tags: ["AI", "Markdown", "文本处理"],
+    tags: ["AI", "Markdown", "Word", "LaTeX", "文档"],
   },
 ];
