@@ -345,6 +345,24 @@
       dark:text-ink-50;
   }
 
+  /* TrueFocus words inside hero H1 — inherit display type scale */
+  #hero-title .focus-word {
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  /* Active word: solid aqua (clip-text + blur is unreliable together) */
+  #hero-title .focus-word.active {
+    color: var(--color-aqua-600);
+  }
+
+  .dark #hero-title .focus-word.active {
+    color: var(--color-aqua-300);
+  }
+
   .hero-lead {
     @apply mt-6 max-w-xl text-[1.02rem] leading-[1.7] text-ink-600 sm:text-lg sm:leading-[1.75]
       dark:text-ink-300;
