@@ -1,7 +1,8 @@
 ---
 /**
- * Vanilla port of React Bits TrueFocus.
- * Word-by-word focus frame + blur; frame motion via GSAP (no React/motion dependency).
+ * Vanilla port of React Bits TrueFocus (JS + CSS).
+ * Frame motion uses GSAP instead of motion/react (site is Astro, not React).
+ * @see https://reactbits.dev — TrueFocus
  */
 interface Props {
   sentence?: string;
@@ -20,11 +21,11 @@ const {
   sentence = "True Focus",
   separator = " ",
   manualMode = false,
-  blurAmount = 4,
+  blurAmount = 5,
   borderColor = "var(--color-aqua-500)",
-  glowColor = "rgb(47 168 154 / 0.55)",
-  animationDuration = 0.55,
-  pauseBetweenAnimations = 1.1,
+  glowColor = "rgb(47 168 154 / 0.6)",
+  animationDuration = 0.5,
+  pauseBetweenAnimations = 1,
   className = "",
   wordClassName = "",
 } = Astro.props;
@@ -32,16 +33,16 @@ const {
 const words = sentence.split(separator).filter((w) => w.length > 0);
 ---
 
-<span
+<div
   class:list={["focus-container", className]}
   data-true-focus
   data-manual={manualMode ? "1" : "0"}
-  data-blur={blurAmount}
+  data-blur={String(blurAmount)}
   data-border-color={borderColor}
   data-glow-color={glowColor}
-  data-duration={animationDuration}
-  data-pause={pauseBetweenAnimations}
-  style={`--border-color: ${borderColor}; --glow-color: ${glowColor}; --tf-duration: ${animationDuration}s; --tf-blur: ${blurAmount}px;`}
+  data-duration={String(animationDuration)}
+  data-pause={String(pauseBetweenAnimations)}
+  style={`--border-color: ${borderColor}; --glow-color: ${glowColor}; --tf-duration: ${animationDuration}s;`}
 >
   {
     words.map((word, index) => (
@@ -49,33 +50,31 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
         class:list={[
           "focus-word",
           wordClassName,
-          manualMode ? "manual" : "",
-          !manualMode && index === 0 ? "active" : "",
+          manualMode && "manual",
+          !manualMode && index === 0 && "active",
         ]}
         data-focus-word
-        data-index={index}
-        style={
-          !manualMode && index === 0
-            ? "filter: blur(0px)"
-            : `filter: blur(${blurAmount}px)`
-        }
+        data-index={String(index)}
+        style={`filter: blur(${!manualMode && index === 0 ? 0 : blurAmount}px); transition: filter ${animationDuration}s ease; --border-color: ${borderColor}; --glow-color: ${glowColor};`}
       >
         {word}
       </span>
     ))
   }
-  <span class="focus-frame" data-focus-frame aria-hidden="true">
+
+  <div class="focus-frame" data-focus-frame aria-hidden="true">
     <span class="corner top-left"></span>
     <span class="corner top-right"></span>
     <span class="corner bottom-left"></span>
     <span class="corner bottom-right"></span>
-  </span>
-</span>
+  </div>
+</div>
 
 <style>
+  /* React Bits TrueFocus.css (adapted for hero inline layout) */
   .focus-container {
     position: relative;
-    display: inline-flex;
+    display: flex;
     gap: 0.35em;
     justify-content: flex-start;
     align-items: center;
@@ -87,11 +86,11 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
   .focus-word {
     position: relative;
     cursor: default;
+    transition:
+      filter 0.3s ease,
+      color 0.3s ease;
     outline: none;
     user-select: none;
-    transition:
-      filter var(--tf-duration, 0.55s) ease,
-      color 0.3s ease;
     will-change: filter;
   }
 
@@ -113,76 +112,78 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
     box-sizing: content-box;
     border: none;
     opacity: 0;
+    will-change: left, top, width, height, opacity;
   }
 
   .corner {
     position: absolute;
-    width: 0.7rem;
-    height: 0.7rem;
-    border: 2.5px solid var(--border-color, #2fa89a);
-    filter: drop-shadow(0 0 5px var(--glow-color, rgb(47 168 154 / 0.55)));
-    border-radius: 2px;
+    width: 1rem;
+    height: 1rem;
+    border: 3px solid var(--border-color, #2fa89a);
+    filter: drop-shadow(0px 0px 4px var(--glow-color, var(--border-color, #2fa89a)));
+    border-radius: 3px;
+    transition: none;
   }
 
   .top-left {
-    top: -8px;
-    left: -8px;
+    top: -10px;
+    left: -10px;
     border-right: none;
     border-bottom: none;
   }
 
   .top-right {
-    top: -8px;
-    right: -8px;
+    top: -10px;
+    right: -10px;
     border-left: none;
     border-bottom: none;
   }
 
   .bottom-left {
-    bottom: -8px;
-    left: -8px;
+    bottom: -10px;
+    left: -10px;
     border-right: none;
     border-top: none;
   }
 
   .bottom-right {
-    bottom: -8px;
-    right: -8px;
+    bottom: -10px;
+    right: -10px;
     border-left: none;
     border-top: none;
   }
 
-  @media (min-width: 640px) {
+  @media (max-width: 639px) {
     .corner {
-      width: 0.85rem;
-      height: 0.85rem;
-      border-width: 3px;
+      width: 0.75rem;
+      height: 0.75rem;
+      border-width: 2.5px;
     }
     .top-left,
     .top-right {
-      top: -10px;
+      top: -8px;
     }
     .bottom-left,
     .bottom-right {
-      bottom: -10px;
+      bottom: -8px;
     }
     .top-left,
     .bottom-left {
-      left: -10px;
+      left: -8px;
     }
     .top-right,
     .bottom-right {
-      right: -10px;
+      right: -8px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .focus-word {
       filter: none !important;
-      transition: none;
+      transition: none !important;
     }
     .focus-frame {
-      display: none;
+      display: none !important;
     }
   }
 </style>
@@ -190,13 +191,11 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
 <script>
   import { gsap } from "gsap";
 
-  type Root = HTMLElement;
-
   function prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
-  function initOne(root: Root) {
+  function initOne(root: HTMLElement) {
     if (root.dataset.ready === "1") return;
     root.dataset.ready = "1";
 
@@ -205,11 +204,11 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
     if (!words.length || !frame) return;
 
     const manual = root.dataset.manual === "1";
-    const blurAmount = Number(root.dataset.blur || 4);
-    const duration = Number(root.dataset.duration || 0.55);
-    const pause = Number(root.dataset.pause || 1.1);
+    const blurAmount = Number(root.dataset.blur ?? 5);
+    const duration = Number(root.dataset.duration ?? 0.5);
+    const pause = Number(root.dataset.pause ?? 1);
     const borderColor = root.dataset.borderColor || "var(--color-aqua-500)";
-    const glowColor = root.dataset.glowColor || "rgb(47 168 154 / 0.55)";
+    const glowColor = root.dataset.glowColor || "rgb(47 168 154 / 0.6)";
 
     root.style.setProperty("--border-color", borderColor);
     root.style.setProperty("--glow-color", glowColor);
@@ -235,19 +234,20 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
       });
     };
 
+    /** Match motion.div animate left/top/size (not transform-only) */
     const moveFrame = (active: number) => {
       const word = words[active];
       if (!word) return;
       const parentRect = root.getBoundingClientRect();
       const activeRect = word.getBoundingClientRect();
-      const x = activeRect.left - parentRect.left;
-      const y = activeRect.top - parentRect.top;
+      const x = activeRect.left - parentRect.left + root.scrollLeft;
+      const y = activeRect.top - parentRect.top + root.scrollTop;
       const width = activeRect.width;
       const height = activeRect.height;
 
       gsap.to(frame, {
-        x,
-        y,
+        left: x,
+        top: y,
         width,
         height,
         opacity: 1,
@@ -258,31 +258,39 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
     };
 
     const setActive = (index: number) => {
-      currentIndex = index;
-      applyBlur(index);
-      moveFrame(index);
+      currentIndex = ((index % words.length) + words.length) % words.length;
+      applyBlur(currentIndex);
+      // double-rAF so layout is settled after class/filter change
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => moveFrame(currentIndex));
+      });
     };
 
-    // initial layout after fonts
     const boot = () => {
-      gsap.set(frame, { x: 0, y: 0, width: 0, height: 0, opacity: 0 });
+      gsap.set(frame, { left: 0, top: 0, width: 0, height: 0, opacity: 0, x: 0, y: 0 });
       setActive(0);
     };
 
-    if (document.fonts?.ready) {
-      document.fonts.ready.then(boot);
-    } else {
-      requestAnimationFrame(boot);
-    }
-
-    if (!manual) {
+    const startAuto = () => {
+      if (manual || timer) return;
       timer = setInterval(
-        () => {
-          setActive((currentIndex + 1) % words.length);
-        },
+        () => setActive(currentIndex + 1),
         (duration + pause) * 1000,
       );
+    };
+
+    const whenReady = () => {
+      boot();
+      if (!manual) startAuto();
+    };
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(whenReady).catch(whenReady);
     } else {
+      requestAnimationFrame(whenReady);
+    }
+
+    if (manual) {
       words.forEach((w, index) => {
         w.addEventListener("mouseenter", () => {
           lastActiveIndex = currentIndex;
@@ -309,7 +317,7 @@ const words = sentence.split(separator).filter((w) => w.length > 0);
   }
 
   function bootAll() {
-    document.querySelectorAll<Root>("[data-true-focus]").forEach(initOne);
+    document.querySelectorAll<HTMLElement>("[data-true-focus]").forEach(initOne);
   }
 
   if (document.readyState === "loading") {
