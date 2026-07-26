@@ -1,0 +1,258 @@
+---
+/**
+ * Vanilla port of React Bits TextType (typewriter + GSAP cursor blink).
+ * Used in Hero role chip.
+ */
+interface Props {
+  text: string | string[];
+  typingSpeed?: number;
+  initialDelay?: number;
+  pauseDuration?: number;
+  deletingSpeed?: number;
+  loop?: boolean;
+  className?: string;
+  showCursor?: boolean;
+  hideCursorWhileTyping?: boolean;
+  cursorCharacter?: string;
+  cursorBlinkDuration?: number;
+  cursorClassName?: string;
+  startOnVisible?: boolean;
+}
+
+const {
+  text,
+  typingSpeed = 75,
+  initialDelay = 400,
+  pauseDuration = 1800,
+  deletingSpeed = 40,
+  loop = true,
+  className = "",
+  showCursor = true,
+  hideCursorWhileTyping = false,
+  cursorCharacter = "|",
+  cursorBlinkDuration = 0.5,
+  cursorClassName = "",
+  startOnVisible = false,
+} = Astro.props;
+
+const texts = Array.isArray(text) ? text : [text];
+const textsJson = JSON.stringify(texts);
+const first = texts[0] ?? "";
+---
+
+<span
+  class:list={["text-type", className]}
+  data-text-type
+  data-texts={textsJson}
+  data-typing-speed={typingSpeed}
+  data-initial-delay={initialDelay}
+  data-pause-duration={pauseDuration}
+  data-deleting-speed={deletingSpeed}
+  data-loop={loop ? "1" : "0"}
+  data-show-cursor={showCursor ? "1" : "0"}
+  data-hide-cursor-while-typing={hideCursorWhileTyping ? "1" : "0"}
+  data-cursor-blink={cursorBlinkDuration}
+  data-start-on-visible={startOnVisible ? "1" : "0"}
+>
+  {/* SSR shows first phrase for SEO/no-JS; client clears then types */}
+  <span class="text-type__content" data-text-type-content aria-live="polite">{first}</span>
+  {
+    showCursor && (
+      <span
+        class:list={["text-type__cursor", cursorClassName]}
+        data-text-type-cursor
+        aria-hidden="true"
+      >
+        {cursorCharacter}
+      </span>
+    )
+  }
+</span>
+
+<style>
+  /* React Bits TextType CSS (adapted) */
+  .text-type {
+    display: inline-block;
+    white-space: pre-wrap;
+  }
+
+  .text-type__content {
+    white-space: pre-wrap;
+  }
+
+  .text-type__cursor {
+    margin-left: 0.25rem;
+    display: inline-block;
+    opacity: 1;
+    font-weight: 700;
+    color: var(--color-aqua-500);
+    will-change: opacity;
+  }
+
+  .text-type__cursor--hidden {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .text-type__cursor {
+      animation: none !important;
+      opacity: 0.85;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  type TextTypeRoot = HTMLElement & { dataset: DOMStringMap };
+
+  function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function parseTexts(raw: string | undefined): string[] {
+    if (!raw) return [""];
+    try {
+      const v = JSON.parse(raw) as unknown;
+      if (Array.isArray(v)) return v.map(String);
+      return [String(v)];
+    } catch {
+      return [raw];
+    }
+  }
+
+  function initOne(root: TextTypeRoot) {
+    if (root.dataset.ready === "1") return;
+    root.dataset.ready = "1";
+
+    const content = root.querySelector<HTMLElement>("[data-text-type-content]");
+    const cursor = root.querySelector<HTMLElement>("[data-text-type-cursor]");
+    if (!content) return;
+
+    const texts = parseTexts(root.dataset.texts);
+    const typingSpeed = Number(root.dataset.typingSpeed || 75);
+    const initialDelay = Number(root.dataset.initialDelay || 0);
+    const pauseDuration = Number(root.dataset.pauseDuration || 1800);
+    const deletingSpeed = Number(root.dataset.deletingSpeed || 40);
+    const loop = root.dataset.loop !== "0";
+    const showCursor = root.dataset.showCursor !== "0";
+    const hideCursorWhileTyping = root.dataset.hideCursorWhileTyping === "1";
+    const cursorBlinkDuration = Number(root.dataset.cursorBlink || 0.5);
+    const startOnVisible = root.dataset.startOnVisible === "1";
+
+    // Reduced motion: show first string, soft static cursor
+    if (prefersReducedMotion()) {
+      content.textContent = texts[0] ?? "";
+      if (cursor) cursor.style.opacity = "0.85";
+      return;
+    }
+
+    let textIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let started = !startOnVisible;
+
+    if (showCursor && cursor) {
+      gsap.set(cursor, { opacity: 1 });
+      gsap.to(cursor, {
+        opacity: 0,
+        duration: cursorBlinkDuration,
+        repeat: -1,
+        yoyo: true,
+        ease: "power2.inOut",
+      });
+    }
+
+    const syncCursorVisibility = () => {
+      if (!cursor || !hideCursorWhileTyping) return;
+      const current = texts[textIndex] ?? "";
+      const typing = charIndex < current.length || isDeleting;
+      cursor.classList.toggle("text-type__cursor--hidden", typing);
+    };
+
+    const tick = () => {
+      if (!started) return;
+      const current = texts[textIndex] ?? "";
+
+      if (isDeleting) {
+        charIndex = Math.max(0, charIndex - 1);
+        content.textContent = current.slice(0, charIndex);
+        syncCursorVisibility();
+
+        if (charIndex === 0) {
+          isDeleting = false;
+          if (!loop && textIndex === texts.length - 1) return;
+          textIndex = (textIndex + 1) % texts.length;
+          timer = setTimeout(tick, pauseDuration * 0.35);
+          return;
+        }
+        timer = setTimeout(tick, deletingSpeed);
+        return;
+      }
+
+      // typing forward
+      if (charIndex < current.length) {
+        charIndex += 1;
+        content.textContent = current.slice(0, charIndex);
+        syncCursorVisibility();
+        timer = setTimeout(tick, typingSpeed);
+        return;
+      }
+
+      // sentence complete
+      syncCursorVisibility();
+      if (!loop && textIndex === texts.length - 1) return;
+      timer = setTimeout(() => {
+        isDeleting = true;
+        tick();
+      }, pauseDuration);
+    };
+
+    const start = () => {
+      if (started && root.dataset.started === "1") return;
+      started = true;
+      root.dataset.started = "1";
+      content.textContent = "";
+      charIndex = 0;
+      isDeleting = false;
+      textIndex = 0;
+      timer = setTimeout(tick, initialDelay);
+    };
+
+    if (startOnVisible) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              start();
+              io.disconnect();
+            }
+          }
+        },
+        { threshold: 0.15 },
+      );
+      io.observe(root);
+    } else {
+      start();
+    }
+
+    // cleanup on page hide (view transitions / navigation)
+    const cleanup = () => {
+      if (timer) clearTimeout(timer);
+      if (cursor) gsap.killTweensOf(cursor);
+    };
+    window.addEventListener("pagehide", cleanup, { once: true });
+  }
+
+  function boot() {
+    document.querySelectorAll<TextTypeRoot>("[data-text-type]").forEach(initOne);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+  document.addEventListener("astro:page-load", boot);
+</script>

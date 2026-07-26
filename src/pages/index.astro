@@ -3,6 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import FlagshipProjectBay from "@/components/FlagshipProjectBay.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import PostCard from "@/components/PostCard.astro";
+import TextType from "@/components/TextType.astro";
 import { SITE, FOCUS_AREAS, ACHIEVEMENTS } from "@/config";
 import {
   getFlagshipProject,
@@ -79,9 +80,28 @@ const jsonLd = {
 
       <p class="mt-4 flex flex-wrap items-center gap-2 text-lg sm:text-xl font-normal text-ink-600 dark:text-ink-300">
         <span>Building AI systems & fullstack apps as a</span>
-        <span class="inline-flex items-center rounded-lg border border-ink-200/80 bg-white/80 px-2.5 py-0.5 font-mono text-base sm:text-lg font-medium italic text-ink-800 shadow-xs backdrop-blur-xs dark:border-ink-700/80 dark:bg-ink-800/80 dark:text-ink-100">
-          <span id="typewriter-text" class="text-aqua-600 dark:text-aqua-400">&lt;developer /&gt;</span>
-          <span class="animate-pulse ml-0.5 font-bold text-aqua-500">|</span>
+        <span
+          class="inline-flex min-h-[1.75em] items-center rounded-lg border border-ink-200/80 bg-white/80 px-2.5 py-0.5 font-mono text-base sm:text-lg font-medium italic text-ink-800 shadow-xs backdrop-blur-xs dark:border-ink-700/80 dark:bg-ink-800/80 dark:text-ink-100"
+        >
+          <TextType
+            className="text-aqua-600 dark:text-aqua-400"
+            text={[
+              "<developer />",
+              "<agent_builder />",
+              "<fullstack_dev />",
+              "<harmonyos_dev />",
+              "<open_sourcer />",
+            ]}
+            typingSpeed={75}
+            deletingSpeed={40}
+            pauseDuration={1600}
+            initialDelay={500}
+            showCursor={true}
+            cursorCharacter="|"
+            cursorBlinkDuration={0.5}
+            loop={true}
+            startOnVisible={true}
+          />
         </span>
       </p>
 
@@ -359,57 +379,4 @@ const jsonLd = {
     </div>
   </section>
 
-  <script>
-    function initTypewriter() {
-      const typewriterEl = document.getElementById("typewriter-text");
-      if (!typewriterEl) return;
-      const el: HTMLElement = typewriterEl;
-
-      const words = [
-        "<developer />",
-        "<agent_builder />",
-        "<fullstack_dev />",
-        "<harmonyos_dev />",
-        "<open_sourcer />"
-      ];
-
-      let wordIdx = 0;
-      let charIdx = words[0].length;
-      let isDeleting = false;
-      let typingSpeed = 100;
-
-      function type() {
-        const currentWord = words[wordIdx];
-
-        if (isDeleting) {
-          charIdx--;
-          typingSpeed = 50;
-        } else {
-          charIdx++;
-          typingSpeed = 100;
-        }
-
-        el.textContent = currentWord.substring(0, charIdx);
-
-        if (!isDeleting && charIdx === currentWord.length) {
-          typingSpeed = 2200;
-          isDeleting = true;
-        } else if (isDeleting && charIdx === 0) {
-          isDeleting = false;
-          wordIdx = (wordIdx + 1) % words.length;
-          typingSpeed = 350;
-        }
-
-        setTimeout(type, typingSpeed);
-      }
-
-      setTimeout(type, 1000);
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", initTypewriter);
-    } else {
-      initTypewriter();
-    }
-  </script>
 </BaseLayout>
