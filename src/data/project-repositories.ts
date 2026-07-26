@@ -186,9 +186,35 @@ export const projectRepositories: ProjectRepositoryConfig[] = [
     notifyEnabled: true,
     notes: "AI 输出清洗、场景排版与 Markdown 预览工具",
   },
+  {
+    projectId: "sticker-forge",
+    repository: "Logikinet/sticker-forge",
+    provider: "github",
+    visibility: "public",
+    defaultBranch: "main",
+    exposeRepositoryUrl: true,
+    readmePublicSafe: true,
+    syncReadme: true,
+    syncMetadata: true,
+    notifyEnabled: false,
+    notes: "AquaLeap Lab WebGL 贴纸工具；demo → /lab/sticker-forge/",
+  },
+  {
+    projectId: "todos-clone",
+    repository: "Logikinet/todos-clone",
+    provider: "github",
+    visibility: "private",
+    defaultBranch: "main",
+    exposeRepositoryUrl: true,
+    readmePublicSafe: true,
+    syncReadme: true,
+    syncMetadata: true,
+    notifyEnabled: false,
+    notes: "todos.dev 风格 Agent 工作流复现（Plan → Confirm → Build）",
+  },
 ];
 
-/** 未确认 / 不存在映射，需人工处理 */
+/** 未确认 / 不入作品集映射，需人工处理 */
 export const pendingRepositoryMappings: Array<{
   label: string;
   reason: string;
@@ -204,6 +230,31 @@ export const pendingRepositoryMappings: Array<{
   {
     label: "welcome-robot",
     reason: "账号仓库列表中未检出 welcome-robot，暂不安装 notify。",
+  },
+  {
+    label: "terraform",
+    reason:
+      "私有仓描述写 AI Agent，但 README 为 HashiCorp Terraform 官方扩展文案，疑似误用/克隆，暂不入作品集。",
+  },
+  {
+    label: "AI_xunlianying",
+    reason: "公开仓内容为阮一峰微信小程序教程示例，非原创作品，不入作品集。",
+  },
+  {
+    label: "ICT_bak",
+    reason: "私有空备份仓（无 README/无默认分支信息），跳过。",
+  },
+  {
+    label: "qianhouduan_muban",
+    reason: "私有前后端模板仓，无 README，暂不入作品集。",
+  },
+  {
+    label: "Logikinet.github.io",
+    reason: "本站源码仓库，不作为作品条目展示。",
+  },
+  {
+    label: "Codex-5.5-codex-instruct-5.5 / system_prompts_leaks",
+    reason: "上游 fork，不入原创作品集。",
   },
 ];
 

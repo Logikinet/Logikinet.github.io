@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import FlagshipProjectBay from "@/components/FlagshipProjectBay.astro";
-import ProjectCard from "@/components/ProjectCard.astro";
+import ProjectStackCarousel from "@/components/ProjectStackCarousel.astro";
 import PostCard from "@/components/PostCard.astro";
 import TextType from "@/components/TextType.astro";
 import TrueFocus from "@/components/TrueFocus.astro";
@@ -18,8 +18,8 @@ import { getPublishedPosts } from "@/utils/blog";
 
 const flagshipProject = getFlagshipProject();
 const moreProjects = flagshipProject
-  ? getMoreProjects(flagshipProject.id, 3)
-  : getMoreProjects("", 3);
+  ? getMoreProjects(flagshipProject.id, 8)
+  : getMoreProjects("", 8);
 const listedProjects = getListedProjects();
 const allPosts = await getPublishedPosts();
 const posts = allPosts.slice(0, 3);
@@ -180,7 +180,7 @@ const jsonLd = {
     )
   }
 
-  <!-- More projects — compact remainder -->
+  <!-- More projects — Travel2-style stacked carousel -->
   <section class="pb-16 sm:pb-20 lg:pb-24" aria-labelledby="more-projects">
     <div class="container-page">
       <div class="mb-7 flex items-end justify-between gap-4 sm:mb-8">
@@ -188,20 +188,12 @@ const jsonLd = {
           <p class="label-meta">Projects</p>
           <h2 id="more-projects" class="section-heading mt-2.5">更多项目</h2>
           <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-            其余精选实践的紧凑入口。
+            其余精选实践，左右滑动或点两侧卡片浏览。
           </p>
         </div>
         <a href="/projects/" class="section-link shrink-0">全部项目 →</a>
       </div>
-      {
-        moreProjects.length > 0 && (
-          <div class="grid gap-4 sm:grid-cols-3 sm:gap-5">
-            {moreProjects.map((project) => (
-              <ProjectCard project={project} compact />
-            ))}
-          </div>
-        )
-      }
+      {moreProjects.length > 0 && <ProjectStackCarousel projects={moreProjects} />}
     </div>
   </section>
 

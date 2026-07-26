@@ -106,8 +106,8 @@ export function getFlagshipProject(id: string = FLAGSHIP_PROJECT_ID): Project | 
   return getProjectById(id) ?? getFeaturedProjects(1)[0];
 }
 
-/** 更多项目：精选中排除旗舰后的紧凑列表 */
-export function getMoreProjects(flagshipId: string, limit = 3): Project[] {
+/** 更多项目：精选中排除旗舰后的堆叠轮播列表 */
+export function getMoreProjects(flagshipId: string, limit = 8): Project[] {
   return getListedProjects()
     .filter((p) => p.featured && p.id !== flagshipId)
     .slice(0, limit);

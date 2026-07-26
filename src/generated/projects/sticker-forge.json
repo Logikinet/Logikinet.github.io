@@ -1,10 +1,10 @@
 {
-  "id": "smart-silver",
-  "name": "smart-silver",
-  "description": "计算机程序设计大赛",
+  "id": "sticker-forge",
+  "name": "sticker-forge",
+  "description": "Sticker Forge — AquaLeap Lab fork of CatsJuice/sticker-forge (MIT). Interactive WebGL sticker maker.",
   "repositoryProvider": "github",
   "repositoryOwner": "Logikinet",
-  "repositoryName": "smart-silver",
+  "repositoryName": "sticker-forge",
   "repositoryStatus": "public",
   "defaultBranch": "main",
   "language": "JavaScript",
@@ -12,7 +12,7 @@
   "stars": 0,
   "forks": 0,
   "homepage": null,
-  "pushedAt": "2026-07-22T11:11:55Z",
+  "pushedAt": "2026-07-24T07:55:12Z",
   "syncedAt": "2026-07-26T03:34:18.551Z",
   "sourceSha": null,
   "syncReason": "manual-github-refresh-20260726",
@@ -20,5 +20,5 @@
   "readmePublicSafe": true,
   "securityScanPassed": true,
   "readmeSource": "remote",
-  "repositoryUrl": "https://github.com/Logikinet/smart-silver"
+  "repositoryUrl": "https://github.com/Logikinet/sticker-forge"
 }

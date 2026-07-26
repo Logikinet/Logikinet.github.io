@@ -1,24 +1,28 @@
 {
-  "id": "cangjie-ict",
-  "name": "cangjie-ict",
-  "description": "Cangjie ICT team project core source release",
+  "id": "todos-clone",
+  "name": "todos-clone",
+  "description": "todos-clone - AI Agent / Harness / Token 优化",
   "repositoryProvider": "github",
   "repositoryOwner": "Logikinet",
-  "repositoryName": "cangjie-ict",
+  "repositoryName": "todos-clone",
   "repositoryStatus": "private",
   "defaultBranch": "main",
-  "language": "Cangjie",
-  "topics": [],
+  "language": "HTML",
+  "topics": [
+    "ai",
+    "ai-agent",
+    "javascript"
+  ],
   "stars": 0,
   "forks": 0,
   "homepage": null,
-  "pushedAt": "2026-07-22T11:11:41Z",
+  "pushedAt": "2026-07-22T07:31:32Z",
   "syncedAt": "2026-07-26T03:34:18.551Z",
   "sourceSha": null,
   "syncReason": "manual-github-refresh-20260726",
   "readmeIncluded": true,
   "readmePublicSafe": true,
   "securityScanPassed": true,
-  "readmeSource": "remote",
-  "repositoryUrl": "https://github.com/Logikinet/cangjie-ict"
+  "readmeSource": "remote-redacted",
+  "repositoryUrl": "https://github.com/Logikinet/todos-clone"
 }

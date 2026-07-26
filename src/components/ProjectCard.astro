@@ -17,76 +17,110 @@ const project = toPageSafeProject(raw);
 const repoUrl = getExposedRepositoryUrl(project);
 const repoLabel = repositoryLabel(project);
 const providerLabel = getProviderLabel(project);
+
+/** Shared with ProjectStackCarousel — bump when covers change */
+const COVER_V = "20260726e";
+const coverSrc = `/assets/projects/${project.id}.jpg?v=${COVER_V}`;
 ---
 
-<article class="card card-spotlight flex h-full flex-col">
-  <div class="mb-3.5 flex flex-wrap items-center gap-2">
-    {project.featured && <span class="chip-accent">精选</span>}
-    <span class="chip">{project.status}</span>
-    <span class="chip">{repoLabel}</span>
-    {
-      project.year && (
-        <span class="card-meta ml-auto font-mono">{project.year}</span>
-      )
-    }
+<article class="card card-spotlight flex h-full flex-col !overflow-hidden !p-0">
+  <div class="project-card-media relative shrink-0 overflow-hidden border-b border-ink-100 dark:border-ink-800/80">
+    <img
+      src={coverSrc}
+      alt=""
+      width="640"
+      height="480"
+      loading="lazy"
+      decoding="async"
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+    />
+    <div
+      class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/90 to-transparent dark:from-ink-900/90"
+      aria-hidden="true"
+    >
+    </div>
   </div>
 
-  <h3 class:list={["card-title", compact ? "!text-base" : ""]}>
-    <a href={`/projects/${project.id}/`} class="no-underline after:absolute after:inset-0">
-      {project.title}
-    </a>
-  </h3>
+  <div class="flex flex-1 flex-col p-5 sm:p-6">
+    <div class="mb-3.5 flex flex-wrap items-center gap-2">
+      {project.featured && <span class="chip-accent">精选</span>}
+      <span class="chip">{project.status}</span>
+      <span class="chip">{repoLabel}</span>
+      {
+        project.year && (
+          <span class="card-meta ml-auto font-mono">{project.year}</span>
+        )
+      }
+    </div>
 
-  <p class="card-body flex-1">{project.summary}</p>
+    <h3 class:list={["card-title", compact ? "!text-base" : ""]}>
+      <a href={`/projects/${project.id}/`} class="no-underline after:absolute after:inset-0">
+        {project.title}
+      </a>
+    </h3>
 
-  {
-    project.stack.filter((t) => t && t !== "整理中").length > 0 && (
-      <div class="mt-4 flex flex-wrap gap-1.5">
-        {project.stack
-          .filter((t) => t && t !== "整理中")
-          .slice(0, 5)
-          .map((tech) => (
-            <span class="chip">{tech}</span>
-          ))}
-      </div>
-    )
-  }
+    <p class="card-body flex-1">{project.summary}</p>
 
-  <div class="relative z-10 mt-5 flex flex-wrap items-center gap-2 border-t border-ink-100 pt-4 dark:border-ink-800/80">
-    <a href={`/projects/${project.id}/`} class="btn-secondary !px-3 !py-1.5 text-xs">
-      详情
-    </a>
     {
-      repoUrl ? (
-        <a
-          href={repoUrl}
-          class="btn-ghost !px-3 !py-1.5 text-xs"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {project.repositoryStatus === "private" ? `私有 ${providerLabel}` : providerLabel}
-        </a>
-      ) : project.repositoryStatus === "private" ? (
-        <span class="px-2 py-1.5 text-xs text-ink-400">私有仓库</span>
-      ) : null
+      project.stack.filter((t) => t && t !== "整理中").length > 0 && (
+        <div class="mt-4 flex flex-wrap gap-1.5">
+          {project.stack
+            .filter((t) => t && t !== "整理中")
+            .slice(0, 5)
+            .map((tech) => (
+              <span class="chip">{tech}</span>
+            ))}
+        </div>
+      )
     }
-    {
-      project.demo ? (
-        project.demo.startsWith("/") ? (
-          <a href={project.demo} class="btn-ghost !px-3 !py-1.5 text-xs">
-            {project.demo.startsWith("/tools/") ? "打开工具" : "打开"}
-          </a>
-        ) : (
+
+    <div class="relative z-10 mt-5 flex flex-wrap items-center gap-2 border-t border-ink-100 pt-4 dark:border-ink-800/80">
+      <a href={`/projects/${project.id}/`} class="btn-secondary !px-3 !py-1.5 text-xs">
+        详情
+      </a>
+      {
+        repoUrl ? (
           <a
-            href={project.demo}
+            href={repoUrl}
             class="btn-ghost !px-3 !py-1.5 text-xs"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Demo
+            {project.repositoryStatus === "private" ? `私有 ${providerLabel}` : providerLabel}
           </a>
-        )
-      ) : null
-    }
+        ) : project.repositoryStatus === "private" ? (
+          <span class="px-2 py-1.5 text-xs text-ink-400">私有仓库</span>
+        ) : null
+      }
+      {
+        project.demo ? (
+          project.demo.startsWith("/") ? (
+            <a href={project.demo} class="btn-ghost !px-3 !py-1.5 text-xs">
+              {project.demo.startsWith("/tools/") ? "打开工具" : "打开"}
+            </a>
+          ) : (
+            <a
+              href={project.demo}
+              class="btn-ghost !px-3 !py-1.5 text-xs"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Demo
+            </a>
+          )
+        ) : null
+      }
+    </div>
   </div>
 </article>
+
+<style>
+  .project-card-media {
+    aspect-ratio: 16 / 10;
+    background: rgb(232 238 246 / 0.65);
+  }
+
+  :global(.dark) .project-card-media {
+    background: rgb(23 34 49 / 0.9);
+  }
+</style>
