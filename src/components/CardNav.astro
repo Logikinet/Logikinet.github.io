@@ -1,0 +1,616 @@
+---
+/**
+ * Vanilla port of React Bits CardNav (official JS + CSS + GSAP).
+ * @see https://reactbits.dev/components/card-nav
+ * @see https://github.com/DavidHDev/react-bits/tree/main/src/content/Components/CardNav
+ */
+import { SITE } from "@/config";
+
+export interface CardNavLink {
+  label: string;
+  href: string;
+  ariaLabel?: string;
+  external?: boolean;
+}
+
+export interface CardNavItem {
+  label: string;
+  bgColor: string;
+  textColor: string;
+  links: CardNavLink[];
+}
+
+interface Props {
+  logo?: string;
+  logoAlt?: string;
+  items: CardNavItem[];
+  className?: string;
+  ease?: string;
+  baseColor?: string;
+  menuColor?: string;
+  buttonBgColor?: string;
+  buttonTextColor?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+}
+
+const {
+  logo = "/assets/logo-128.png?v=20260723b",
+  logoAlt = SITE.title,
+  items,
+  className = "",
+  ease = "power3.out",
+  baseColor = "#fff",
+  menuColor = "#000",
+  buttonBgColor = "#111",
+  buttonTextColor = "#fff",
+  ctaLabel = "GitHub",
+  ctaHref = SITE.github,
+} = Astro.props;
+
+const cards = items.slice(0, 3);
+---
+
+<div
+  class:list={["card-nav-container", className]}
+  data-card-nav
+  data-ease={ease}
+>
+  <nav
+    class="card-nav"
+    data-card-nav-el
+    style={`background-color: ${baseColor};`}
+    aria-label="主导航"
+  >
+    <div class="card-nav-top">
+      <button
+        type="button"
+        class="hamburger-menu"
+        data-card-nav-toggle
+        aria-label="打开菜单"
+        aria-expanded="false"
+        style={`color: ${menuColor};`}
+      >
+        <span class="hamburger-line" aria-hidden="true"></span>
+        <span class="hamburger-line" aria-hidden="true"></span>
+      </button>
+
+      <a href="/" class="logo-container no-underline" aria-label={`${SITE.title} 首页`}>
+        <img src={logo} alt={logoAlt} class="logo" width="28" height="28" decoding="async" />
+        <span class="logo-text">{SITE.title}</span>
+      </a>
+
+      <div class="card-nav-actions">
+        <button
+          type="button"
+          id="theme-toggle"
+          class="card-nav-icon-btn"
+          aria-label="切换深浅色主题"
+        >
+          <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+          </svg>
+          <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+        </button>
+
+        <a
+          href={ctaHref}
+          class="card-nav-cta-button no-underline"
+          style={`background-color: ${buttonBgColor}; color: ${buttonTextColor};`}
+          target={ctaHref.startsWith("http") ? "_blank" : undefined}
+          rel={ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
+        >
+          {ctaLabel}
+        </a>
+      </div>
+    </div>
+
+    <div class="card-nav-content" data-card-nav-content aria-hidden="true">
+      {
+        cards.map((item) => (
+          <div
+            class="nav-card"
+            data-nav-card
+            style={`background-color: ${item.bgColor}; color: ${item.textColor};`}
+          >
+            <div class="nav-card-label">{item.label}</div>
+            <div class="nav-card-links">
+              {item.links.map((lnk) => (
+                <a
+                  class="nav-card-link"
+                  href={lnk.href}
+                  aria-label={lnk.ariaLabel ?? lnk.label}
+                  target={lnk.external ? "_blank" : undefined}
+                  rel={lnk.external ? "noopener noreferrer" : undefined}
+                >
+                  <svg class="nav-card-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M9 7h8v8" />
+                  </svg>
+                  {lnk.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </nav>
+</div>
+
+<style>
+  /*
+   * Official React Bits CardNav.css
+   * https://github.com/DavidHDev/react-bits/blob/main/src/content/Components/CardNav/CardNav.css
+   * Site-only: fixed (not absolute) so it stays as chrome; dark mode; theme btn; logo text.
+   */
+  .card-nav-container {
+    position: fixed;
+    top: 2em;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    z-index: 99;
+    box-sizing: border-box;
+  }
+
+  .card-nav {
+    display: block;
+    height: 60px;
+    padding: 0;
+    background-color: white;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    will-change: height;
+  }
+
+  :global(.dark) .card-nav {
+    background-color: rgb(18 28 41 / 0.96) !important;
+    border-color: rgb(52 70 89 / 0.55);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
+
+  .card-nav-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.45rem 0.55rem 1.1rem;
+    z-index: 2;
+  }
+
+  .hamburger-menu {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    gap: 6px;
+    border: 0;
+    background: transparent;
+    padding: 0 0.35rem;
+    color: inherit;
+  }
+
+  .hamburger-menu:hover .hamburger-line {
+    opacity: 0.75;
+  }
+
+  :global(.dark) .hamburger-menu {
+    color: var(--color-ink-100) !important;
+  }
+
+  .hamburger-line {
+    width: 30px;
+    height: 2px;
+    background-color: currentColor;
+    transition:
+      transform 0.25s ease,
+      opacity 0.2s ease,
+      margin 0.3s ease;
+    transform-origin: 50% 50%;
+  }
+
+  .hamburger-menu.open .hamburger-line:first-child {
+    transform: translateY(4px) rotate(45deg);
+  }
+
+  .hamburger-menu.open .hamburger-line:last-child {
+    transform: translateY(-4px) rotate(-45deg);
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .logo {
+    height: 28px;
+    width: 28px;
+    object-fit: contain;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-900);
+  }
+
+  :global(.dark) .logo-text {
+    color: var(--color-ink-50);
+  }
+
+  .card-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 100%;
+    margin-left: auto;
+  }
+
+  .card-nav-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 2.5rem;
+    border: 0;
+    border-radius: calc(0.75rem - 0.35rem);
+    background: transparent;
+    color: var(--color-ink-700);
+    cursor: pointer;
+  }
+
+  :global(.dark) .card-nav-icon-btn {
+    color: var(--color-ink-200);
+  }
+
+  .card-nav-cta-button {
+    display: none;
+    background-color: #111;
+    color: white;
+    border: none;
+    border-radius: calc(0.75rem - 0.35rem);
+    padding: 0 1rem;
+    height: 100%;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    align-items: center;
+  }
+
+  .card-nav-cta-button:hover {
+    background-color: #333;
+  }
+
+  @media (min-width: 769px) {
+    .card-nav-cta-button {
+      display: inline-flex;
+    }
+  }
+
+  .card-nav-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 60px;
+    bottom: 0;
+    padding: 0.5rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .card-nav.open .card-nav-content {
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .nav-card {
+    height: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+    border-radius: calc(0.75rem - 0.2rem);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .nav-card-label {
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-card-links {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-card-link {
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-card-link:hover {
+    opacity: 0.75;
+  }
+
+  .nav-card-link-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .card-nav-container {
+      width: 90%;
+      top: 1.2em;
+    }
+
+    .card-nav-top {
+      padding: 0.5rem 1rem;
+      justify-content: space-between;
+    }
+
+    .hamburger-menu {
+      order: 2;
+    }
+
+    .logo-container {
+      position: static;
+      transform: none;
+      order: 1;
+    }
+
+    .card-nav-actions {
+      order: 3;
+    }
+
+    .card-nav-cta-button {
+      display: none;
+    }
+
+    .card-nav-content {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 0.5rem;
+      bottom: 0;
+      justify-content: flex-start;
+    }
+
+    .nav-card {
+      height: auto;
+      min-height: 60px;
+      flex: 1 1 auto;
+      max-height: none;
+    }
+
+    .nav-card-label {
+      font-size: 18px;
+    }
+
+    .nav-card-link {
+      font-size: 15px;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+
+  const CLOSED_HEIGHT = 60;
+
+  /** Keep page padding in sync with open panel height (avoids covering Hero). */
+  function setNavExpand(px: number) {
+    document.documentElement.style.setProperty(
+      "--site-nav-expand",
+      `${Math.max(0, px)}px`,
+    );
+  }
+
+  /** Official React Bits CardNav animation + site content push. */
+  function initCardNav(root: HTMLElement) {
+    if (root.dataset.ready === "1") return;
+    root.dataset.ready = "1";
+
+    const navEl = root.querySelector<HTMLElement>("[data-card-nav-el]");
+    const toggleBtn = root.querySelector<HTMLButtonElement>("[data-card-nav-toggle]");
+    const contentEl = root.querySelector<HTMLElement>("[data-card-nav-content]");
+    const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-nav-card]"));
+    if (!navEl || !toggleBtn || !contentEl) return;
+
+    const ease = root.dataset.ease || "power3.out";
+    let isExpanded = false;
+    let tl: gsap.core.Timeline | null = null;
+    const expandProxy = { delta: 0 };
+
+    const calculateHeight = () => {
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      if (isMobile) {
+        const wasVisible = contentEl.style.visibility;
+        const wasPointerEvents = contentEl.style.pointerEvents;
+        const wasPosition = contentEl.style.position;
+        const wasHeight = contentEl.style.height;
+
+        contentEl.style.visibility = "visible";
+        contentEl.style.pointerEvents = "auto";
+        contentEl.style.position = "static";
+        contentEl.style.height = "auto";
+        void contentEl.offsetHeight;
+
+        const topBar = CLOSED_HEIGHT;
+        const padding = 16;
+        const contentHeight = contentEl.scrollHeight;
+
+        contentEl.style.visibility = wasVisible;
+        contentEl.style.pointerEvents = wasPointerEvents;
+        contentEl.style.position = wasPosition;
+        contentEl.style.height = wasHeight;
+
+        return topBar + contentHeight + padding;
+      }
+      return 260;
+    };
+
+    const expandDelta = () => Math.max(0, calculateHeight() - CLOSED_HEIGHT);
+
+    const createTimeline = () => {
+      expandProxy.delta = 0;
+      setNavExpand(0);
+      gsap.set(navEl, { height: CLOSED_HEIGHT, overflow: "hidden" });
+      gsap.set(cards, { y: 50, opacity: 0 });
+
+      const timeline = gsap.timeline({ paused: true });
+
+      // Nav height + page push share the same clock (official ease / duration)
+      timeline.to(
+        navEl,
+        {
+          height: calculateHeight,
+          duration: 0.4,
+          ease,
+        },
+        0,
+      );
+      timeline.to(
+        expandProxy,
+        {
+          delta: expandDelta,
+          duration: 0.4,
+          ease,
+          onUpdate: () => setNavExpand(expandProxy.delta),
+        },
+        0,
+      );
+      timeline.to(
+        cards,
+        { y: 0, opacity: 1, duration: 0.4, ease, stagger: 0.08 },
+        "-=0.1",
+      );
+      return timeline;
+    };
+
+    tl = createTimeline();
+
+    const setExpanded = (open: boolean) => {
+      isExpanded = open;
+      navEl.classList.toggle("open", open);
+      contentEl.setAttribute("aria-hidden", open ? "false" : "true");
+      toggleBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      toggleBtn.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
+      if (!open) setNavExpand(0);
+    };
+
+    const setHamburger = (open: boolean) => {
+      toggleBtn.classList.toggle("open", open);
+    };
+
+    const closeMenu = () => {
+      if (!tl || !isExpanded) return;
+      setHamburger(false);
+      tl.eventCallback("onReverseComplete", () => setExpanded(false));
+      tl.reverse();
+    };
+
+    const toggleMenu = () => {
+      if (!tl) return;
+      if (!isExpanded) {
+        setHamburger(true);
+        setExpanded(true);
+        tl.eventCallback("onReverseComplete", null);
+        tl.play(0);
+      } else {
+        closeMenu();
+      }
+    };
+
+    toggleBtn.addEventListener("click", toggleMenu);
+
+    contentEl.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => closeMenu());
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+    const handleResize = () => {
+      if (!tl) return;
+      if (isExpanded) {
+        const newHeight = calculateHeight();
+        const newDelta = Math.max(0, newHeight - CLOSED_HEIGHT);
+        gsap.set(navEl, { height: newHeight });
+        expandProxy.delta = newDelta;
+        setNavExpand(newDelta);
+        tl.kill();
+        const newTl = createTimeline();
+        if (newTl) {
+          newTl.progress(1);
+          expandProxy.delta = newDelta;
+          setNavExpand(newDelta);
+          tl = newTl;
+        }
+      } else {
+        tl.kill();
+        tl = createTimeline();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    window.addEventListener(
+      "pagehide",
+      () => {
+        window.removeEventListener("resize", handleResize);
+        setNavExpand(0);
+        tl?.kill();
+      },
+      { once: true },
+    );
+  }
+
+  function boot() {
+    document.querySelectorAll<HTMLElement>("[data-card-nav]").forEach(initCardNav);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+  document.addEventListener("astro:page-load", boot);
+</script>

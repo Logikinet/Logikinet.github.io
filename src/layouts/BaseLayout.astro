@@ -3,7 +3,7 @@ import "@/styles/global.css";
 import { SITE } from "@/config";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import MagneticCursor from "@/components/MagneticCursor.astro";
+
 
 interface Props {
   title?: string;
@@ -91,7 +91,6 @@ const jsonLdList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     ))}
   </head>
   <body class="min-h-screen flex flex-col">
-    <MagneticCursor />
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-aqua-500 focus:px-3 focus:py-2 focus:text-ink-950"
@@ -99,7 +98,7 @@ const jsonLdList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
       跳到主要内容
     </a>
     <Header />
-    <main id="main" class="flex-1">
+    <main id="main" class="site-main flex-1">
       <slot />
     </main>
     <Footer />

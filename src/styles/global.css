@@ -42,9 +42,23 @@
 }
 
 @layer base {
+  :root {
+    /* Official CardNav: top 2em + 60px bar */
+    --site-header-clearance: calc(2em + 60px + 0.75rem);
+    /* Extra pad while menu open — GSAP drives this so Hero isn't covered */
+    --site-nav-expand: 0px;
+  }
+
+  @media (max-width: 768px) {
+    :root {
+      --site-header-clearance: calc(1.2em + 60px + 0.75rem);
+    }
+  }
+
   html {
     scroll-behavior: smooth;
     color-scheme: light;
+    scroll-padding-top: calc(var(--site-header-clearance) + var(--site-nav-expand) + 0.5rem);
   }
 
   html.dark {
@@ -286,11 +300,20 @@
     @apply text-[11px] font-medium uppercase tracking-[0.16em] text-aqua-600 dark:text-aqua-400;
   }
 
-  /* Hero surface */
+  /*
+   * Fixed CardNav overlays the page. Base clearance = closed bar.
+   * --site-nav-expand grows with the open panel so Hero (red-box area)
+   * is pushed down instead of being covered by the menu cards.
+   */
+  .site-main:not(:has(.hero-surface)) {
+    padding-top: calc(var(--site-header-clearance) + var(--site-nav-expand));
+  }
+
   .hero-surface {
     position: relative;
     isolation: isolate;
     overflow: hidden;
+    padding-top: calc(var(--site-header-clearance) + var(--site-nav-expand));
     border-bottom: 1px solid rgb(208 219 234 / 0.7);
   }
 
@@ -301,18 +324,22 @@
   .hero-surface::before {
     content: "";
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    /* Cover from the true visual top (above cancelled padding) through hero */
+    top: 0;
+    bottom: 0;
     z-index: -2;
     background:
-      radial-gradient(ellipse 70% 55% at 18% 10%, rgb(47 168 154 / 0.14), transparent 55%),
-      radial-gradient(ellipse 55% 45% at 88% 20%, rgb(90 113 140 / 0.12), transparent 55%),
+      radial-gradient(ellipse 90% 70% at 18% 0%, rgb(47 168 154 / 0.16), transparent 58%),
+      radial-gradient(ellipse 70% 55% at 88% 0%, rgb(90 113 140 / 0.13), transparent 55%),
       radial-gradient(ellipse 40% 30% at 55% 90%, rgb(47 168 154 / 0.05), transparent 60%);
   }
 
   .dark .hero-surface::before {
     background:
-      radial-gradient(ellipse 70% 55% at 15% 0%, rgb(47 168 154 / 0.14), transparent 55%),
-      radial-gradient(ellipse 50% 40% at 90% 15%, rgb(80 120 170 / 0.14), transparent 55%),
+      radial-gradient(ellipse 90% 70% at 15% 0%, rgb(47 168 154 / 0.16), transparent 58%),
+      radial-gradient(ellipse 65% 50% at 90% 0%, rgb(80 120 170 / 0.15), transparent 55%),
       radial-gradient(ellipse 35% 30% at 50% 100%, rgb(47 100 120 / 0.08), transparent 60%);
   }
 
@@ -320,14 +347,18 @@
   .hero-surface::after {
     content: "";
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
     z-index: -1;
     opacity: 0.35;
     background-image:
       linear-gradient(to right, rgb(90 113 140 / 0.07) 1px, transparent 1px),
       linear-gradient(to bottom, rgb(90 113 140 / 0.07) 1px, transparent 1px);
     background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, black 20%, transparent 75%);
+    /* Grid continues under nav; soft fade only at outer edges */
+    mask-image: radial-gradient(ellipse 95% 90% at 50% 10%, black 30%, transparent 80%);
     pointer-events: none;
   }
 
@@ -384,9 +415,10 @@
 
   .stat-item {
     @apply block rounded-2xl border border-ink-200/70 bg-white/65 px-4 py-3.5 backdrop-blur-sm
-      transition-all duration-200 hover:-translate-y-0.5 hover:border-aqua-500/40 hover:bg-white/90 hover:shadow-md
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aqua-500
-      dark:border-ink-700/50 dark:bg-ink-900/40 dark:hover:border-aqua-400/40 dark:hover:bg-ink-900/70;
+      transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-300 hover:bg-white/90 hover:shadow-sm
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-300
+      dark:border-ink-700/50 dark:bg-ink-900/40 dark:hover:border-ink-600 dark:hover:bg-ink-900/70
+      dark:focus-visible:ring-ink-600;
   }
 
   .stat-value {
