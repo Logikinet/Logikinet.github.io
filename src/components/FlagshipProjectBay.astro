@@ -10,6 +10,7 @@ import {
   repositoryLabel,
   toPageSafeProject,
 } from "@/data/projects";
+import { projectCoverAlt, projectCoverUrl } from "@/data/projects/covers";
 
 interface Props {
   project: Project;
@@ -20,6 +21,7 @@ const project = toPageSafeProject(raw);
 const repoUrl = getExposedRepositoryUrl(project);
 const repoLabel = repositoryLabel(project);
 const providerLabel = getProviderLabel(project);
+const coverSrc = projectCoverUrl(project.id);
 
 const stack = project.stack.filter((t) => t && t !== "整理中" && t.trim().length > 0).slice(0, 8);
 
@@ -50,14 +52,6 @@ const updatedLabel = project.updatedAt
 const projectHref = `/projects/${project.id}/`;
 const relatedBlogHref = "/blog/tags/Harness/";
 const devLogHref = "/blog/tags/Agent/";
-
-// Architecture preview lines (code-style visual — not a blank image frame)
-const previewLines = [
-  { dim: true, text: "# Agent Harness · CLI" },
-  { dim: false, text: "harness run --trace --budget" },
-  { dim: true, text: "→ skills.compose(tools, hooks)" },
-  { dim: false, text: "→ observe · retry · report" },
-] as const;
 ---
 
 <!--
@@ -87,57 +81,40 @@ const previewLines = [
         }
       </div>
 
-      <!-- Media: architecture / code visual (no empty screenshot frame) -->
+      <!-- Media: project cover (aligned with carousel / ProjectCard) -->
       <div
-        class="relative isolate overflow-hidden border-b border-ink-100 bg-ink-50/90 dark:border-ink-800/80 dark:bg-ink-950/50"
-        aria-hidden="true"
+        class="relative isolate aspect-[16/9] overflow-hidden border-b border-ink-100 bg-ink-50/90 dark:border-ink-800/80 dark:bg-ink-950/50 sm:aspect-[2/1]"
       >
-        <div
-          class="pointer-events-none absolute inset-0 opacity-40"
-          style="background-image: linear-gradient(to right, rgb(90 113 140 / 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgb(90 113 140 / 0.08) 1px, transparent 1px); background-size: 28px 28px; mask-image: linear-gradient(120deg, black 35%, transparent 92%);"
-        >
-        </div>
-        <div
-          class="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-aqua-500/10 blur-2xl motion-reduce:blur-none"
-        >
-        </div>
-        <div class="relative px-4 py-5 sm:px-5 sm:py-6">
-          <div class="mb-3 flex items-center gap-2.5">
+        {
+          coverSrc ? (
             <img
-              src="/assets/logo-128.png?v=20260723b"
-              alt=""
-              width="40"
-              height="40"
-              class="h-10 w-10 shrink-0 object-contain drop-shadow-sm"
+              src={coverSrc}
+              alt={projectCoverAlt(project.title)}
+              width="1200"
+              height="675"
+              class="h-full w-full object-cover"
               decoding="async"
+              fetchpriority="high"
             />
-            <span
-              class="text-[11px] uppercase tracking-[0.14em] text-ink-500 dark:text-ink-400"
-              style="font-family: var(--font-mono);"
+          ) : (
+            <div
+              class="flex h-full items-center justify-center bg-gradient-to-br from-ink-50 to-aqua-500/10 dark:from-ink-900 dark:to-aqua-500/10"
+              aria-hidden="true"
             >
-              Agent Harness · CLI
-            </span>
-          </div>
-          <div
-            class="rounded-xl border border-ink-200/70 bg-white/75 px-3.5 py-3 dark:border-ink-700/50 dark:bg-ink-900/45"
-            style="font-family: var(--font-mono);"
-          >
-            <ul class="space-y-1.5 text-[11px] leading-relaxed sm:text-xs">
-              {
-                previewLines.map((line) => (
-                  <li
-                    class={
-                      line.dim
-                        ? "text-ink-400 dark:text-ink-500"
-                        : "text-ink-700 dark:text-ink-200"
-                    }
-                  >
-                    {line.text}
-                  </li>
-                ))
-              }
-            </ul>
-          </div>
+              <img
+                src="/assets/logo-128.png?v=20260723b"
+                alt=""
+                width="64"
+                height="64"
+                class="h-16 w-16 opacity-80"
+              />
+            </div>
+          )
+        }
+        <div
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white/80 to-transparent dark:from-ink-900/80"
+          aria-hidden="true"
+        >
         </div>
       </div>
 

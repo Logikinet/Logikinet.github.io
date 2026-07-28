@@ -18,8 +18,8 @@ import { getPublishedPosts } from "@/utils/blog";
 
 const flagshipProject = getFlagshipProject();
 const moreProjects = flagshipProject
-  ? getMoreProjects(flagshipProject.id, 8)
-  : getMoreProjects("", 8);
+  ? getMoreProjects(flagshipProject.id, 6)
+  : getMoreProjects("", 6);
 const listedProjects = getListedProjects();
 const allPosts = await getPublishedPosts();
 const posts = allPosts.slice(0, 3);
@@ -170,7 +170,7 @@ const jsonLd = {
     flagshipProject && (
       <section
         id="projects"
-        class="scroll-mt-16 sm:scroll-mt-20 flagship-follow pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-14 lg:pb-14"
+        class="scroll-mt-header flagship-follow pt-8 pb-10 sm:pt-10 sm:pb-12 lg:pt-14 lg:pb-14"
         aria-label="旗舰项目展示舱"
       >
         <div class="container-page">
@@ -181,7 +181,7 @@ const jsonLd = {
   }
 
   <!-- More projects — Travel2-style stacked carousel -->
-  <section class="pb-16 sm:pb-20 lg:pb-24" aria-labelledby="more-projects">
+  <section class="scroll-mt-header pb-16 sm:pb-20 lg:pb-24" aria-labelledby="more-projects">
     <div class="container-page">
       <div class="mb-7 flex items-end justify-between gap-4 sm:mb-8">
         <div>
@@ -197,44 +197,47 @@ const jsonLd = {
     </div>
   </section>
 
-  <!-- Focus areas -->
+  <!-- Focus -->
   <section class="band section-space" aria-labelledby="focus-areas">
     <div class="container-page">
-      <div class="mb-9">
+      <div class="mb-8">
         <p class="label-meta">Focus</p>
         <h2 id="focus-areas" class="section-heading mt-2.5">技术方向</h2>
-        <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-          以工程约束与系统可靠性为主线，串联软件、系统与硬件。
-        </p>
       </div>
-      <div class="grid gap-4 sm:grid-cols-2 sm:gap-5">
+      <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:gap-5" role="list">
         {
-          FOCUS_AREAS.map((area, i) => (
-            <article class="card">
-              <div class="flex items-start justify-between gap-3">
-                <h3 class="card-title !text-base sm:!text-lg">{area.title}</h3>
-                <span class="focus-index" aria-hidden="true">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <p class="card-body">{area.description}</p>
-            </article>
+          FOCUS_AREAS.map((area) => (
+            <li>
+              <article class="card h-full !p-5 sm:!p-5">
+                <span
+                  class="mb-7 block h-px w-10 bg-aqua-500/70 dark:bg-aqua-400/70"
+                  aria-hidden="true"
+                />
+                <h3 class="text-lg font-semibold tracking-tight text-ink-900 dark:text-ink-50">
+                  {area.title}
+                </h3>
+                <p class="mt-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300">
+                  {area.description}
+                </p>
+              </article>
+            </li>
           ))
         }
-      </div>
+      </ul>
     </div>
   </section>
 
   <!-- Latest posts -->
-  <section id="latest-posts" class="scroll-mt-16 sm:scroll-mt-20 section-space" aria-labelledby="latest-posts-heading">
+  <section
+    id="latest-posts"
+    class="scroll-mt-header section-space"
+    aria-labelledby="latest-posts-heading"
+  >
     <div class="container-page">
       <div class="mb-9 flex items-end justify-between gap-4">
         <div>
           <p class="label-meta">Blog</p>
           <h2 id="latest-posts-heading" class="section-heading mt-2.5">最新文章</h2>
-          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-            工程判断、工作流与可复用框架，而非一次性提示词技巧。
-          </p>
         </div>
         <a href="/blog/" class="section-link shrink-0">全部文章 →</a>
       </div>
@@ -244,110 +247,90 @@ const jsonLd = {
     </div>
   </section>
 
-  <!-- Resources preview -->
-  <section class="band section-space" aria-labelledby="resources-preview">
+  <!-- Explore: tools + resources + lab in one band -->
+  <section
+    id="explore"
+    class="scroll-mt-header band section-space"
+    aria-labelledby="explore-heading"
+  >
     <div class="container-page">
-      <div class="mb-9 flex items-end justify-between gap-4">
-        <div>
-          <p class="label-meta">Resources</p>
-          <h2 id="resources-preview" class="section-heading mt-2.5">个人资源库</h2>
-          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-            网址、Prompt、Skills 与工作流规则——知识资产归档，不把整库内容堆在首页。
-          </p>
-        </div>
-        <a href="/resources/" class="section-link shrink-0">进入资源库 →</a>
+      <div class="mb-8">
+        <p class="label-meta">Explore</p>
+        <h2 id="explore-heading" class="section-heading mt-2.5">继续探索</h2>
       </div>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-5">
-        {
-          resourceSections.map((section) => (
-            <a href={section.href} class="card card-interactive group">
-              <h3 class="card-title !text-base">{section.shortTitle}</h3>
-              <p class="card-body line-clamp-2">{section.description}</p>
-              <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
-                查看 →
-              </p>
-            </a>
-          ))
-        }
-      </div>
-    </div>
-  </section>
 
-  <!-- Tools -->
-  <section id="tools" class="scroll-mt-16 sm:scroll-mt-20 section-space" aria-labelledby="tools-heading">
-    <div class="container-page">
-      <div class="mb-9 flex items-end justify-between gap-4">
-        <div>
-          <p class="label-meta">Tools</p>
-          <h2 id="tools-heading" class="section-heading mt-2.5">在线工具</h2>
-          <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-            全部在浏览器本地运行，不上传用户数据。
-          </p>
+      <div class="grid gap-6 lg:grid-cols-3 lg:gap-5">
+        <div id="tools" class="scroll-mt-header">
+          <div class="mb-3 flex items-center justify-between gap-2">
+            <h3 class="text-base font-semibold text-ink-900 dark:text-ink-50">在线工具</h3>
+            <a href="/tools/" class="section-link text-xs">全部 →</a>
+          </div>
+          <ul class="space-y-2.5">
+            {
+              tools.slice(0, 3).map((tool) => (
+                <li>
+                  <a href={tool.href} class="card card-interactive !p-3.5 block no-underline">
+                    <p class="text-sm font-medium text-ink-900 dark:text-ink-50">{tool.title}</p>
+                    <p class="mt-1 line-clamp-2 text-xs text-ink-500 dark:text-ink-400">
+                      {tool.summary}
+                    </p>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
         </div>
-        <a href="/tools/" class="section-link shrink-0">工具箱 →</a>
-      </div>
-      <div class="grid gap-4 sm:grid-cols-3 sm:gap-5">
-        {
-          tools.map((tool) => (
-            <a href={tool.href} class="card card-interactive group">
-              <div class="mb-3 flex flex-wrap gap-1.5">
-                {tool.tags.map((tag) => (
-                  <span class="chip">{tag}</span>
+
+        <div id="resources" class="scroll-mt-header">
+          <div class="mb-3 flex items-center justify-between gap-2">
+            <h3 class="text-base font-semibold text-ink-900 dark:text-ink-50">资源库</h3>
+            <a href="/resources/" class="section-link text-xs">进入 →</a>
+          </div>
+          <ul class="space-y-2.5">
+            {
+              resourceSections.slice(0, 4).map((section) => (
+                <li>
+                  <a href={section.href} class="card card-interactive !p-3.5 block no-underline">
+                    <p class="text-sm font-medium text-ink-900 dark:text-ink-50">
+                      {section.shortTitle}
+                    </p>
+                    <p class="mt-1 line-clamp-2 text-xs text-ink-500 dark:text-ink-400">
+                      {section.description}
+                    </p>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div id="lab" class="scroll-mt-header">
+          <div class="mb-3 flex items-center justify-between gap-2">
+            <h3 class="text-base font-semibold text-ink-900 dark:text-ink-50">实验室</h3>
+            <a href="/lab/" class="section-link text-xs">全部 →</a>
+          </div>
+          {
+            labItems.length > 0 ? (
+              <ul class="space-y-2.5">
+                {labItems.slice(0, 3).map((item) => (
+                  <li>
+                    <a href={item.href} class="card card-interactive !p-3.5 block no-underline">
+                      <p class="text-sm font-medium text-ink-900 dark:text-ink-50">{item.title}</p>
+                      <p class="mt-1 line-clamp-2 text-xs text-ink-500 dark:text-ink-400">
+                        {item.summary}
+                      </p>
+                    </a>
+                  </li>
                 ))}
-              </div>
-              <h3 class="card-title !text-base">{tool.title}</h3>
-              <p class="card-body">{tool.summary}</p>
-              <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
-                打开工具 →
-              </p>
-            </a>
-          ))
-        }
+              </ul>
+            ) : (
+              <p class="text-sm text-ink-500">暂无公开 Demo。</p>
+            )
+          }
+        </div>
       </div>
     </div>
   </section>
-
-  <!-- Lab preview（无 Demo 时整块隐藏） -->
-  {
-    labItems.length > 0 && (
-      <section
-        id="lab"
-        class="scroll-mt-16 sm:scroll-mt-20 band section-space"
-        aria-labelledby="lab-heading"
-      >
-        <div class="container-page">
-          <div class="mb-9 flex items-end justify-between gap-4">
-            <div>
-              <p class="label-meta">Lab</p>
-              <h2 id="lab-heading" class="section-heading mt-2.5">
-                实验室 Demo
-              </h2>
-              <p class="mt-2 max-w-lg text-sm text-ink-500 dark:text-ink-400">
-                小型实验与 Demo 集合——用于验证想法、保留趣味原型与交互片段。
-              </p>
-            </div>
-            <a href="/lab/" class="section-link shrink-0">
-              进入实验室 →
-            </a>
-          </div>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5">
-            {labItems.map((item) => (
-              <a href={item.href} class="card card-interactive group">
-                <div class="mb-3 flex flex-wrap gap-1.5">
-                  <span class="chip">{item.tech}</span>
-                </div>
-                <h3 class="card-title !text-base">{item.title}</h3>
-                <p class="card-body">{item.summary}</p>
-                <p class="mt-4 text-xs font-medium text-aqua-600 opacity-0 transition group-hover:opacity-100 dark:text-aqua-400">
-                  打开 Demo →
-                </p>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   <!-- Highlights + contact -->
   <section class="section-space" aria-labelledby="achievements">

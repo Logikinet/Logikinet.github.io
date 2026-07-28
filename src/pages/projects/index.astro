@@ -2,24 +2,152 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import GitHubPublicNote from "@/components/GitHubPublicNote.astro";
-import { getListedProjects } from "@/data/projects";
+import { getListedProjects, projectFilterTags } from "@/data/projects";
 
 const listed = getListedProjects();
+const projectsPayload = listed.map((p) => ({
+  id: p.id,
+  tags: projectFilterTags(p),
+}));
 ---
 
-<BaseLayout title="项目作品集" description="AquaLeap 项目作品集：Agent Harness、鸿蒙、AI 工作台、ROS 机器人与智能硬件相关实践。">
-  <div class="container-page section-space">
+<BaseLayout
+  title="项目作品集"
+  description="AquaLeap 项目作品集：Agent Harness、本地 AI 工作台、鸿蒙、安全审查与在线工具等实践。"
+>
+  <div class="container-page section-space scroll-mt-header">
     <p class="label-meta">Projects</p>
     <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">项目作品集</h1>
     <p class="mt-4 max-w-2xl text-base text-ink-600 dark:text-ink-300">
-      详情页正文优先渲染已同步且可公开的仓库 README（<code class="chip">src/generated/projects</code>）。
-      目录与精选在 <code class="chip">catalog.ts</code> 维护；是否暴露仓库 URL 由 <code class="chip">exposeRepositoryUrl</code> 控制。
-      无 Demo 时不显示占位按钮。
+      Agent 工程、本机 AI 工作台、鸿蒙与安全审查等精选实践。可打开工具 Demo 的会直接标注；仓库链接仅在可公开跳转时显示。
     </p>
-    <p class="mt-2 text-sm text-ink-500">当前展示 {listed.length} 个项目。</p>
-    <div class="mt-10 grid gap-5 sm:grid-cols-2">
-      {listed.map((project) => <ProjectCard project={project} />)}
+    <p class="mt-2 text-sm text-ink-500">
+      共 <span data-project-count>{listed.length}</span> 个项目
+    </p>
+
+    <div
+      class="mt-8 flex flex-wrap gap-2"
+      role="toolbar"
+      aria-label="项目筛选"
+      data-project-filters
+    >
+      <button type="button" class="filter-chip is-active" data-filter="all" aria-pressed="true">
+        全部
+      </button>
+      <button type="button" class="filter-chip" data-filter="featured" aria-pressed="false">
+        精选
+      </button>
+      <button type="button" class="filter-chip" data-filter="public" aria-pressed="false">
+        公开仓库
+      </button>
+      <button type="button" class="filter-chip" data-filter="agent" aria-pressed="false">
+        Agent
+      </button>
+      <button type="button" class="filter-chip" data-filter="harmony" aria-pressed="false">
+        鸿蒙
+      </button>
+      <button type="button" class="filter-chip" data-filter="tools" aria-pressed="false">
+        工具 / Lab
+      </button>
+      <button type="button" class="filter-chip" data-filter="security" aria-pressed="false">
+        安全
+      </button>
     </div>
+
+    <div class="mt-10 grid gap-5 sm:grid-cols-2" data-project-grid>
+      {
+        listed.map((project) => (
+          <div data-project-card data-project-id={project.id}>
+            <ProjectCard project={project} />
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="mt-8 hidden text-sm text-ink-500" data-project-empty>
+      当前筛选下没有项目，试试「全部」或其他标签。
+    </p>
+
     <GitHubPublicNote />
   </div>
 </BaseLayout>
+
+<script is:inline define:vars={{ projectsPayload }}>
+  const filtersRoot = document.querySelector("[data-project-filters]");
+  const cards = Array.from(document.querySelectorAll("[data-project-card]"));
+  const countEl = document.querySelector("[data-project-count]");
+  const emptyEl = document.querySelector("[data-project-empty]");
+  const tagMap = new Map(projectsPayload.map((p) => [p.id, p.tags]));
+
+  function setFilter(key) {
+    filtersRoot?.querySelectorAll("[data-filter]").forEach((btn) => {
+      const on = btn.getAttribute("data-filter") === key;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    let visible = 0;
+    cards.forEach((card) => {
+      const id = card.getAttribute("data-project-id") || "";
+      const tags = tagMap.get(id) || [];
+      const show = key === "all" || tags.includes(key);
+      card.classList.toggle("hidden", !show);
+      if (show) visible += 1;
+    });
+
+    if (countEl) countEl.textContent = String(visible);
+    emptyEl?.classList.toggle("hidden", visible > 0);
+  }
+
+  filtersRoot?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-filter]");
+    if (!btn || !filtersRoot.contains(btn)) return;
+    setFilter(btn.getAttribute("data-filter") || "all");
+  });
+</script>
+
+<style>
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid rgb(208 219 234 / 0.9);
+    background: rgb(255 255 255 / 0.75);
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-ink-600);
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .filter-chip:hover {
+    border-color: rgb(47 168 154 / 0.4);
+    color: var(--color-aqua-700);
+  }
+
+  .filter-chip.is-active {
+    border-color: rgb(47 168 154 / 0.45);
+    background: rgb(47 168 154 / 0.12);
+    color: var(--color-aqua-700);
+  }
+
+  :global(.dark) .filter-chip {
+    border-color: rgb(52 70 89 / 0.65);
+    background: rgb(18 28 41 / 0.55);
+    color: var(--color-ink-300);
+  }
+
+  :global(.dark) .filter-chip.is-active {
+    border-color: rgb(47 168 154 / 0.4);
+    background: rgb(47 168 154 / 0.14);
+    color: var(--color-aqua-300);
+  }
+
+  :global(.dark) .filter-chip:hover {
+    color: var(--color-aqua-300);
+  }
+</style>

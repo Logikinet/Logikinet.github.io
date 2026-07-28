@@ -6,6 +6,7 @@ import {
   repositoryLabel,
   toPageSafeProject,
 } from "@/data/projects";
+import { projectCoverAlt, projectCoverUrl } from "@/data/projects/covers";
 
 interface Props {
   project: Project;
@@ -17,29 +18,29 @@ const project = toPageSafeProject(raw);
 const repoUrl = getExposedRepositoryUrl(project);
 const repoLabel = repositoryLabel(project);
 const providerLabel = getProviderLabel(project);
-
-/** Shared with ProjectStackCarousel — bump when covers change */
-const COVER_V = "20260726e";
-const coverSrc = `/assets/projects/${project.id}.jpg?v=${COVER_V}`;
+const coverSrc = projectCoverUrl(project.id);
 ---
 
 <article class="card card-spotlight flex h-full flex-col !overflow-hidden !p-0">
-  <div class="project-card-media relative shrink-0 overflow-hidden border-b border-ink-100 dark:border-ink-800/80">
-    <img
-      src={coverSrc}
-      alt=""
-      width="640"
-      height="480"
-      loading="lazy"
-      decoding="async"
-      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-    />
-    <div
-      class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/90 to-transparent dark:from-ink-900/90"
-      aria-hidden="true"
-    >
-    </div>
-  </div>
+  {
+    coverSrc && (
+      <div class="project-card-media relative shrink-0 overflow-hidden border-b border-ink-100 dark:border-ink-800/80">
+        <img
+          src={coverSrc}
+          alt={projectCoverAlt(project.title)}
+          width="640"
+          height="400"
+          loading="lazy"
+          decoding="async"
+          class="h-full w-full object-cover"
+        />
+        <div
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white/90 to-transparent dark:from-ink-900/90"
+          aria-hidden="true"
+        />
+      </div>
+    )
+  }
 
   <div class="flex flex-1 flex-col p-5 sm:p-6">
     <div class="mb-3.5 flex flex-wrap items-center gap-2">
@@ -96,7 +97,11 @@ const coverSrc = `/assets/projects/${project.id}.jpg?v=${COVER_V}`;
         project.demo ? (
           project.demo.startsWith("/") ? (
             <a href={project.demo} class="btn-ghost !px-3 !py-1.5 text-xs">
-              {project.demo.startsWith("/tools/") ? "打开工具" : "打开"}
+              {project.demo.startsWith("/tools/")
+                ? "打开工具"
+                : project.demo.startsWith("/lab/")
+                  ? "打开 Demo"
+                  : "打开"}
             </a>
           ) : (
             <a

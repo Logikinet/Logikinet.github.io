@@ -10,6 +10,7 @@
     "studio:api": "node scripts/content-server.mjs",
     "content:migrate": "tsx scripts/migrate-resources-to-content.ts",
     "sync:projects": "node scripts/sync-projects.mjs",
+    "sync:discover": "node scripts/discover-projects.mjs",
     "sync:aof": "node scripts/sync-ai-output-formatter.mjs",
     "sync:sticker-forge": "node scripts/sync-sticker-forge.mjs",
     "install:notify": "node scripts/install-notify-workflows.mjs",

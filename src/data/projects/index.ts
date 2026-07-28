@@ -106,11 +106,28 @@ export function getFlagshipProject(id: string = FLAGSHIP_PROJECT_ID): Project | 
   return getProjectById(id) ?? getFeaturedProjects(1)[0];
 }
 
-/** 更多项目：精选中排除旗舰后的堆叠轮播列表 */
-export function getMoreProjects(flagshipId: string, limit = 8): Project[] {
+/** 更多项目：精选中排除旗舰后的堆叠轮播列表（默认 6，避免过挤） */
+export function getMoreProjects(flagshipId: string, limit = 6): Project[] {
   return getListedProjects()
     .filter((p) => p.featured && p.id !== flagshipId)
     .slice(0, limit);
+}
+
+/** 简易标签：用于作品集筛选 */
+export function projectFilterTags(p: Project): string[] {
+  const tags = new Set<string>();
+  if (p.featured) tags.add("featured");
+  if (p.repositoryStatus === "public" || p.visibility === "public") tags.add("public");
+  const blob = `${p.title} ${p.summary} ${p.stack.join(" ")}`.toLowerCase();
+  if (/agent|harness|仓颉|cli|orchestr|工作流|workbench|aether|todos/.test(blob)) {
+    tags.add("agent");
+  }
+  if (/harmony|鸿蒙|arkts|票务|ticket|digital-bomb|游戏/.test(blob)) {
+    tags.add("harmony");
+  }
+  if (p.demo || /tool|formatter|sticker|lab/.test(blob)) tags.add("tools");
+  if (/安全|审|盾|security|脱敏|审计/.test(blob)) tags.add("security");
+  return [...tags];
 }
 
 export function getGeneratedMeta(id: string): GeneratedProjectMeta | undefined {

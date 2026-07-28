@@ -54,10 +54,19 @@ const featuredProjects = getFeaturedProjects(8);
                   <span class="chip">{p.status}</span>
                 </div>
                 <p class="mt-1 text-sm text-ink-600 dark:text-ink-300">{p.summary}</p>
+                <a
+                  href={`/projects/${p.id}/`}
+                  class="mt-2 inline-block text-xs font-medium text-aqua-600 no-underline hover:underline dark:text-aqua-400"
+                >
+                  查看项目详情 →
+                </a>
               </li>
             ))
         }
       </ul>
+      <p class="mt-5">
+        <a href="/projects/" class="section-link text-sm">浏览全部作品 →</a>
+      </p>
     </section>
 
     <section class="mt-6 card">
