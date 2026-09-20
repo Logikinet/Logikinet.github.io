@@ -2,46 +2,74 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { SITE } from "@/config";
 
-const resumePdfPrint = SITE.resumePdfPrint ?? SITE.resumePdf;
-const previewPages = [
-  { src: "/resume/preview/page-01-v3.png", alt: "简历第 1 页" },
-  { src: "/resume/preview/page-02-v3.png", alt: "简历第 2 页" },
-];
+/** 一页版：预览用米白图，下载白底 PDF */
+const onePage = {
+  title: "一页版",
+  subtitle: "精简投递 · 预览为米白底，下载为打印白底",
+  downloadHref: SITE.resumePdfOnepage ?? "/resume/wangzijian-resume-onepage.pdf",
+  downloadName: "王子健_简历_一页白底.pdf",
+  pages: [{ src: "/resume/preview/onepage/page-01-v1.png", alt: "一页版简历预览", width: 1310, height: 1853 }],
+};
+
+/** 详细版：两页米白预览，下载打印白底 */
+const detail = {
+  title: "详细版",
+  subtitle: "完整两页 · 预览为米白底，下载为打印白底",
+  downloadHref: SITE.resumePdfPrint ?? SITE.resumePdf ?? "/resume/wangzijian-resume-print.pdf",
+  downloadName: "王子健_简历_打印白底.pdf",
+  pages: [
+    { src: "/resume/preview/detail/page-01-v1.png", alt: "详细版简历第 1 页", width: 1191, height: 1684 },
+    { src: "/resume/preview/detail/page-02-v1.png", alt: "详细版简历第 2 页", width: 1191, height: 1684 },
+  ],
+};
+
+const sections = [onePage, detail];
 ---
 
 <BaseLayout
   title="简历预览"
-  description={`${SITE.name} 简历在线预览。`}
+  description={`${SITE.name} 简历在线预览：一页版与详细版。`}
 >
   <div class="container-page section-space !pt-5 sm:!pt-8 !pb-8">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="min-w-0">
-        <p class="label-meta">Resume Preview</p>
-        <h1 class="mt-2 text-xl font-semibold tracking-tight sm:text-3xl">简历预览</h1>
-      </div>
-      <a
-        href={resumePdfPrint}
-        class="btn-secondary shrink-0"
-        download={`王子健_简历_打印白底.pdf`}
-      >
-        下载
-      </a>
+    <div class="min-w-0">
+      <p class="label-meta">Resume Preview</p>
+      <h1 class="mt-2 text-xl font-semibold tracking-tight sm:text-3xl">简历预览</h1>
+      <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">一页精简版与两页详细版分开展示，各自可下载对应白底 PDF。</p>
     </div>
 
-    <div class="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
+    <div class="mt-8 space-y-12 sm:mt-10 sm:space-y-14">
       {
-        previewPages.map((page, index) => (
-          <figure class="overflow-hidden rounded-xl border border-ink-200/80 bg-[#f5f4ed] shadow-sm dark:border-ink-700 sm:rounded-2xl">
-            <img
-              src={page.src}
-              alt={page.alt}
-              width="1191"
-              height="1684"
-              class="block h-auto w-full"
-              loading={index === 0 ? "eager" : "lazy"}
-              decoding="async"
-            />
-          </figure>
+        sections.map((section) => (
+          <section>
+            <div class="flex flex-wrap items-end justify-between gap-3">
+              <div class="min-w-0">
+                <h2 class="text-lg font-semibold tracking-tight sm:text-xl">{section.title}</h2>
+                <p class="mt-1 text-xs text-ink-500 sm:text-sm">{section.subtitle}</p>
+              </div>
+              <a
+                href={section.downloadHref}
+                class="btn-secondary shrink-0"
+                download={section.downloadName}
+              >
+                下载
+              </a>
+            </div>
+            <div class="mt-4 space-y-4 sm:mt-5 sm:space-y-5">
+              {section.pages.map((page, index) => (
+                <figure class="overflow-hidden rounded-xl border border-ink-200/80 bg-[#f5f4ed] shadow-sm dark:border-ink-700 sm:rounded-2xl">
+                  <img
+                    src={page.src}
+                    alt={page.alt}
+                    width={page.width}
+                    height={page.height}
+                    class="block h-auto w-full"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                </figure>
+              ))}
+            </div>
+          </section>
         ))
       }
     </div>
