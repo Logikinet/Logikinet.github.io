@@ -15,6 +15,8 @@ export const SITE = {
   resumePdf: "/resume/wangzijian-resume.pdf",
   /** 打印白底版 */
   resumePdfPrint: "/resume/wangzijian-resume-print.pdf",
+  /** 一页版白底 PDF（预览页一页版下载） */
+  resumePdfOnepage: "/resume/wangzijian-resume-onepage.pdf",
 } as const;
 
 export const NAV = [
