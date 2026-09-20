@@ -2,76 +2,155 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { SITE } from "@/config";
 
-/** 一页版：预览用米白图，下载白底 PDF */
-const onePage = {
-  title: "一页版",
-  subtitle: "精简投递 · 预览为米白底，下载为打印白底",
+const shortResume = {
+  id: "short",
+  label: "简版",
   downloadHref: SITE.resumePdfOnepage ?? "/resume/wangzijian-resume-onepage.pdf",
   downloadName: "王子健_简历_一页白底.pdf",
-  pages: [{ src: "/resume/preview/onepage/page-01-v1.png", alt: "一页版简历预览", width: 1310, height: 1853 }],
+  pages: [{ src: "/resume/preview/onepage/page-01-v1.png", alt: "简版简历预览", width: 1310, height: 1853 }],
 };
 
-/** 详细版：两页米白预览，下载打印白底 */
-const detail = {
-  title: "详细版",
-  subtitle: "完整两页 · 预览为米白底，下载为打印白底",
+const fullResume = {
+  id: "full",
+  label: "详版",
   downloadHref: SITE.resumePdfPrint ?? SITE.resumePdf ?? "/resume/wangzijian-resume-print.pdf",
   downloadName: "王子健_简历_打印白底.pdf",
   pages: [
-    { src: "/resume/preview/detail/page-01-v1.png", alt: "详细版简历第 1 页", width: 1191, height: 1684 },
-    { src: "/resume/preview/detail/page-02-v1.png", alt: "详细版简历第 2 页", width: 1191, height: 1684 },
+    { src: "/resume/preview/detail/page-01-v1.png", alt: "详版简历第 1 页", width: 1191, height: 1684 },
+    { src: "/resume/preview/detail/page-02-v1.png", alt: "详版简历第 2 页", width: 1191, height: 1684 },
   ],
 };
 
-const sections = [onePage, detail];
+const variants = [shortResume, fullResume];
 ---
 
 <BaseLayout
   title="简历预览"
-  description={`${SITE.name} 简历在线预览：一页版与详细版。`}
+  description={`${SITE.name} 简历在线预览：简版与详版。`}
 >
-  <div class="container-page section-space !pt-5 sm:!pt-8 !pb-8">
-    <div class="min-w-0">
-      <p class="label-meta">Resume Preview</p>
-      <h1 class="mt-2 text-xl font-semibold tracking-tight sm:text-3xl">简历预览</h1>
-      <p class="mt-2 text-sm text-ink-600 dark:text-ink-300">一页精简版与两页详细版分开展示，各自可下载对应白底 PDF。</p>
+  <div class="container-page section-space !pt-5 sm:!pt-8 !pb-8" data-resume-preview>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="label-meta">Resume Preview</p>
+        <h1 class="mt-2 text-xl font-semibold tracking-tight sm:text-3xl">简历预览</h1>
+      </div>
+      <a
+        href={shortResume.downloadHref}
+        class="btn-secondary shrink-0"
+        download={shortResume.downloadName}
+        data-resume-download
+        data-for="short"
+      >
+        下载
+      </a>
+      <a
+        href={fullResume.downloadHref}
+        class="btn-secondary shrink-0 hidden"
+        download={fullResume.downloadName}
+        data-resume-download
+        data-for="full"
+      >
+        下载
+      </a>
     </div>
 
-    <div class="mt-8 space-y-12 sm:mt-10 sm:space-y-14">
+    <div
+      class="mt-5 inline-flex rounded-full border border-ink-200/90 bg-white/80 p-1 shadow-sm dark:border-ink-700 dark:bg-ink-900/60"
+      role="tablist"
+      aria-label="简历版本"
+    >
       {
-        sections.map((section) => (
-          <section>
-            <div class="flex flex-wrap items-end justify-between gap-3">
-              <div class="min-w-0">
-                <h2 class="text-lg font-semibold tracking-tight sm:text-xl">{section.title}</h2>
-                <p class="mt-1 text-xs text-ink-500 sm:text-sm">{section.subtitle}</p>
-              </div>
-              <a
-                href={section.downloadHref}
-                class="btn-secondary shrink-0"
-                download={section.downloadName}
-              >
-                下载
-              </a>
-            </div>
-            <div class="mt-4 space-y-4 sm:mt-5 sm:space-y-5">
-              {section.pages.map((page, index) => (
-                <figure class="overflow-hidden rounded-xl border border-ink-200/80 bg-[#f5f4ed] shadow-sm dark:border-ink-700 sm:rounded-2xl">
-                  <img
-                    src={page.src}
-                    alt={page.alt}
-                    width={page.width}
-                    height={page.height}
-                    class="block h-auto w-full"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                  />
-                </figure>
-              ))}
-            </div>
-          </section>
+        variants.map((v, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`tab-${v.id}`}
+            aria-controls={`panel-${v.id}`}
+            aria-selected={i === 0 ? "true" : "false"}
+            data-resume-tab={v.id}
+            class:list={[
+              "rounded-full px-4 py-1.5 text-sm font-medium transition",
+              i === 0
+                ? "bg-ink-900 text-white dark:bg-ink-100 dark:text-ink-900"
+                : "text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50",
+            ]}
+          >
+            {v.label}
+          </button>
         ))
       }
     </div>
+
+    {
+      variants.map((v, i) => (
+        <div
+          id={`panel-${v.id}`}
+          role="tabpanel"
+          aria-labelledby={`tab-${v.id}`}
+          data-resume-panel={v.id}
+          class:list={["mt-5 space-y-4 sm:mt-6 sm:space-y-5", i !== 0 && "hidden"]}
+          hidden={i !== 0}
+        >
+          {v.pages.map((page, index) => (
+            <figure class="overflow-hidden rounded-xl border border-ink-200/80 bg-[#f5f4ed] shadow-sm dark:border-ink-700 sm:rounded-2xl">
+              <img
+                src={page.src}
+                alt={page.alt}
+                width={page.width}
+                height={page.height}
+                class="block h-auto w-full"
+                loading={i === 0 && index === 0 ? "eager" : "lazy"}
+                decoding="async"
+              />
+            </figure>
+          ))}
+        </div>
+      ))
+    }
   </div>
+
+  <script>
+    function initResumePreview() {
+      const root = document.querySelector("[data-resume-preview]");
+      if (!root || root.dataset.bound === "1") return;
+      root.dataset.bound = "1";
+
+      const tabs = Array.from(root.querySelectorAll("[data-resume-tab]"));
+      const panels = Array.from(root.querySelectorAll("[data-resume-panel]"));
+      const downloads = Array.from(root.querySelectorAll("[data-resume-download]"));
+
+      const activeBtn =
+        "rounded-full px-4 py-1.5 text-sm font-medium transition bg-ink-900 text-white dark:bg-ink-100 dark:text-ink-900";
+      const idleBtn =
+        "rounded-full px-4 py-1.5 text-sm font-medium transition text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50";
+
+      function activate(id) {
+        tabs.forEach((tab) => {
+          const on = tab.getAttribute("data-resume-tab") === id;
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          tab.className = on ? activeBtn : idleBtn;
+        });
+        panels.forEach((panel) => {
+          const on = panel.getAttribute("data-resume-panel") === id;
+          panel.classList.toggle("hidden", !on);
+          if (on) panel.removeAttribute("hidden");
+          else panel.setAttribute("hidden", "");
+        });
+        downloads.forEach((a) => {
+          const on = a.getAttribute("data-for") === id;
+          a.classList.toggle("hidden", !on);
+        });
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          const id = tab.getAttribute("data-resume-tab");
+          if (id) activate(id);
+        });
+      });
+    }
+
+    initResumePreview();
+    document.addEventListener("astro:page-load", initResumePreview);
+  </script>
 </BaseLayout>
