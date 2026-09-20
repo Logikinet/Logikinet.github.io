@@ -2,7 +2,7 @@ export const SITE = {
   title: "AquaLeap",
   name: "王子健",
   description:
-    "王子健的个人技术空间：AI Agent / Harness 工程、鸿蒙与仓颉、AI 应用开发、ROS 机器人与工程实践。",
+    "王子健的个人技术空间：AI Agent / Harness 与 FDE 前线部署、鸿蒙与仓颉、AI 应用开发、ROS 机器人与工程实践。",
   url: "https://aqualeap.dev",
   lang: "zh-CN",
   timezone: "Asia/Shanghai",
@@ -11,6 +11,8 @@ export const SITE = {
   githubUser: "Logikinet",
   ogImage: "/og-default.svg",
   postsPerPage: 6,
+  /** 最新电子版简历 PDF（Kami 米白底） */
+  resumePdf: "/resume/wangzijian-resume.pdf",
 } as const;
 
 export const NAV = [
@@ -49,8 +51,10 @@ export const FOCUS_AREAS = [
 export const ACHIEVEMENTS = [
   "华为 ICT 大赛编程赛全球二等奖",
   "华为云一带一路金砖国家技能发展与技术创新大赛全国优秀奖",
-  "实用新型专利 2 项（第一发明人）",
+  "国创赛省级特等奖",
+  "两项实用新型专利申请已受理（第一发明人）",
   "GPA 3.5 · 专业前 10%",
-  "一等奖学金 2 次 · 二等奖学金 2 次 · 三等奖学金 1 次",
+  "国家奖学金",
+  "一等奖学金 3 次 · 二等奖学金 2 次 · 三等奖学金 1 次",
   "校级励志奖学金 1 次",
 ] as const;
