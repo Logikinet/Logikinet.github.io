@@ -13,6 +13,8 @@ export const SITE = {
   postsPerPage: 6,
   /** 最新电子版简历 PDF（Kami 米白底） */
   resumePdf: "/resume/wangzijian-resume.pdf",
+  /** 打印白底版 */
+  resumePdfPrint: "/resume/wangzijian-resume-print.pdf",
 } as const;
 
 export const NAV = [
@@ -53,8 +55,8 @@ export const ACHIEVEMENTS = [
   "华为云一带一路金砖国家技能发展与技术创新大赛全国优秀奖",
   "国创赛省级特等奖",
   "两项实用新型专利申请已受理（第一发明人）",
-  "GPA 3.5 · 专业前 10%",
+  "GPA 3.5/4.0 · 专业前 10% · 连续班长",
   "国家奖学金",
-  "一等奖学金 3 次 · 二等奖学金 2 次 · 三等奖学金 1 次",
-  "校级励志奖学金 1 次",
+  "一等奖学金 ×3 · 二等奖学金 ×2 · 三等奖学金 ×1",
+  "校级励志奖学金 · 优秀学生干部",
 ] as const;
