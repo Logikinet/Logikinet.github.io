@@ -1,0 +1,43 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { SITE } from "@/config";
+
+const resumePdf = SITE.resumePdf;
+const resumePdfPrint = SITE.resumePdfPrint ?? SITE.resumePdf;
+---
+
+<BaseLayout
+  title="简历预览"
+  description={`${SITE.name} 简历 PDF 在线预览（电子版米白）；可下载打印白底版。`}
+>
+  <div class="container-page section-space !pt-6 sm:!pt-8">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="label-meta">Resume Preview</p>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">简历预览 · 电子版米白</h1>
+        <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">浏览器内直接阅读；需要打印请下载白底版。</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <a href={resumePdfPrint} class="btn-primary" download={`王子健_简历_打印白底.pdf`}>
+          下载打印白底 PDF
+        </a>
+        <a href="/resume/" class="btn-ghost">返回简历页</a>
+      </div>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-sm dark:border-ink-700 dark:bg-ink-900">
+      <iframe
+        title="王子健简历电子版预览"
+        src={`${resumePdf}#toolbar=1&navpanes=0&view=FitH`}
+        class="block h-[78vh] w-full min-h-[640px] bg-[#f5f4ed]"
+      ></iframe>
+    </div>
+
+    <p class="mt-4 text-center text-xs text-ink-500">
+      若预览未显示，可
+      <a href={resumePdf} class="text-aqua-600 no-underline hover:underline dark:text-aqua-300" target="_blank" rel="noopener noreferrer">新窗口打开电子版</a>
+      ，或直接
+      <a href={resumePdfPrint} class="text-aqua-600 no-underline hover:underline dark:text-aqua-300" download>下载打印白底 PDF</a>。
+    </p>
+  </div>
+</BaseLayout>
