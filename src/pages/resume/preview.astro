@@ -6,15 +6,15 @@ const shortResume = {
   id: "short",
   label: "简版",
   downloadHref: SITE.resumePdfOnepage ?? "/resume/wangzijian-resume-onepage.pdf",
-  downloadName: "王子健_简历_一页白底.pdf",
-  pages: [{ src: "/resume/preview/onepage/page-01-v1.png", alt: "简版简历预览", width: 1310, height: 1853 }],
+  downloadName: "王子健_简历_简版.pdf",
+  pages: [{ src: "/resume/preview/onepage/page-01-v1.png", alt: "简版简历", width: 1310, height: 1853 }],
 };
 
 const fullResume = {
   id: "full",
   label: "详版",
   downloadHref: SITE.resumePdfPrint ?? SITE.resumePdf ?? "/resume/wangzijian-resume-print.pdf",
-  downloadName: "王子健_简历_打印白底.pdf",
+  downloadName: "王子健_简历_详版.pdf",
   pages: [
     { src: "/resume/preview/detail/page-01-v1.png", alt: "详版简历第 1 页", width: 1191, height: 1684 },
     { src: "/resume/preview/detail/page-02-v1.png", alt: "详版简历第 2 页", width: 1191, height: 1684 },
@@ -26,7 +26,7 @@ const variants = [shortResume, fullResume];
 
 <BaseLayout
   title="简历预览"
-  description={`${SITE.name} 简历在线预览：简版与详版。`}
+  description={`${SITE.name} 简历预览`}
 >
   <div class="container-page section-space !pt-5 sm:!pt-8 !pb-8" data-resume-preview>
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -109,48 +109,50 @@ const variants = [shortResume, fullResume];
     }
   </div>
 
-  <script>
-    function initResumePreview() {
-      const root = document.querySelector("[data-resume-preview]");
-      if (!root || root.dataset.bound === "1") return;
-      root.dataset.bound = "1";
+  <script is:inline>
+    (function () {
+      function initResumePreview() {
+        var root = document.querySelector("[data-resume-preview]");
+        if (!root || root.getAttribute("data-bound") === "1") return;
+        root.setAttribute("data-bound", "1");
 
-      const tabs = Array.from(root.querySelectorAll("[data-resume-tab]"));
-      const panels = Array.from(root.querySelectorAll("[data-resume-panel]"));
-      const downloads = Array.from(root.querySelectorAll("[data-resume-download]"));
+        var tabs = Array.prototype.slice.call(root.querySelectorAll("[data-resume-tab]"));
+        var panels = Array.prototype.slice.call(root.querySelectorAll("[data-resume-panel]"));
+        var downloads = Array.prototype.slice.call(root.querySelectorAll("[data-resume-download]"));
 
-      const activeBtn =
-        "rounded-full px-4 py-1.5 text-sm font-medium transition bg-ink-900 text-white dark:bg-ink-100 dark:text-ink-900";
-      const idleBtn =
-        "rounded-full px-4 py-1.5 text-sm font-medium transition text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50";
+        var activeBtn =
+          "rounded-full px-4 py-1.5 text-sm font-medium transition bg-ink-900 text-white dark:bg-ink-100 dark:text-ink-900";
+        var idleBtn =
+          "rounded-full px-4 py-1.5 text-sm font-medium transition text-ink-600 hover:text-ink-900 dark:text-ink-300 dark:hover:text-ink-50";
 
-      function activate(id) {
-        tabs.forEach((tab) => {
-          const on = tab.getAttribute("data-resume-tab") === id;
-          tab.setAttribute("aria-selected", on ? "true" : "false");
-          tab.className = on ? activeBtn : idleBtn;
-        });
-        panels.forEach((panel) => {
-          const on = panel.getAttribute("data-resume-panel") === id;
-          panel.classList.toggle("hidden", !on);
-          if (on) panel.removeAttribute("hidden");
-          else panel.setAttribute("hidden", "");
-        });
-        downloads.forEach((a) => {
-          const on = a.getAttribute("data-for") === id;
-          a.classList.toggle("hidden", !on);
+        function activate(id) {
+          tabs.forEach(function (tab) {
+            var on = tab.getAttribute("data-resume-tab") === id;
+            tab.setAttribute("aria-selected", on ? "true" : "false");
+            tab.className = on ? activeBtn : idleBtn;
+          });
+          panels.forEach(function (panel) {
+            var on = panel.getAttribute("data-resume-panel") === id;
+            panel.classList.toggle("hidden", !on);
+            if (on) panel.removeAttribute("hidden");
+            else panel.setAttribute("hidden", "");
+          });
+          downloads.forEach(function (a) {
+            var on = a.getAttribute("data-for") === id;
+            a.classList.toggle("hidden", !on);
+          });
+        }
+
+        tabs.forEach(function (tab) {
+          tab.addEventListener("click", function () {
+            var id = tab.getAttribute("data-resume-tab");
+            if (id) activate(id);
+          });
         });
       }
 
-      tabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-          const id = tab.getAttribute("data-resume-tab");
-          if (id) activate(id);
-        });
-      });
-    }
-
-    initResumePreview();
-    document.addEventListener("astro:page-load", initResumePreview);
+      initResumePreview();
+      document.addEventListener("astro:page-load", initResumePreview);
+    })();
   </script>
 </BaseLayout>
